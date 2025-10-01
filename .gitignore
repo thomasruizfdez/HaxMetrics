@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.dist/
+.build/
+# IDE
+.vscode/
+.idea/
+# Datos y artefactos
+*.parquet
+*.hbr2
+/out/
+/examples/*.out

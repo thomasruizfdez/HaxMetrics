@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "haxmetrics"
+version = "0.1.0"
+description = "Haxball Replay Processor: decode .hbr2, simulate, compute
+metrics."
+authors = [{ name = "Bandolero" }]
+requires-python = ">=3.10"
+dependencies = [
+"click>=8.1",
+]
+[project.scripts]
+haxmetrics = "haxmetrics.cli:main"
