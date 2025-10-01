@@ -1,15 +1,23 @@
 [build-system]
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
+
 [project]
 name = "haxmetrics"
 version = "0.1.0"
-description = "Haxball Replay Processor: decode .hbr2, simulate, compute
-metrics."
-authors = [{ name = "Bandolero" }]
+description = "Haxball replay metrics: decode .hbr2, simulate, compute metrics."
+readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-"click>=8.1",
-]
+authors = [{ name = "Tomas Ruiz" }]
+dependencies = ["click>=8.1"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [project.scripts]
 haxmetrics = "haxmetrics.cli:main"
+haxprobe = "haxmetrics.io.probes:main_cli" 
+

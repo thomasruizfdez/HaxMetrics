@@ -4,6 +4,7 @@ __pycache__/
 .venv/
 .dist/
 .build/
+*.egg-info/
 # IDE
 .vscode/
 .idea/
@@ -12,3 +13,6 @@ __pycache__/
 *.hbr2
 /out/
 /examples/*.out
+# Replays (archivos binarios pesados)
+src/replays/*
+!src/replays/.gitkeep
