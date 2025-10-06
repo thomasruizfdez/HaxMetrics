@@ -1,0 +1,27 @@
+{
+  "name": "haxmetrics",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thomasruizfdez/HaxMetrics.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thomasruizfdez/HaxMetrics/issues"
+  },
+  "homepage": "https://github.com/thomasruizfdez/HaxMetrics#readme",
+  "dependencies": {
+    "json5": "^2.2.3",
+    "jszip": "^3.10.1",
+    "node-domexception": "^2.0.2",
+    "node-haxball": "^2.3.0",
+    "pako": "^2.1.0"
+  }
+}
