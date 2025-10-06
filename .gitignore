@@ -13,6 +13,9 @@ __pycache__/
 *.hbr2
 /out/
 /examples/*.out
-# Replays (archivos binarios pesados)
-src/replays/*
-!src/replays/.gitkeep
+
+/node_modules/
+.DS_Store
+.env
+/out_probe/
+package-lock.json
