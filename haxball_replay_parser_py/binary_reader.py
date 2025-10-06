@@ -33,3 +33,14 @@ class BinaryReader:
 
     def eof(self):
         return self.offset >= len(self.data)
+
+    def read_double_be(self):
+        val = struct.unpack(">d", self.data[self.offset : self.offset + 8])[0]
+        self.offset += 8
+        return val
+
+    def read_string_auto(self):
+        length = self.read_uint16_be()
+        if length > 0:
+            return self.read_string(length)
+        return ""

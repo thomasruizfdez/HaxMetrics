@@ -1,6 +1,6 @@
 import sys
 import json
-from HaxballReplay import HaxballReplay
+from haxball_replay import HaxballReplay
 
 
 def parse_hbr2_file(file_path: str):
