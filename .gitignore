@@ -18,3 +18,5 @@ __pycache__/
 .env
 /out_probe/
 package-lock.json
+
+src/out/
