@@ -13,7 +13,7 @@ from models.actions.desynced import Desynced
 from models.actions.player_admin_change import PlayerAdminChange
 from models.actions.change_stadium import ChangeStadium
 from models.actions.change_paused import ChangePaused
-from models.actions.broadcast_pings import BroadcastPings
+from haxball_replay_parser_py.models.actions.broadcast_pings import BroadcastPings
 from models.actions.player_handicap_change import PlayerHandicapChange
 from models.actions.change_colors import ChangeColors
 
