@@ -1,8 +1,8 @@
-from haxball_replay_parser_py.models.room import Room
-from haxball_replay_parser_py.models.player import Player
-from haxball_replay_parser_py.models.team_color import TeamColor
-from haxball_replay_parser_py.models.action import Action  # y tus subclases específicas
-from binary_reader import BinaryReader
+from haxmetrics.models.room import Room
+from haxmetrics.models.player import Player
+from haxmetrics.models.team_color import TeamColor
+from haxmetrics.models.action import Action  # y tus subclases específicas
+from haxmetrics.binary_reader import BinaryReader
 
 # from models.stadium.disc import Disc  # si tienes el modelo
 
