@@ -1,4 +1,4 @@
-from binary_reader import BinaryReader
+from haxmetrics.binary_reader import BinaryReader
 import zlib
 import gzip
 
