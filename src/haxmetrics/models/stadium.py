@@ -1,4 +1,13 @@
 from typing import Any, Dict, List, Optional
+from .stadium.vertex import Vertex
+from .stadium.segment import Segment
+from .stadium.plane import Plane
+from .stadium.goal import Goal
+from .stadium.disc import Disc
+from .stadium.player_physics import PlayerPhysics
+from .stadium.ball_physics import BallPhysics
+from .stadium.background import Background
+from .stadium.masked_item import MaskedItem
 
 
 class Stadium:
@@ -24,14 +33,14 @@ class Stadium:
         self.width: Optional[float] = None
         self.height: Optional[float] = None
         self.spawn_distance: Optional[float] = None
-        self.background = None
-        self.player_physics = None
-        self.ball_physics = None
-        self.vertexes: List[Any] = []
-        self.segments: List[Any] = []
-        self.planes: List[Any] = []
-        self.goals: List[Any] = []
-        self.discs: List[Any] = []
+        self.background: Optional[Background] = None
+        self.player_physics: Optional[PlayerPhysics] = None
+        self.ball_physics: Optional[BallPhysics] = None
+        self.vertexes: List[Vertex] = []
+        self.segments: List[Segment] = []
+        self.planes: List[Plane] = []
+        self.goals: List[Goal] = []
+        self.discs: List[Disc] = []
 
     @classmethod
     def parse(cls, reader):
@@ -41,39 +50,26 @@ class Stadium:
             stadium.set_name(cls.STADIUMS[type_])
             return stadium
         stadium.set_custom(True)
-        stadium.set_name(reader.read_string_auto())
-        stadium.set_background(None)  # Background.parse(reader) to be implemented
+        stadium.set_name(reader.read_string_auto_be())
+        stadium.set_background(Background.parse(reader))
         stadium.set_width(reader.read_double_be())
         stadium.set_height(reader.read_double_be())
         stadium.set_spawn_distance(reader.read_double_be())
-        stadium.set_vertexes(
-            cls.parse_multiple(reader, "Vertex")
-        )  # Replace with actual Vertex class
-        stadium.set_segments(
-            cls.parse_multiple(reader, "Segment")
-        )  # Replace with actual Segment class
-        stadium.set_planes(
-            cls.parse_multiple(reader, "Plane")
-        )  # Replace with actual Plane class
-        stadium.set_goals(
-            cls.parse_multiple(reader, "Goal")
-        )  # Replace with actual Goal class
-        stadium.set_discs(
-            cls.parse_multiple(reader, "Disc")
-        )  # Replace with actual Disc class
-        stadium.set_player_physics(
-            None
-        )  # PlayerPhysics.parse(reader) to be implemented
-        stadium.set_ball_physics(None)  # BallPhysics.parse(reader) to be implemented
+        stadium.set_vertexes(cls.parse_multiple(reader, Vertex, cls))
+        stadium.set_segments(cls.parse_multiple(reader, Segment, cls))
+        stadium.set_planes(cls.parse_multiple(reader, Plane, cls))
+        stadium.set_goals(cls.parse_multiple(reader, Goal, cls))
+        stadium.set_discs(cls.parse_multiple(reader, Disc, cls))
+        stadium.set_player_physics(PlayerPhysics.parse(reader))
+        stadium.set_ball_physics(BallPhysics.parse(reader, cls))
         return stadium
 
     @staticmethod
-    def parse_multiple(reader, type_name):
+    def parse_multiple(reader, cls_type, stadium_cls):
         items = []
         num = reader.read_uint8()
-        # Replace with actual parse call for each class, e.g. Vertex.parse(reader)
         for _ in range(num):
-            items.append(None)  # Placeholder: type_name + '.parse(reader)'
+            items.append(cls_type.parse(reader, stadium_cls))
         return items
 
     @classmethod
