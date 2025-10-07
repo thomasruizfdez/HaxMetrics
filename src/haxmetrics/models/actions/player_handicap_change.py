@@ -1,4 +1,4 @@
-from models.action import Action
+from ..action import Action
 
 
 class PlayerHandicapChange(Action):
