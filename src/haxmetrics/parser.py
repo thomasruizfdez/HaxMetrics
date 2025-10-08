@@ -1,30 +1,24 @@
 from haxmetrics.models.room import Room
 from haxmetrics.models.player import Player
 from haxmetrics.models.team_color import TeamColor
-from haxmetrics.models.action import Action  # y tus subclases específicas
+from haxmetrics.models.action import Action
+from haxmetrics.models.action_types import ACTION_TYPES
+from haxmetrics.models.stadium.disc import Disc
 from haxmetrics.binary_reader import BinaryReader
-
-# from models.stadium.disc import Disc  # si tienes el modelo
-
 import zlib
 
 
 class Parser:
-    ACTION_TYPES = [
-        # Añade aquí tus clases Action específicas en el mismo orden que PHP
-        # PlayerJoined, PlayerLeft, ChatMessage, etc.
-    ]
+    ACTION_TYPES = ACTION_TYPES
 
     def __init__(self, replay_data: bytes):
         self.reader = BinaryReader(replay_data)
-        self.version = self.reader.read_uint32_be()
         self.header = self.reader.read_string(4)
+        self.version = self.reader.read_uint32_be()
         self.frames = self.reader.read_uint32_be()
 
-        if self.header != "HBRP":
+        if self.header != "HBR2":
             raise Exception("Not a valid haxball replay!")
-        if self.version < 7:
-            raise Exception("Replay must be at least version 7")
 
         self.replay = {
             "version": self.version,
@@ -38,7 +32,8 @@ class Parser:
 
     def parse(self):
         # 1. Descomprime el bloque principal
-        decompressed_data = zlib.decompress(self.reader.get_input_string())
+        decompressed_data = zlib.decompress(self.reader.get_input_string(), wbits=-15)
+        print(f"First 500 bytes: {decompressed_data[:500]}")
         reader = BinaryReader(decompressed_data)
 
         # 2. Room info
@@ -64,8 +59,7 @@ class Parser:
         discs = []
         num = reader.read_uint32_be()
         for _ in range(num):
-            # discs.append(Disc.parse(reader))  # Si tienes el modelo Disc
-            discs.append(None)  # Placeholder
+            discs.append(Disc.parse(reader))
         return discs
 
     def parse_players(self, reader):

@@ -1,9 +1,13 @@
 from typing import Any, Dict
+from haxmetrics.models.stadium.stadium import Stadium
 
 
 class Room:
     def __init__(self, version: int):
         self.version = version
+        self.state = None
+        self.idk1 = None
+        self.idk2 = None
         self.frame = None
         self.name = None
         self.locked = None
@@ -24,25 +28,43 @@ class Room:
     @classmethod
     def parse(cls, reader, version):
         room = cls(version)
-        room.set_frame(reader.read_uint32_be())
+        # room.set_frame(reader.read_uint32_be())
+        # room.idk1 = reader.read_uint32_be()
+        # room.idk2 = reader.read_uint32_be()
+        room.set_state(reader.read_uint16())
+        if room.get_state() != 0:
+            print(f"Unknown room state: {room.get_state()}")
+            reader.read_bytes(10)
+
         room.set_name(reader.read_string_auto())
         room.set_locked(reader.read_uint8())
-        room.set_score_limit(reader.read_uint8())
-        room.set_time_limit(reader.read_uint8())
-        room.set_rules_timer(reader.read_uint32_be())
-        room.set_kick_off_taken(reader.read_uint8())
-        room.set_kick_off_team(reader.read_uint8())  # Stadium.parseTeam would go here
-        room.set_ball_x(reader.read_double_be())
-        room.set_ball_y(reader.read_double_be())
-        room.set_score_red(reader.read_uint32_be())
-        room.set_score_blue(reader.read_uint32_be())
-        room.set_match_time(reader.read_double_be())
-        room.set_pause_timer(reader.read_uint8())
-        room.set_stadium(None)  # Stadium.parse(reader) would go here
-        room.set_in_progress(reader.read_uint8())
+        room.set_score_limit(reader.read_uint32_be())
+        room.set_time_limit(reader.read_uint32_be())
+
+        print(f"32 bytes: {reader.read_bytes(4)}")
+
+        print(f"State: {room.get_state()}")
+        print(f"Parsed Room Name: {room.name}")
+        print(f"Is Locked: {room.locked}")
+        print(f"Score Limit: {room.score_limit}")
+        print(f"Time Limit: {room.time_limit}")
+
+        room.set_stadium(Stadium.parse(reader))
+        # room.set_rules_timer(reader.read_uint16())
+        # room.set_kick_off_taken(reader.read_uint8())
+        # room.set_kick_off_team(reader.read_uint8())
+        # room.set_ball_x(reader.read_double())
+        # room.set_ball_y(reader.read_double())
+        # room.set_score_red(reader.read_uint32_be())
+        # room.set_score_blue(reader.read_uint32_be())
+        # room.set_match_time(reader.read_double())
+        # room.set_pause_timer(reader.read_uint8())
+        # room.set_in_progress(reader.read_uint8())
         # If stadium is custom, read extra bits (not implemented here)
         # if room.get_stadium() and room.get_stadium().is_custom():
         #     reader.read_bytes(32)
+
+        exit(1)
         return room
 
     def json_serialize(self) -> Dict[str, Any]:
@@ -64,6 +86,13 @@ class Room:
         }
 
     # Setters and Getters
+    def set_state(self, state):
+        self.state = int(state)
+        return self
+
+    def get_state(self):
+        return self.state
+
     def set_frame(self, frame):
         self.frame = int(frame)
         return self

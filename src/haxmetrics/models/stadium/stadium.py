@@ -1,13 +1,13 @@
 from typing import Any, Dict, List, Optional
-from .stadium.vertex import Vertex
-from .stadium.segment import Segment
-from .stadium.plane import Plane
-from .stadium.goal import Goal
-from .stadium.disc import Disc
-from .stadium.player_physics import PlayerPhysics
-from .stadium.ball_physics import BallPhysics
-from .stadium.background import Background
-from .stadium.masked_item import MaskedItem
+from .vertex import Vertex
+from .segment import Segment
+from .plane import Plane
+from .goal import Goal
+from .disc import Disc
+from .player_physics import PlayerPhysics
+from .ball_physics import BallPhysics
+from .background import Background
+from .masked_item import MaskedItem
 
 
 class Stadium:
@@ -28,6 +28,7 @@ class Stadium:
     TEAMS = ["Spectators", "Red", "Blue"]
 
     def __init__(self):
+        self.type: Optional[int] = None
         self.name: Optional[str] = None
         self.custom: bool = False
         self.width: Optional[float] = None
@@ -45,23 +46,63 @@ class Stadium:
     @classmethod
     def parse(cls, reader):
         stadium = cls()
-        type_ = reader.read_uint8()
-        if type_ < len(cls.STADIUMS):
-            stadium.set_name(cls.STADIUMS[type_])
-            return stadium
-        stadium.set_custom(True)
-        stadium.set_name(reader.read_string_auto_be())
-        stadium.set_background(Background.parse(reader))
-        stadium.set_width(reader.read_double_be())
-        stadium.set_height(reader.read_double_be())
-        stadium.set_spawn_distance(reader.read_double_be())
-        stadium.set_vertexes(cls.parse_multiple(reader, Vertex, cls))
-        stadium.set_segments(cls.parse_multiple(reader, Segment, cls))
-        stadium.set_planes(cls.parse_multiple(reader, Plane, cls))
-        stadium.set_goals(cls.parse_multiple(reader, Goal, cls))
-        stadium.set_discs(cls.parse_multiple(reader, Disc, cls))
-        stadium.set_player_physics(PlayerPhysics.parse(reader))
-        stadium.set_ball_physics(BallPhysics.parse(reader, cls))
+
+        # Esperamos leer x/ff para estadios custom
+
+        stadium.type = reader.read_uint8()
+        print(f"Stadium Type (raw): {stadium.type}")
+
+        if stadium.type != 255:
+            print(f"Stadium Type: {stadium.type}. Expected 255 for custom stadiums.")
+            exit(1)
+
+        stadium.set_name(reader.read_string_auto())
+        print(f"Stadium Name: {stadium.name}")
+
+        reader.read_bytes(4)
+
+        # type_ = reader.read_uint8()
+        # if type_ < len(cls.STADIUMS):
+        #     stadium.set_name(cls.STADIUMS[type_])
+        #     return stadium
+        # stadium.set_custom(True)
+        # # Depuración para capturar el nombre correctamente
+        # length = reader.read_uint16()
+
+        # name_bytes = reader.read_bytes(length)
+
+        # try:
+        #     room_name = name_bytes.decode("utf-8")
+        # except UnicodeDecodeError as e:
+        #     print(f"[Stadium.parse] Error decodificando nombre: {e}")
+        #     room_name = name_bytes
+
+        # stadium.set_name(room_name)
+        # stadium.set_background(Background.parse(reader))
+        # stadium.set_width(reader.read_double())
+        # stadium.set_height(reader.read_double())
+        # stadium.set_spawn_distance(reader.read_double())
+        # stadium.set_vertexes(cls.parse_multiple(reader, Vertex, cls))
+        # stadium.set_segments(cls.parse_multiple(reader, Segment, cls))
+        # stadium.set_planes(cls.parse_multiple(reader, Plane, cls))
+        # stadium.set_goals(cls.parse_multiple(reader, Goal, cls))
+        # stadium.set_discs(cls.parse_multiple(reader, Disc, cls))
+        # stadium.set_player_physics(PlayerPhysics.parse(reader))
+        # stadium.set_ball_physics(BallPhysics.parse(reader, cls))
+
+        # print(f"Stadium Name: {stadium.name}")
+        # print(f"Is Custom: {stadium.custom}")
+        # print(f"Width: {stadium.width}")
+        # print(f"Height: {stadium.height}")
+        # print(f"Spawn Distance: {stadium.spawn_distance}")
+        # print(f"Background: {stadium.background}")
+        # print(f"Player Physics: {stadium.player_physics}")
+        # print(f"Ball Physics: {stadium.ball_physics}")
+        # print(f"Vertexes: {stadium.vertexes}")
+        # print(f"Segments: {stadium.segments}")
+        # print(f"Goals: {stadium.goals}")
+        # print(f"Discs: {stadium.discs}")
+
         return stadium
 
     @staticmethod
