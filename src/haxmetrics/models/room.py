@@ -1,5 +1,6 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from haxmetrics.models.stadium.stadium import Stadium
+from haxmetrics.models.game import Game
 
 
 class Room:
@@ -61,11 +62,9 @@ class Room:
         
         # 10. If game is active, parse game state
         if game_active:
-            # Game state parsing (to be implemented)
             room.set_in_progress(True)
-            # For now, skip game state parsing - would need Game class
-            # room.game = Game.parse(reader, room)
-            print("Game is active (game state parsing not yet implemented)")
+            room.game = Game.parse(reader, room)
+            print(f"Game is active - parsed game state at frame {room.game.frame}")
         else:
             room.set_in_progress(False)
 
