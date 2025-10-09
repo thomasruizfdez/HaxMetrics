@@ -164,3 +164,34 @@ class BinaryReader:
 
     def read_team_id(self) -> int:
         return self.read_byte()
+
+    # Compatibility methods for HaxBall original scripts
+    def read_uint8(self) -> int:
+        """Alias for read_byte() for compatibility with original scripts"""
+        return self.read_byte()
+
+    def read_uint32_be(self) -> int:
+        """Read uint32 in big-endian format (for HaxBall compatibility)"""
+        if self.position + 4 > self.length:
+            raise EOFError("No hay suficientes bytes para leer uint32")
+
+        result = struct.unpack(">I", self.data[self.position : self.position + 4])[0]
+        self.position += 4
+        return result
+
+    def read_uint16_be(self) -> int:
+        """Read uint16 in big-endian format (for HaxBall compatibility)"""
+        if self.position + 2 > self.length:
+            raise EOFError("No hay suficientes bytes para leer uint16")
+
+        result = struct.unpack(">H", self.data[self.position : self.position + 2])[0]
+        self.position += 2
+        return result
+
+    def read_string_auto(self) -> Optional[str]:
+        """Alias for read_string() for compatibility with original scripts"""
+        return self.read_string()
+
+    def get_input_string(self) -> bytes:
+        """Alias for read_remaining() for compatibility"""
+        return self.read_remaining()

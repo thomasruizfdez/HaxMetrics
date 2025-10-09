@@ -9,14 +9,18 @@ class TeamColor:
 
     @classmethod
     def parse(cls, reader):
+        """
+        Parse team color from binary data according to HaxBall original scripts.
+        Colors are stored as uint32 big-endian values.
+        """
         model = cls()
-        model.set_angle(reader.read_uint16_be())
-        # Convert uint32 to hex string, matching PHP dechex
-        model.set_text_color(hex(reader.read_uint32_be())[2:])
-        num_stripes = reader.read_uint8()
+        model.set_angle(reader.read_uint16())
+        # Convert uint32 to hex string (colors are in little-endian format in HaxBall)
+        model.set_text_color(hex(reader.read_uint32())[2:])
+        num_stripes = reader.read_byte()
         stripes = []
         for _ in range(num_stripes):
-            stripes.append(hex(reader.read_uint32_be())[2:])
+            stripes.append(hex(reader.read_uint32())[2:])
         model.set_stripes(stripes)
         return model
 

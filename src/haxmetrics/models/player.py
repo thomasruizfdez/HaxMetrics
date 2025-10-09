@@ -18,27 +18,31 @@ class Player:
 
     @classmethod
     def parse(cls, reader, version: int):
+        """
+        Parse player from binary data according to HaxBall original scripts.
+        Uses read_int32() for IDs, read_string() for strings, read_byte() for bytes.
+        """
         player = cls()
-        player.set_id(reader.read_uint32_be())
-        player.set_name(reader.read_string_auto())
-        player.set_admin(reader.read_uint8())
-        team_val = reader.read_uint8()
+        player.set_id(reader.read_int32())
+        player.set_name(reader.read_string())
+        player.set_admin(reader.read_byte())
+        team_val = reader.read_byte()
         # Stadium.parse_team emulated below, replace with Stadium.parse_team if available
         if hasattr(reader, "stadium") and hasattr(reader.stadium, "parse_team"):
             player.set_team(reader.stadium.parse_team(team_val))
         else:
-            from .stadium import Stadium
+            from .stadium.stadium import Stadium
 
             player.set_team(Stadium.parse_team(team_val))
-        player.set_number(reader.read_uint8())
-        player.set_avatar(reader.read_string_auto())
-        player.set_input(reader.read_uint32_be())
-        player.set_kicking(reader.read_uint8())
-        player.set_desynced(reader.read_uint8())
-        player.set_country(reader.read_string_auto())
+        player.set_number(reader.read_byte())
+        player.set_avatar(reader.read_string())
+        player.set_input(reader.read_int32())
+        player.set_kicking(reader.read_byte())
+        player.set_desynced(reader.read_byte())
+        player.set_country(reader.read_string())
         if version >= 11:
-            player.set_handicap(reader.read_uint16_be())
-        player.set_disc_id(reader.read_uint32_be())
+            player.set_handicap(reader.read_uint16())
+        player.set_disc_id(reader.read_int32())
         return player
 
     def json_serialize(self) -> Dict[str, Any]:

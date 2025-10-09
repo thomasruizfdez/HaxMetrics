@@ -45,21 +45,32 @@ class Stadium:
 
     @classmethod
     def parse(cls, reader):
+        """
+        Parse stadium from binary data according to HaxBall original scripts.
+        If type < 255, it's a predefined stadium. If type == 255, it's custom.
+        """
         stadium = cls()
 
-        # Esperamos leer x/ff para estadios custom
-
-        stadium.type = reader.read_uint8()
+        # Read stadium type (1 byte)
+        stadium.type = reader.read_byte()
         print(f"Stadium Type (raw): {stadium.type}")
 
-        if stadium.type != 255:
-            print(f"Stadium Type: {stadium.type}. Expected 255 for custom stadiums.")
-            exit(1)
+        # If it's a predefined stadium (< 255), just set the name and return
+        if stadium.type < len(cls.STADIUMS):
+            stadium.set_name(cls.STADIUMS[stadium.type])
+            stadium.set_custom(False)
+            print(f"Predefined Stadium: {stadium.name}")
+            return stadium
 
-        stadium.set_name(reader.read_string_auto())
-        print(f"Stadium Name: {stadium.name}")
+        # Custom stadium (type == 255)
+        stadium.set_custom(True)
+        stadium.set_name(reader.read_string())
+        print(f"Custom Stadium Name: {stadium.name}")
 
-        reader.read_bytes(4)
+        # For now, skip detailed custom stadium parsing
+        # TODO: Implement full custom stadium parsing according to ws() method
+        print("Custom stadium parsing not yet fully implemented")
+        return stadium
 
         # type_ = reader.read_uint8()
         # if type_ < len(cls.STADIUMS):
