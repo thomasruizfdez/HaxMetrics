@@ -1,3 +1,4 @@
+from haxmetrics.models.replay_messages import ReplayMessages
 from haxmetrics.models.room import Room
 from haxmetrics.models.player import Player
 from haxmetrics.models.team_color import TeamColor
@@ -13,17 +14,19 @@ class Parser:
 
     def __init__(self, replay_data: bytes):
         self.reader = BinaryReader(replay_data)
-        self.header = self.reader.read_string(4)
-        self.version = self.reader.read_uint32_be()
-        self.frames = self.reader.read_uint32_be()
+
+        self.header = self.reader.read_fixed_string(4)
+        self.version = self.reader.read_uint32()
+        self.duration = self.reader.read_uint32()
 
         if self.header != "HBR2":
             raise Exception("Not a valid haxball replay!")
 
         self.replay = {
             "version": self.version,
-            "frames": self.frames,
+            "duration": self.duration,
             "room_info": None,
+            "messages": [],
             "discs": [],
             "players": [],
             "team_colors": {},
@@ -33,11 +36,15 @@ class Parser:
     def parse(self):
         # 1. Descomprime el bloque principal
         decompressed_data = zlib.decompress(self.reader.get_input_string(), wbits=-15)
-        print(f"First 500 bytes: {decompressed_data[:500]}")
+        print(f"First 500 bytes: {decompressed_data[:500].hex()}")
         reader = BinaryReader(decompressed_data)
+
+        self.replay["messages"] = ReplayMessages.parse(reader)
 
         # 2. Room info
         self.replay["room_info"] = Room.parse(reader, self.version)
+
+        return self.replay
 
         # 3. Discs (si corresponde)
         if self.replay["room_info"].is_playing():

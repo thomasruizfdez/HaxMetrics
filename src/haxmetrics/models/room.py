@@ -5,32 +5,28 @@ from haxmetrics.models.stadium.stadium import Stadium
 class Room:
     def __init__(self, version: int):
         self.version = version
-        self.state = None
-        self.idk1 = None
-        self.idk2 = None
-        self.frame = None
-        self.name = None
-        self.locked = None
+
+        self.kick_timeout = 2
+        self.kick_rate_limit = 0
+        self.kick_rate_limit_burst = 1
+
         self.score_limit = None
         self.time_limit = None
-        self.rules_timer = None
-        self.kick_off_taken = None
-        self.kick_off_team = None
-        self.ball_x = None
-        self.ball_y = None
-        self.score_red = None
-        self.score_blue = None
-        self.match_time = None
-        self.pause_timer = None
+
+        self.teams_locked = None
+        self.team_colors = None
+
+        self.name = None
+
+        self.game = None
+
+        self.players = None
         self.stadium = None
-        self.in_progress = None
 
     @classmethod
     def parse(cls, reader, version):
         room = cls(version)
-        # room.set_frame(reader.read_uint32_be())
-        # room.idk1 = reader.read_uint32_be()
-        # room.idk2 = reader.read_uint32_be()
+
         room.set_state(reader.read_uint16())
         if room.get_state() != 0:
             print(f"Unknown room state: {room.get_state()}")
