@@ -14,10 +14,10 @@ class BallPhysics:
 
     @staticmethod
     def parse(reader, stadium_cls):
-        radius = reader.read_double()
-        b_coef = reader.read_double()
-        inv_mass = reader.read_double()
-        damping = reader.read_double()
+        radius = reader.read_double_be()
+        b_coef = reader.read_double_be()
+        inv_mass = reader.read_double_be()
+        damping = reader.read_double_be()
         color = format(reader.read_uint32(), "x")
         c_mask = stadium_cls.parse_mask(reader.read_uint32())
         c_group = stadium_cls.parse_mask(reader.read_uint32())

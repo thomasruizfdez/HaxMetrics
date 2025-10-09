@@ -18,14 +18,14 @@ class Disc:
 
     @staticmethod
     def parse(reader, stadium_cls):
-        pos_x = float(reader.read_double())
-        pos_y = float(reader.read_double())
-        velocity_x = float(reader.read_double())
-        velocity_y = float(reader.read_double())
-        radius = float(reader.read_double())
-        b_coef = float(reader.read_double())
-        inv_mass = float(reader.read_double())
-        damping = float(reader.read_double())
+        pos_x = float(reader.read_double_be())
+        pos_y = float(reader.read_double_be())
+        velocity_x = float(reader.read_double_be())
+        velocity_y = float(reader.read_double_be())
+        radius = float(reader.read_double_be())
+        b_coef = float(reader.read_double_be())
+        inv_mass = float(reader.read_double_be())
+        damping = float(reader.read_double_be())
         color = format(reader.read_uint32(), "x")
         c_mask = stadium_cls.parse_mask(reader.read_uint32())
         c_group = stadium_cls.parse_mask(reader.read_uint32())
