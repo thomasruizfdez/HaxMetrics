@@ -53,19 +53,16 @@ class Stadium:
 
         # Read stadium type (1 byte)
         stadium.type = reader.read_byte()
-        print(f"Stadium Type (raw): {stadium.type}")
 
         # If it's a predefined stadium (< 255), just set the name and return
         if stadium.type < len(cls.STADIUMS):
             stadium.set_name(cls.STADIUMS[stadium.type])
             stadium.set_custom(False)
-            print(f"Predefined Stadium: {stadium.name}")
             return stadium
 
         # Custom stadium (type == 255)
         stadium.set_custom(True)
         stadium.set_name(reader.read_string())
-        print(f"Custom Stadium Name: {stadium.name}")
 
         # Parse custom stadium properties
         stadium.set_background(Background.parse(reader))
@@ -102,8 +99,7 @@ class Stadium:
         
         # Joints parsing (not yet implemented, skip for now)
         joints_count = reader.read_uint8()
-        print(f"Joints count: {joints_count} (skipping)")
-        # TODO: Implement Joint class and parsing
+        # TODO: Implement Joint class and parsing if needed
         
         # Spawn points - red team
         red_spawn_count = reader.read_uint8()
@@ -120,20 +116,6 @@ class Stadium:
             x = reader.read_double_be()
             y = reader.read_double_be()
             blue_spawns.append((x, y))
-        
-        print(f"Red spawns: {red_spawn_count}, Blue spawns: {blue_spawn_count}")
-
-        print(f"Stadium Name: {stadium.name}")
-        print(f"Is Custom: {stadium.custom}")
-        print(f"Background: {stadium.background}")
-        print(f"Max View: {max_view_width}x{max_view_height}")
-        print(f"Spawn Distance: {stadium.spawn_distance}")
-        print(f"Player Physics: {stadium.player_physics}")
-        print(f"Vertexes: {len(stadium.vertexes)}")
-        print(f"Segments: {len(stadium.segments)}")
-        print(f"Planes: {len(stadium.planes)}")
-        print(f"Goals: {len(stadium.goals)}")
-        print(f"Discs: {len(stadium.discs)}")
 
         return stadium
 
