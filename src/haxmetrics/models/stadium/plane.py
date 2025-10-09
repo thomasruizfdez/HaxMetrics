@@ -13,10 +13,10 @@ class Plane:
 
     @staticmethod
     def parse(reader, stadium_cls):
-        normal_x = float(reader.read_double())
-        normal_y = float(reader.read_double())
-        dist = float(reader.read_double())
-        b_coef = float(reader.read_double())
+        normal_x = float(reader.read_double_be())
+        normal_y = float(reader.read_double_be())
+        dist = float(reader.read_double_be())
+        b_coef = float(reader.read_double_be())
         c_mask = stadium_cls.parse_mask(reader.read_uint32())
         c_group = stadium_cls.parse_mask(reader.read_uint32())
         return Plane(

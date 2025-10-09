@@ -24,13 +24,13 @@ class PlayerPhysics:
     @staticmethod
     def parse(reader):
         return PlayerPhysics(
-            b_coef=reader.read_double(),
-            inv_mass=reader.read_double(),
-            damping=reader.read_double(),
-            acceleration=reader.read_double(),
-            kicking_acceleration=reader.read_double(),
-            kicking_damping=reader.read_double(),
-            kick_strength=reader.read_double(),
+            b_coef=reader.read_double_be(),
+            inv_mass=reader.read_double_be(),
+            damping=reader.read_double_be(),
+            acceleration=reader.read_double_be(),
+            kicking_acceleration=reader.read_double_be(),
+            kicking_damping=reader.read_double_be(),
+            kick_strength=reader.read_double_be(),
         )
 
     def to_json(self):
