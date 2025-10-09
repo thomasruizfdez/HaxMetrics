@@ -100,11 +100,28 @@ class Stadium:
         stadium.set_goals(cls.parse_multiple(reader, Goal, cls))
         stadium.set_discs(cls.parse_multiple(reader, Disc, cls))
         
-        # Joints are not yet implemented but may be needed
-        # stadium.set_joints(cls.parse_multiple(reader, Joint, cls))
+        # Joints parsing (not yet implemented, skip for now)
+        joints_count = reader.read_uint8()
+        print(f"Joints count: {joints_count} (skipping)")
+        # TODO: Implement Joint class and parsing
         
-        # Ball physics
-        stadium.set_ball_physics(BallPhysics.parse(reader, cls))
+        # Spawn points - red team
+        red_spawn_count = reader.read_uint8()
+        red_spawns = []
+        for _ in range(red_spawn_count):
+            x = reader.read_double_be()
+            y = reader.read_double_be()
+            red_spawns.append((x, y))
+        
+        # Spawn points - blue team
+        blue_spawn_count = reader.read_uint8()
+        blue_spawns = []
+        for _ in range(blue_spawn_count):
+            x = reader.read_double_be()
+            y = reader.read_double_be()
+            blue_spawns.append((x, y))
+        
+        print(f"Red spawns: {red_spawn_count}, Blue spawns: {blue_spawn_count}")
 
         print(f"Stadium Name: {stadium.name}")
         print(f"Is Custom: {stadium.custom}")
@@ -112,7 +129,6 @@ class Stadium:
         print(f"Max View: {max_view_width}x{max_view_height}")
         print(f"Spawn Distance: {stadium.spawn_distance}")
         print(f"Player Physics: {stadium.player_physics}")
-        print(f"Ball Physics: {stadium.ball_physics}")
         print(f"Vertexes: {len(stadium.vertexes)}")
         print(f"Segments: {len(stadium.segments)}")
         print(f"Planes: {len(stadium.planes)}")
