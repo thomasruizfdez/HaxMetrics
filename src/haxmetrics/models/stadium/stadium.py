@@ -53,66 +53,69 @@ class Stadium:
 
         # Read stadium type (1 byte)
         stadium.type = reader.read_byte()
-        print(f"Stadium Type (raw): {stadium.type}")
 
         # If it's a predefined stadium (< 255), just set the name and return
         if stadium.type < len(cls.STADIUMS):
             stadium.set_name(cls.STADIUMS[stadium.type])
             stadium.set_custom(False)
-            print(f"Predefined Stadium: {stadium.name}")
             return stadium
 
         # Custom stadium (type == 255)
         stadium.set_custom(True)
         stadium.set_name(reader.read_string())
-        print(f"Custom Stadium Name: {stadium.name}")
 
-        # For now, skip detailed custom stadium parsing
-        # TODO: Implement full custom stadium parsing according to ws() method
-        print("Custom stadium parsing not yet fully implemented")
-        return stadium
-
-        # type_ = reader.read_uint8()
-        # if type_ < len(cls.STADIUMS):
-        #     stadium.set_name(cls.STADIUMS[type_])
-        #     return stadium
-        # stadium.set_custom(True)
-        # # Depuración para capturar el nombre correctamente
-        # length = reader.read_uint16()
-
-        # name_bytes = reader.read_bytes(length)
-
-        # try:
-        #     room_name = name_bytes.decode("utf-8")
-        # except UnicodeDecodeError as e:
-        #     print(f"[Stadium.parse] Error decodificando nombre: {e}")
-        #     room_name = name_bytes
-
-        # stadium.set_name(room_name)
-        # stadium.set_background(Background.parse(reader))
-        # stadium.set_width(reader.read_double())
-        # stadium.set_height(reader.read_double())
-        # stadium.set_spawn_distance(reader.read_double())
-        # stadium.set_vertexes(cls.parse_multiple(reader, Vertex, cls))
-        # stadium.set_segments(cls.parse_multiple(reader, Segment, cls))
-        # stadium.set_planes(cls.parse_multiple(reader, Plane, cls))
-        # stadium.set_goals(cls.parse_multiple(reader, Goal, cls))
-        # stadium.set_discs(cls.parse_multiple(reader, Disc, cls))
-        # stadium.set_player_physics(PlayerPhysics.parse(reader))
-        # stadium.set_ball_physics(BallPhysics.parse(reader, cls))
-
-        # print(f"Stadium Name: {stadium.name}")
-        # print(f"Is Custom: {stadium.custom}")
-        # print(f"Width: {stadium.width}")
-        # print(f"Height: {stadium.height}")
-        # print(f"Spawn Distance: {stadium.spawn_distance}")
-        # print(f"Background: {stadium.background}")
-        # print(f"Player Physics: {stadium.player_physics}")
-        # print(f"Ball Physics: {stadium.ball_physics}")
-        # print(f"Vertexes: {stadium.vertexes}")
-        # print(f"Segments: {stadium.segments}")
-        # print(f"Goals: {stadium.goals}")
-        # print(f"Discs: {stadium.discs}")
+        # Parse custom stadium properties
+        stadium.set_background(Background.parse(reader))
+        
+        # Max view width and height (not the same as background width/height)
+        max_view_width = reader.read_double_be()
+        max_view_height = reader.read_double_be()
+        
+        # Spawn distance
+        stadium.set_spawn_distance(reader.read_double_be())
+        
+        # Player physics
+        stadium.set_player_physics(PlayerPhysics.parse(reader))
+        
+        # Additional fields from ws() method
+        # max_view_width_override (nullable int32 using Sb() method)
+        max_view_width_override = reader.read_nullable_int32()
+        
+        # Camera follow (uint8/bool)
+        camera_follow = reader.read_uint8()
+        
+        # Can be stored (uint8/bool)
+        can_be_stored = reader.read_uint8() != 0
+        
+        # Full reset after goal (uint8/bool)  
+        full_reset = reader.read_uint8() != 0
+        
+        # Now parse the stadium elements
+        stadium.set_vertexes(cls.parse_multiple(reader, Vertex, cls))
+        stadium.set_segments(cls.parse_multiple(reader, Segment, cls))
+        stadium.set_planes(cls.parse_multiple(reader, Plane, cls))
+        stadium.set_goals(cls.parse_multiple(reader, Goal, cls))
+        stadium.set_discs(cls.parse_multiple(reader, Disc, cls))
+        
+        # Joints parsing (not yet implemented, skip for now)
+        joints_count = reader.read_uint8()
+        # TODO: Implement Joint class and parsing if needed
+        
+        # Spawn points - red team
+        red_spawn_count = reader.read_uint8()
+        red_spawns = []
+        for _ in range(red_spawn_count):
+            x = reader.read_double_be()
+            y = reader.read_double_be()
+            red_spawns.append((x, y))
+        
+        # Spawn points - blue team
+        blue_spawn_count = reader.read_uint8()
+        blue_spawns = []
+        for _ in range(blue_spawn_count):
+            x = reader.read_double_be()
+            y = reader.read_double_be()
+            blue_spawns.append((x, y))
 
         return stadium
 

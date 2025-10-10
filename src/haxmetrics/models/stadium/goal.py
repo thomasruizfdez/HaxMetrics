@@ -10,10 +10,10 @@ class Goal:
 
     @staticmethod
     def parse(reader, stadium_cls):
-        # reader: debe tener métodos read_double() y read_uint8()
+        # reader: debe tener métodos read_double_be() y read_uint8()
         # stadium_cls: clase Stadium con método parse_team
-        pos_start = [reader.read_double(), reader.read_double()]
-        pos_end = [reader.read_double(), reader.read_double()]
+        pos_start = [reader.read_double_be(), reader.read_double_be()]
+        pos_end = [reader.read_double_be(), reader.read_double_be()]
         team_val = reader.read_uint8()
         team = stadium_cls.parse_team(1 if team_val else 2)
         return Goal(pos_start=pos_start, pos_end=pos_end, team=team)

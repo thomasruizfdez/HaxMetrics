@@ -14,22 +14,22 @@ class Background:
 
     @staticmethod
     def parse(reader):
-        # reader: debe tener métodos read_uint8(), read_double(), read_uint32()
-        type_val = reader.read_uint8()
+        # reader: debe tener métodos read_uint32_be(), read_double_be()
+        type_val = reader.read_uint32_be()
         if type_val == 2:
             bg_type = "hockey"
         elif type_val == 1:
             bg_type = "grass"
         else:
             bg_type = "none"
-        width = reader.read_double()
-        height = reader.read_double()
-        kick_off_radius = reader.read_double()
-        corner_radius = reader.read_double()
-        goal_line = reader.read_double()
+        width = reader.read_double_be()
+        height = reader.read_double_be()
+        kick_off_radius = reader.read_double_be()
+        corner_radius = reader.read_double_be()
+        goal_line = reader.read_double_be()
         if goal_line != goal_line:  # NaN check
             goal_line = 0.0
-        color = format(reader.read_uint32(), "x")
+        color = format(reader.read_uint32_be(), "x")
         return Background(
             type=bg_type,
             width=width,

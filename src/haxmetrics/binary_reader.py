@@ -192,6 +192,28 @@ class BinaryReader:
         """Alias for read_string() for compatibility with original scripts"""
         return self.read_string()
 
+    def read_double(self) -> float:
+        """Alias for read_float64() for compatibility with original scripts"""
+        return self.read_float64()
+
+    def read_double_be(self) -> float:
+        """Read double in big-endian format (for HaxBall stadium data)"""
+        if self.position + 8 > self.length:
+            raise EOFError("No hay suficientes bytes para leer float64")
+
+        result = struct.unpack(">d", self.data[self.position : self.position + 8])[0]
+        self.position += 8
+        return result
+
+    def read_float_le(self) -> float:
+        """Read 32-bit float in little-endian format (for HaxBall action data)"""
+        if self.position + 4 > self.length:
+            raise EOFError("No hay suficientes bytes para leer float32")
+
+        result = struct.unpack("<f", self.data[self.position : self.position + 4])[0]
+        self.position += 4
+        return result
+
     def get_input_string(self) -> bytes:
         """Alias for read_remaining() for compatibility"""
         return self.read_remaining()
