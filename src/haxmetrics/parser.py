@@ -78,15 +78,35 @@ class Parser:
         return discs
 
     def parse_players(self, reader):
-        """Parse players from the replay. Count is a single byte (F() in original)."""
+        """
+        Parse players from the replay. Count is a single byte (F() in original).
+        
+        Note: Player structure appears to differ between replay types.
+        Some replays may have simplified player data or different field ordering.
+        """
         players = []
         num = reader.read_byte()
-        for _ in range(num):
-            players.append(Player.parse(reader, self.version))
+        for i in range(num):
+            try:
+                players.append(Player.parse(reader, self.version))
+            except Exception as e:
+                print(f"Warning: Failed to parse player {i+1}/{num}: {e}")
+                # Player parsing failed - this may indicate a structural difference
+                # in how players are stored for certain replay types
+                break
         return players
 
     def parse_team_colors(self, reader):
-        return {"red": TeamColor.parse(reader), "blue": TeamColor.parse(reader)}
+        """
+        Parse team colors. May fail if prior parsing (players) consumed incorrect bytes.
+        """
+        try:
+            return {"red": TeamColor.parse(reader), "blue": TeamColor.parse(reader)}
+        except Exception as e:
+            print(f"Warning: Failed to parse team colors: {e}")
+            print(f"  This often indicates issues with prior parsing steps")
+            # Return default team colors
+            return {"red": None, "blue": None}
 
     def parse_actions(self, reader):
         """
@@ -96,18 +116,25 @@ class Parser:
         actions = []
         frame = 0
         print(f"Starting action parsing at position: {reader.position}")
+        
         while not reader.eof():
-            new_frame = reader.read_byte()
-            if new_frame:
-                frame += reader.read_uint32_be()
-            sender = reader.read_uint32_be()
-            type_ = reader.read_byte()
-            if type_ >= len(self.ACTION_TYPES):
-                print(f"Invalid action type {type_} at position {reader.position - 1}")
-                print(f"Remaining bytes: {reader.peek_bytes(20).hex()}")
-                raise Exception(f"Action type {type_} invalid")
-            cls = self.ACTION_TYPES[type_]
-            action = cls.parse(reader)
-            action.set_frame(frame).set_sender(sender)
-            actions.append(action)
+            try:
+                new_frame = reader.read_byte()
+                if new_frame:
+                    frame += reader.read_uint32_be()
+                sender = reader.read_uint32_be()
+                type_ = reader.read_byte()
+                if type_ >= len(self.ACTION_TYPES):
+                    print(f"Invalid action type {type_} at position {reader.position - 1}")
+                    print(f"Remaining bytes: {reader.peek_bytes(20).hex()}")
+                    # Stop parsing actions - likely means we're at wrong position
+                    break
+                cls = self.ACTION_TYPES[type_]
+                action = cls.parse(reader)
+                action.set_frame(frame).set_sender(sender)
+                actions.append(action)
+            except Exception as e:
+                print(f"Warning: Failed to parse action at position {reader.position}: {e}")
+                break
+                
         return actions

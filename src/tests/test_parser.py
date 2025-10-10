@@ -10,7 +10,7 @@ def main(filepath):
 
     # Muestra algunos datos relevantes
     print("Versión:", replay["version"])
-    print("Frames:", replay["frames"])
+    print("Duration:", replay["duration"], "frames")
     print("Room:", replay["room_info"].name if replay["room_info"] else None)
     if replay["room_info"] and replay["room_info"].stadium:
         print("Stadium:", replay["room_info"].stadium.name)

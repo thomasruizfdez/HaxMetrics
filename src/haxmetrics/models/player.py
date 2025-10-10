@@ -69,7 +69,7 @@ class Player:
         return self.id
 
     def set_name(self, name: str):
-        self.name = str(name)
+        self.name = str(name) if name is not None else None
         return self
 
     def get_name(self) -> Optional[str]:

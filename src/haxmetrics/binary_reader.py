@@ -83,7 +83,13 @@ class BinaryReader:
         if self.position + length > self.length:
             raise EOFError("No hay suficientes bytes para leer string")
 
-        result = self.data[self.position : self.position + length].decode("utf-8")
+        # Try UTF-8 decoding with error handling for corrupted/invalid strings
+        try:
+            result = self.data[self.position : self.position + length].decode("utf-8")
+        except UnicodeDecodeError:
+            # Fall back to latin-1 which accepts all byte values
+            result = self.data[self.position : self.position + length].decode("latin-1")
+        
         self.position += length
         return result
 
