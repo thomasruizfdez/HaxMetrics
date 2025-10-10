@@ -60,7 +60,7 @@ class Parser:
         print(f"Parsed {len(self.replay['players'])} players")
         print(f"Position after players: {reader.position}")
 
-        # 6. Parse team colors (always parsed according to original HaxBall code)
+        # 6. Parse team colors (always parsed - these are defaults even with 0 players)
         self.replay["team_colors"] = self.parse_team_colors(reader)
         print(f"Position after team colors: {reader.position}")
 
