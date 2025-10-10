@@ -23,8 +23,11 @@ class Player:
         Uses read_int32() for IDs, read_string() for strings, read_byte() for bytes.
         """
         player = cls()
+        start_pos = reader.position
         player.set_id(reader.read_int32())
+        print(f"  Player parse - ID: {player.id}, pos: {reader.position}")
         player.set_name(reader.read_string())
+        print(f"  Player parse - Name: {player.name!r}, pos: {reader.position}")
         player.set_admin(reader.read_byte())
         team_val = reader.read_byte()
         # Stadium.parse_team emulated below, replace with Stadium.parse_team if available
@@ -36,13 +39,16 @@ class Player:
             player.set_team(Stadium.parse_team(team_val))
         player.set_number(reader.read_byte())
         player.set_avatar(reader.read_string())
+        print(f"  Player parse - Avatar: {player.avatar!r}, pos: {reader.position}")
         player.set_input(reader.read_int32())
         player.set_kicking(reader.read_byte())
         player.set_desynced(reader.read_byte())
         player.set_country(reader.read_string())
+        print(f"  Player parse - Country: {player.country!r}, pos: {reader.position}")
         if version >= 11:
             player.set_handicap(reader.read_uint16())
         player.set_disc_id(reader.read_int32())
+        print(f"  Player parse - Complete, pos: {reader.position} (consumed {reader.position - start_pos} bytes)")
         return player
 
     def json_serialize(self) -> Dict[str, Any]:
@@ -69,7 +75,7 @@ class Player:
         return self.id
 
     def set_name(self, name: str):
-        self.name = str(name)
+        self.name = str(name) if name is not None else None
         return self
 
     def get_name(self) -> Optional[str]:

@@ -84,8 +84,8 @@ class ReplayMessages:
         """
         messages = cls()
 
-        # 1. Leer contador de mensajes (2 bytes)
-        messages.count = data.read_uint16()
+        # 1. Leer contador de mensajes (2 bytes big-endian)
+        messages.count = data.read_uint16_be()
 
         # 2. Leer cada mensaje
         for i in range(messages.count):
