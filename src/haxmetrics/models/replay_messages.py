@@ -118,120 +118,17 @@ class ReplayMessages:
     @staticmethod
     def _parse_message_data(data, msg_type) -> Dict[str, Any]:
         """
-        Parsea los datos adicionales de un mensaje según su tipo de manera determinista.
-        Basado en el análisis del código fuente de HaxBall.
-
+        Parse message metadata. In HaxBall replays, messages only store the type
+        and timestamp - the actual data (player names, text, etc.) is reconstructed
+        from the actions during playback.
+        
         Args:
             data: Objeto DataReader posicionado justo después del tipo de mensaje
             msg_type: Tipo de mensaje
 
         Returns:
-            Dict: Datos parseados específicos para el tipo de mensaje
+            Dict: Empty dict or minimal metadata for the message type
         """
-        if msg_type == MessageType.ANNOUNCEMENT:
-            # Mensaje del sistema
-            return {
-                "text": data.read_string(),
-                "color": data.read_int32(),
-                "style": data.read_uint8(),
-                "sound": data.read_uint8(),
-            }
-
-        elif msg_type == MessageType.CHAT:
-            # Mensaje de chat
-            return {"player_id": data.read_int32(), "message": data.read_string()}
-
-        elif msg_type == MessageType.GOAL:
-            # Gol anotado
-            return {
-                "player_id": data.read_int32(),
-                "team": data.read_uint8(),  # 1 = rojo, 2 = azul
-            }
-
-        elif msg_type == MessageType.TEAM_GOAL:
-            # Gol de equipo
-            return {"team": data.read_uint8()}  # 1 = rojo, 2 = azul
-
-        elif msg_type == MessageType.GAME_START:
-            # Inicio del juego
-            return {"admin_id": data.read_int32() if data.read_uint8() != 0 else None}
-
-        elif msg_type == MessageType.GAME_STOP:
-            # Fin del juego
-            return {"admin_id": data.read_int32() if data.read_uint8() != 0 else None}
-
-        elif msg_type == MessageType.PLAYER_JOIN:
-            # Jugador se une
-            return {
-                "player_id": data.read_int32(),
-                "name": data.read_string(),
-                "country": data.read_string(),
-                "avatar": data.read_string(),
-            }
-
-        elif msg_type == MessageType.PLAYER_LEAVE:
-            # Jugador se va
-            return {
-                "player_id": data.read_int32(),
-                "reason": data.read_string(),
-                "banned": data.read_uint8() != 0,
-                "admin_id": data.read_int32() if data.read_uint8() != 0 else None,
-            }
-
-        elif msg_type == MessageType.PLAYER_TEAM_CHANGE:
-            # Cambio de equipo
-            return {
-                "player_id": data.read_int32(),
-                "team": data.read_uint8(),  # 0 = espectador, 1 = rojo, 2 = azul
-                "admin_id": data.read_int32() if data.read_uint8() != 0 else None,
-            }
-
-        elif msg_type == MessageType.PAUSE:
-            # Juego pausado
-            return {
-                "admin_id": data.read_int32() if data.read_uint8() != 0 else None,
-                "is_paused": data.read_uint8() != 0,
-                "by_game": data.read_uint8() != 0,
-            }
-
-        elif msg_type == MessageType.UNPAUSE:
-            # Juego reanudado
-            return {"admin_id": data.read_int32() if data.read_uint8() != 0 else None}
-
-        elif msg_type == MessageType.ADMIN_CHANGE:
-            # Cambio de admin
-            return {
-                "player_id": data.read_int32(),
-                "is_admin": data.read_uint8() != 0,
-                "by_player_id": data.read_int32() if data.read_uint8() != 0 else None,
-            }
-
-        elif msg_type == MessageType.STADIUM_CHANGE:
-            # Cambio de estadio
-            stadium_bytes = data.read_bytes(data.read_int32())  # Leer bytes del estadio
-            return {
-                "admin_id": data.read_int32() if data.read_uint8() != 0 else None,
-                "stadium_bytes": stadium_bytes,
-            }
-
-        elif msg_type == MessageType.KICK:
-            # Jugador expulsado
-            return {
-                "player_id": data.read_int32(),
-                "reason": data.read_string() if data.read_uint8() != 0 else None,
-                "banned": data.read_uint8() != 0,
-                "admin_id": data.read_int32() if data.read_uint8() != 0 else None,
-            }
-
-        elif msg_type == MessageType.POSITION_CHANGE:
-            # Cambio de posición
-            return {
-                "player_id": data.read_int32(),
-                "position": data.read_int32(),
-                "admin_id": data.read_int32() if data.read_uint8() != 0 else None,
-            }
-
-        else:
-            # Tipo desconocido
-            # Nota: Podríamos intentar leer algunos bytes genéricos o simplemente no avanzar
-            return {"unknown_type": msg_type}
+        # Messages in replays don't store their full data, only the type
+        # The data is reconstructed from actions during playback
+        return {"type": msg_type}
