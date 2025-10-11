@@ -2,8 +2,14 @@ from ..action import Action
 
 
 class ChangeTeamsLock(Action):
+    """
+    Action index 13 (Fa in original JS)
+    Lock teams
+    xa(): bool newValue
+    """
     def __init__(self):
         super().__init__()
+        self.type = "ChangeTeamsLock"
         self.teams_locked = None
 
     @classmethod
