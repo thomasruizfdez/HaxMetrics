@@ -2,17 +2,23 @@ from ..action import Action
 
 
 class BroadcastPings(Action):
+    """
+    Action index 17 (Ma in original JS)
+    Pings update - array of player pings
+    xa(): array of pings (varint count, then each ping as varint)
+    """
     def __init__(self):
         super().__init__()
-        self.pings = None
+        self.type = "BroadcastPings"
+        self.pings = []
 
     @classmethod
     def parse(cls, reader):
         obj = cls()
-        obj.pings = []
-        count = reader.read_uint8()
+        count = reader.read_varint()  # Bb() - varint count
         for _ in range(count):
-            obj.pings.append(reader.read_uint32_be())
+            ping = reader.read_varint()  # Bb() - varint ping value
+            obj.pings.append(ping)
         return obj
 
     def get_data(self):

@@ -1,21 +1,22 @@
+# Import action classes based on correct mapping from game-min.js
+from .actions.message import Message
+from .actions.toggle_chat import ToggleChat
+from .actions.change_stadium import ChangeStadium
+from .actions.player_input import PlayerInput
+from .actions.chat_message import ChatMessage
 from .actions.player_joined import PlayerJoined
 from .actions.player_left import PlayerLeft
-from .actions.player_admin_change import PlayerAdminChange
-from .actions.player_avatar_change import PlayerAvatarChange
-from .actions.player_team_change import PlayerTeamChange
-from .actions.player_handicap_change import PlayerHandicapChange
 from .actions.match_start import MatchStart
 from .actions.match_stopped import MatchStopped
 from .actions.change_paused import ChangePaused
-from .actions.change_teams_lock import ChangeTeamsLock
 from .actions.change_game_setting import ChangeGameSetting
-from .actions.change_stadium import ChangeStadium
-from .actions.change_colors import ChangeColors
-from .actions.broadcast_pings import BroadcastPings
-from .actions.disc_move import DiscMove
-from .actions.logic_update import LogicUpdate
-from .actions.chat_message import ChatMessage
+from .actions.stadium_update import StadiumUpdate
+from .actions.player_team_change import PlayerTeamChange
+from .actions.change_teams_lock import ChangeTeamsLock
+from .actions.player_admin_change import PlayerAdminChange
+from .actions.auto_team_balance import AutoTeamBalance
 from .actions.desynced import Desynced
+from .actions.broadcast_pings import BroadcastPings
 from .actions.avatar_change import AvatarChange
 from .actions.team_colors_change import TeamColorsChange
 from .actions.player_order_change import PlayerOrderChange
@@ -23,29 +24,31 @@ from .actions.kick_rate_limit import KickRateLimit
 from .actions.player_avatar_set import PlayerAvatarSet
 from .actions.disc_update import DiscUpdate
 
+# Correct action type mapping based on game-min.js lines 4259-4282
+# This matches the order in which actions are registered via p.Ja() calls
 ACTION_TYPES = [
-    PlayerJoined,           # 0 (Eb in original)
-    PlayerLeft,             # 1 (Ha in original)
-    PlayerAdminChange,      # 2 (cb in original)
-    PlayerAvatarChange,     # 3 (La in original - but actually player input)
-    PlayerTeamChange,       # 4 (Ya in original - but actually chat)
-    PlayerHandicapChange,   # 5 (Na in original - but actually join)
-    MatchStart,             # 6 (ma in original - but actually leave)
-    MatchStopped,           # 7 (Va in original)
-    ChangePaused,           # 8 (Wa in original)
-    ChangeTeamsLock,        # 9 (Za in original)
-    ChangeGameSetting,      # 10 (va in original)
-    ChangeStadium,          # 11 (Ea in original)
-    ChangeColors,           # 12 (fa in original)
-    BroadcastPings,         # 13 (Fa in original - but actually lock)
-    DiscMove,               # 14 (Ga in original - but actually admin)
-    LogicUpdate,            # 15 (Xa in original)
-    ChatMessage,            # 16 (Da in original - but actually desync)
-    Desynced,               # 17 (Ma in original - but actually ping)
-    AvatarChange,           # 18 (Qa in original)
-    TeamColorsChange,       # 19 (bb in original)
-    PlayerOrderChange,      # 20 (Fb in original)
-    KickRateLimit,          # 21 (Pa in original)
-    PlayerAvatarSet,        # 22 (Gb in original)
-    DiscUpdate,             # 23 (Hb in original)
+    Message,                # 0  (Eb) - Message/notification with color and style
+    ToggleChat,             # 1  (Ha) - Toggle chat indicator
+    ChangeStadium,          # 2  (cb) - Stadium change (loads from compressed bytes)
+    PlayerInput,            # 3  (La) - Player input (movement, kick)
+    ChatMessage,            # 4  (Ya) - Chat message from player
+    PlayerJoined,           # 5  (Na) - Player joins room
+    PlayerLeft,             # 6  (ma) - Player leaves/kicked
+    MatchStart,             # 7  (Va) - Game start
+    MatchStopped,           # 8  (Wa) - Game stop
+    ChangePaused,           # 9  (Za) - Pause toggle
+    ChangeGameSetting,      # 10 (va) - Game settings change
+    StadiumUpdate,          # 11 (Ea) - Stadium data update
+    PlayerTeamChange,       # 12 (fa) - Player team change
+    ChangeTeamsLock,        # 13 (Fa) - Lock teams
+    PlayerAdminChange,      # 14 (Ga) - Admin change
+    AutoTeamBalance,        # 15 (Xa) - Auto team balance
+    Desynced,               # 16 (Da) - Desync notification
+    BroadcastPings,         # 17 (Ma) - Ping updates
+    AvatarChange,           # 18 (Qa) - Avatar change
+    TeamColorsChange,       # 19 (bb) - Team colors change
+    PlayerOrderChange,      # 20 (Fb) - Player order change
+    KickRateLimit,          # 21 (Pa) - Kick rate limit
+    PlayerAvatarSet,        # 22 (Gb) - Player avatar set
+    DiscUpdate,             # 23 (Hb) - Disc/physics update
 ]
