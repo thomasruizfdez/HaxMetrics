@@ -4,6 +4,7 @@ from .segment import Segment
 from .plane import Plane
 from .goal import Goal
 from .disc import Disc
+from .joint import Joint
 from .player_physics import PlayerPhysics
 from .ball_physics import BallPhysics
 from .background import Background
@@ -42,6 +43,7 @@ class Stadium:
         self.planes: List[Plane] = []
         self.goals: List[Goal] = []
         self.discs: List[Disc] = []
+        self.joints: List[Joint] = []
 
     @classmethod
     def parse(cls, reader):
@@ -97,9 +99,13 @@ class Stadium:
         stadium.set_goals(cls.parse_multiple(reader, Goal, cls))
         stadium.set_discs(cls.parse_multiple(reader, Disc, cls))
         
-        # Joints parsing (not yet implemented, skip for now)
+        # Joints parsing - parse count and each joint
+        joints = []
         joints_count = reader.read_uint8()
-        # TODO: Implement Joint class and parsing if needed
+        for _ in range(joints_count):
+            joint = Joint.parse(reader, cls)
+            joints.append(joint)
+        stadium.set_joints(joints)
         
         # Spawn points - red team
         red_spawn_count = reader.read_uint8()
@@ -153,6 +159,7 @@ class Stadium:
                     "segments": self.segments,
                     "goals": self.goals,
                     "discs": self.discs,
+                    "joints": self.joints,
                 }
             )
         return info
@@ -248,3 +255,10 @@ class Stadium:
 
     def get_discs(self) -> List[Any]:
         return self.discs
+
+    def set_joints(self, joints: List[Any]):
+        self.joints = joints
+        return self
+
+    def get_joints(self) -> List[Any]:
+        return self.joints
