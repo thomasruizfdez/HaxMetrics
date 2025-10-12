@@ -71,6 +71,18 @@ class ReplayMessages:
         self.messages: List[ReplayMessage] = []
         self.end_position: int = 0  # Posición después del último mensaje
 
+    def __len__(self) -> int:
+        """Return the number of messages for len() support"""
+        return len(self.messages)
+
+    def __iter__(self):
+        """Make the class iterable"""
+        return iter(self.messages)
+
+    def __getitem__(self, index):
+        """Allow indexing"""
+        return self.messages[index]
+
     @classmethod
     def parse(cls, data) -> "ReplayMessages":
         """
