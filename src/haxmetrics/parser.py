@@ -37,7 +37,7 @@ class Parser:
     def parse(self):
         """
         Parse the replay file according to HaxBall original scripts structure.
-        Order: messages -> room -> discs (if game active) -> players -> team colors -> actions
+        Order: messages -> room (includes players and team colors) -> actions
         """
         # 1. Descomprime el bloque principal
         decompressed_data = zlib.decompress(self.reader.get_input_string(), wbits=-15)
@@ -47,24 +47,20 @@ class Parser:
         # 2. Parse messages (must be done before room)
         self.replay["messages"] = ReplayMessages.parse(reader)
 
-        # 3. Parse room info
+        # 3. Parse room info (includes stadium, game state, players, and team colors)
         self.replay["room_info"] = Room.parse(reader, self.version)
+        
+        # Extract players and team colors from room for backward compatibility
+        self.replay["players"] = self.replay["room_info"].players if self.replay["room_info"].players else []
+        self.replay["team_colors"] = self.replay["room_info"].team_colors if self.replay["room_info"].team_colors else {}
+        
+        # Extract discs from game state if game is active
+        if self.replay["room_info"].is_playing() and self.replay["room_info"].game:
+            self.replay["discs"] = self.replay["room_info"].game.discs if hasattr(self.replay["room_info"].game, 'discs') else []
+        else:
+            self.replay["discs"] = []
 
-        # 4. Parse discs (only if game is active/playing)
-        if self.replay["room_info"].is_playing():
-            self.replay["discs"] = self.parse_discs(reader)
-            print(f"Parsed {len(self.replay['discs'])} discs")
-
-        # 5. Parse players (count is read as a byte)
-        self.replay["players"] = self.parse_players(reader)
-        print(f"Parsed {len(self.replay['players'])} players")
-        print(f"Position after players: {reader.position}")
-
-        # 6. Parse team colors (always parsed - these are defaults even with 0 players)
-        self.replay["team_colors"] = self.parse_team_colors(reader)
-        print(f"Position after team colors: {reader.position}")
-
-        # 7. Parse actions
+        # 4. Parse actions (immediately after room state)
         self.replay["actions"] = self.parse_actions(reader)
 
         return self.replay
@@ -111,7 +107,11 @@ class Parser:
     def parse_actions(self, reader):
         """
         Parse actions from the replay according to HaxBall original scripts.
-        Actions use big-endian for frame and sender IDs.
+        According to $b.cm() method:
+        - Frame delta is a varint (Bb())
+        - Sender ID is a uint16 big-endian (Sb())
+        - Action type is a byte (F())
+        - Then action-specific data is parsed by the action class
         """
         actions = []
         frame = 0
@@ -119,16 +119,22 @@ class Parser:
         
         while not reader.eof():
             try:
-                new_frame = reader.read_byte()
-                if new_frame:
-                    frame += reader.read_uint32_be()
-                sender = reader.read_uint32_be()
+                # Read frame delta (varint)
+                frame_delta = reader.read_varint()
+                frame += frame_delta
+                
+                # Read sender ID (uint16 big-endian)
+                sender = reader.read_uint16_be()
+                
+                # Read action type (byte)
                 type_ = reader.read_byte()
+                
                 if type_ >= len(self.ACTION_TYPES):
                     print(f"Invalid action type {type_} at position {reader.position - 1}")
                     print(f"Remaining bytes: {reader.peek_bytes(20).hex()}")
-                    # Stop parsing actions - likely means we're at wrong position
+                    # Stop parsing actions - likely means we're at wrong position or end of actions
                     break
+                    
                 cls = self.ACTION_TYPES[type_]
                 action = cls.parse(reader)
                 action.set_frame(frame).set_sender(sender)
