@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 from haxmetrics.models.stadium.stadium import Stadium
 from haxmetrics.models.game import Game
 
@@ -30,6 +30,7 @@ class Room:
         """
         Parse room info from binary data according to HaxBall original scripts.
         The structure follows the ma(a) method from the original code.
+        This includes players and team colors as they're part of the state.
         """
         room = cls(version)
 
@@ -60,7 +61,7 @@ class Room:
         # 9. Game active flag (1 byte)
         game_active = reader.read_byte() != 0
         
-        # 10. If game is active, parse game state
+        # 10. If game is active, parse game state (including discs)
         if game_active:
             room.set_in_progress(True)
             room.game = Game.parse(reader, room)
@@ -68,11 +69,35 @@ class Room:
         else:
             room.set_in_progress(False)
 
+        # 11. Parse players (count + player data)
+        # According to original script ma() method, players are part of the state
+        from haxmetrics.models.player import Player
+        room.players = []
+        player_count = reader.read_byte()
+        print(f"Player count: {player_count}")
+        for i in range(player_count):
+            try:
+                player = Player.parse(reader, version)
+                room.players.append(player)
+            except Exception as e:
+                print(f"Warning: Failed to parse player {i+1}/{player_count}: {e}")
+                break
+        
+        # 12. Parse team colors (red and blue)
+        # According to original script ma() method: this.mb[1].ma(a); this.mb[2].ma(a)
+        from haxmetrics.models.team_color import TeamColor
+        room.team_colors = {
+            "red": TeamColor.parse(reader),
+            "blue": TeamColor.parse(reader)
+        }
+
         print(f"Parsed Room Name: {room.name}")
         print(f"Is Locked: {room.locked}")
         print(f"Score Limit: {room.score_limit}")
         print(f"Time Limit: {room.time_limit}")
         print(f"Game Active: {game_active}")
+        print(f"Players: {len(room.players)}")
+        print(f"Position after Room.parse: {reader.position}")
 
         return room
 
