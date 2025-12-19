@@ -41,7 +41,7 @@ class Parser:
         """
         # 1. Descomprime el bloque principal
         decompressed_data = zlib.decompress(self.reader.get_input_string(), wbits=-15)
-        print(f"First 500 bytes: {decompressed_data[:500].hex()}")
+        print(f"All bytes: {decompressed_data.hex()}")
         reader = BinaryReader(decompressed_data)
 
         # 2. Parse messages (must be done before room)
@@ -49,14 +49,24 @@ class Parser:
 
         # 3. Parse room info (includes stadium, game state, players, and team colors)
         self.replay["room_info"] = Room.parse(reader, self.version)
-        
+
         # Extract players and team colors from room for backward compatibility
-        self.replay["players"] = self.replay["room_info"].players if self.replay["room_info"].players else []
-        self.replay["team_colors"] = self.replay["room_info"].team_colors if self.replay["room_info"].team_colors else {}
-        
+        self.replay["players"] = (
+            self.replay["room_info"].players if self.replay["room_info"].players else []
+        )
+        self.replay["team_colors"] = (
+            self.replay["room_info"].team_colors
+            if self.replay["room_info"].team_colors
+            else {}
+        )
+
         # Extract discs from game state if game is active
         if self.replay["room_info"].is_playing() and self.replay["room_info"].game:
-            self.replay["discs"] = self.replay["room_info"].game.discs if hasattr(self.replay["room_info"].game, 'discs') else []
+            self.replay["discs"] = (
+                self.replay["room_info"].game.discs
+                if hasattr(self.replay["room_info"].game, "discs")
+                else []
+            )
         else:
             self.replay["discs"] = []
 
@@ -76,7 +86,7 @@ class Parser:
     def parse_players(self, reader):
         """
         Parse players from the replay. Count is a single byte (F() in original).
-        
+
         Note: Player structure appears to differ between replay types.
         Some replays may have simplified player data or different field ordering.
         """
@@ -116,31 +126,35 @@ class Parser:
         actions = []
         frame = 0
         print(f"Starting action parsing at position: {reader.position}")
-        
+
         while not reader.eof():
             try:
                 # Read frame delta (varint)
                 frame_delta = reader.read_varint()
                 frame += frame_delta
-                
+
                 # Read sender ID (uint16 big-endian)
                 sender = reader.read_uint16_be()
-                
+
                 # Read action type (byte)
                 type_ = reader.read_byte()
-                
+
                 if type_ >= len(self.ACTION_TYPES):
-                    print(f"Invalid action type {type_} at position {reader.position - 1}")
+                    print(
+                        f"Invalid action type {type_} at position {reader.position - 1}"
+                    )
                     print(f"Remaining bytes: {reader.peek_bytes(20).hex()}")
                     # Stop parsing actions - likely means we're at wrong position or end of actions
                     break
-                    
+
                 cls = self.ACTION_TYPES[type_]
                 action = cls.parse(reader)
                 action.set_frame(frame).set_sender(sender)
                 actions.append(action)
             except Exception as e:
-                print(f"Warning: Failed to parse action at position {reader.position}: {e}")
+                print(
+                    f"Warning: Failed to parse action at position {reader.position}: {e}"
+                )
                 break
-                
+
         return actions

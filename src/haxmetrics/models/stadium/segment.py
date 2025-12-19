@@ -26,6 +26,10 @@ class Segment:
             curve = 0.0
         vis = bool(reader.read_uint8())
         color = format(reader.read_uint32(), "x")  # hexadecimal string
+
+        print(
+            f"    Segment - v0: {v0}, v1: {v1}, b_coef: {b_coef}, c_mask: {c_mask}, c_group: {c_group}, curve: {curve}, vis: {vis}, color: {color}"
+        )
         return Segment(
             v0=v0,
             v1=v1,

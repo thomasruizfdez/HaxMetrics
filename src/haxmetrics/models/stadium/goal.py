@@ -16,6 +16,8 @@ class Goal:
         pos_end = [reader.read_double_be(), reader.read_double_be()]
         team_val = reader.read_uint8()
         team = stadium_cls.parse_team(1 if team_val else 2)
+
+        print(f"    Goal - p0: {pos_start}, p1: {pos_end}, team: {team}")
         return Goal(pos_start=pos_start, pos_end=pos_end, team=team)
 
     def to_json(self):

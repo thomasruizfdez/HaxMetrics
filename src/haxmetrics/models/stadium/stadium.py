@@ -38,6 +38,7 @@ class Stadium:
         self.background: Optional[Background] = None
         self.player_physics: Optional[PlayerPhysics] = None
         self.ball_physics: Optional[BallPhysics] = None
+
         self.vertexes: List[Vertex] = []
         self.segments: List[Segment] = []
         self.planes: List[Plane] = []
@@ -51,6 +52,7 @@ class Stadium:
         Parse stadium from binary data according to HaxBall original scripts.
         If type < 255, it's a predefined stadium. If type == 255, it's custom.
         """
+        print(f"[TRACE] Offset inicial Stadium: {reader.position}")
         stadium = cls()
 
         # Read stadium type (1 byte)
@@ -68,37 +70,47 @@ class Stadium:
 
         # Parse custom stadium properties
         stadium.set_background(Background.parse(reader))
-        
+
         # Max view width and height (not the same as background width/height)
         max_view_width = reader.read_double_be()
         max_view_height = reader.read_double_be()
-        
+
         # Spawn distance
         stadium.set_spawn_distance(reader.read_double_be())
-        
+
+        print(
+            f"Custom Stadium '{stadium.name}' - Max View: ({max_view_width}, {max_view_height}), Spawn Distance: {stadium.spawn_distance}"
+        )
+
         # Player physics
         stadium.set_player_physics(PlayerPhysics.parse(reader))
-        
+
+        print(f"Player Physics: {stadium.player_physics.to_json()}")
+
         # Additional fields from ws() method
         # max_view_width_override (nullable int32 using Sb() method)
         max_view_width_override = reader.read_nullable_int32()
-        
+
         # Camera follow (uint8/bool)
         camera_follow = reader.read_uint8()
-        
+
         # Can be stored (uint8/bool)
         can_be_stored = reader.read_uint8() != 0
-        
-        # Full reset after goal (uint8/bool)  
+
+        # Full reset after goal (uint8/bool)
         full_reset = reader.read_uint8() != 0
-        
+
+        print(
+            f"  Max View Width Override: {max_view_width_override}, Camera Follow: {camera_follow}, Can Be Stored: {can_be_stored}, Full Reset: {full_reset}"
+        )
+
         # Now parse the stadium elements
         stadium.set_vertexes(cls.parse_multiple(reader, Vertex, cls))
         stadium.set_segments(cls.parse_multiple(reader, Segment, cls))
         stadium.set_planes(cls.parse_multiple(reader, Plane, cls))
         stadium.set_goals(cls.parse_multiple(reader, Goal, cls))
         stadium.set_discs(cls.parse_multiple(reader, Disc, cls))
-        
+
         # Joints parsing - parse count and each joint
         joints = []
         joints_count = reader.read_uint8()
@@ -106,7 +118,7 @@ class Stadium:
             joint = Joint.parse(reader, cls)
             joints.append(joint)
         stadium.set_joints(joints)
-        
+
         # Spawn points - red team
         red_spawn_count = reader.read_uint8()
         red_spawns = []
@@ -114,7 +126,7 @@ class Stadium:
             x = reader.read_double_be()
             y = reader.read_double_be()
             red_spawns.append((x, y))
-        
+
         # Spawn points - blue team
         blue_spawn_count = reader.read_uint8()
         blue_spawns = []
@@ -129,6 +141,7 @@ class Stadium:
     def parse_multiple(reader, cls_type, stadium_cls):
         items = []
         num = reader.read_uint8()
+        print(f"Parsing {num} items of type {cls_type.__name__}")
         for _ in range(num):
             items.append(cls_type.parse(reader, stadium_cls))
         return items

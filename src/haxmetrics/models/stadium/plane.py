@@ -19,6 +19,10 @@ class Plane:
         b_coef = float(reader.read_double_be())
         c_mask = stadium_cls.parse_mask(reader.read_uint32())
         c_group = stadium_cls.parse_mask(reader.read_uint32())
+
+        print(
+            f"    Plane - normal: ({normal_x}, {normal_y}), dist: {dist}, b_coef: {b_coef}, c_mask: {c_mask}, c_group: {c_group}"
+        )
         return Plane(
             normal_x=normal_x,
             normal_y=normal_y,
