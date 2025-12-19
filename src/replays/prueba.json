@@ -1,0 +1,148 @@
+{
+  "metadata": {
+    "version": 3,
+    "duration": 34,
+    "fileSize": 76,
+    "decompressedSize": 94
+  },
+  "stadium": {
+    "name": "Classic",
+    "customStadium": false
+  },
+  "players": [],
+  "events": [
+    {
+      "time": 1,
+      "type": 0,
+      "typeHex": "0x00"
+    },
+    {
+      "time": 0,
+      "type": 0,
+      "typeHex": "0x00"
+    },
+    {
+      "time": 0,
+      "type": 3,
+      "typeHex": "0x03"
+    },
+    {
+      "time": 56,
+      "type": 50,
+      "typeHex": "0x32"
+    },
+    {
+      "time": 0,
+      "type": 0,
+      "typeHex": "0x00"
+    },
+    {
+      "time": 3,
+      "type": 101,
+      "typeHex": "0x65"
+    },
+    {
+      "time": 115,
+      "type": 0,
+      "typeHex": "0x00"
+    },
+    {
+      "time": 0,
+      "type": 0,
+      "typeHex": "0x00"
+    },
+    {
+      "time": 0,
+      "type": 10,
+      "typeHex": "0x0a"
+    },
+    {
+      "time": 66,
+      "type": 97,
+      "typeHex": "0x61"
+    },
+    {
+      "time": 110,
+      "type": 100,
+      "typeHex": "0x64"
+    },
+    {
+      "time": 111,
+      "type": 108,
+      "typeHex": "0x6c"
+    },
+    {
+      "time": 101,
+      "type": 114,
+      "typeHex": "0x72"
+    },
+    {
+      "time": 111,
+      "type": 0,
+      "typeHex": "0x00"
+    },
+    {
+      "time": 0,
+      "type": 0,
+      "typeHex": "0x00"
+    },
+    {
+      "time": 0,
+      "type": 0,
+      "typeHex": "0x00"
+    },
+    {
+      "time": 0,
+      "type": 0,
+      "typeHex": "0x00"
+    },
+    {
+      "time": 0,
+      "type": 0,
+      "typeHex": "0x00"
+    },
+    {
+      "time": 0,
+      "type": 255,
+      "typeHex": "0xff"
+    },
+    {
+      "time": 127,
+      "type": 0,
+      "typeHex": "0x00"
+    },
+    {
+      "time": 4194303,
+      "type": 0,
+      "typeHex": "0x00"
+    },
+    {
+      "time": 14181,
+      "type": 86,
+      "typeHex": "0x56"
+    },
+    {
+      "time": 0,
+      "type": 0,
+      "typeHex": "0x00"
+    },
+    {
+      "time": 4194303,
+      "type": 0,
+      "typeHex": "0x00"
+    }
+  ],
+  "gameState": {
+    "teamsLocked": false,
+    "scoreLimit": 524288,
+    "timeLimit": 589824,
+    "redScore": 0,
+    "blueScore": 0
+  },
+  "roomInfo": {
+    "name": "Bandolero's room\u0000",
+    "state": 0
+  },
+  "eventsDataOffset": 34,
+  "eventsDataSize": 60
+}

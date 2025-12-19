@@ -169,8 +169,10 @@ function parseDecompressedData(data, ad) {
   // Helper to read string
   function readString() {
     const length = readVarInt();
-    const bytes = new Uint8Array(data.buffer, data.byteOffset + offset, length);
-    offset += length;
+    if (length === 0) return null;
+    const actualLength = length - 1; // Python code subtracts 1
+    const bytes = new Uint8Array(data.buffer, data.byteOffset + offset, actualLength);
+    offset += actualLength;
     return new TextDecoder().decode(bytes);
   }
   
@@ -191,35 +193,57 @@ function parseDecompressedData(data, ad) {
     players: [],
     events: [],
     gameState: {},
-    roomInfo: {}
+    roomInfo: {},
+    messages: []
   };
   
   try {
-    // Read room state
-    const roomState = view.getUint16(offset, true);
+    // Read messages count (2 bytes, big-endian)
+    const messageCount = view.getUint16(offset, false);
     offset += 2;
-    console.log(`  Room state: ${roomState}`);
+    console.log(`  Messages count: ${messageCount}`);
     
-    // Read room name
+    // Read messages (delta time + type for each)
+    for (let i = 0; i < messageCount; i++) {
+      const deltaTime = readVarInt();
+      const messageType = readByte();
+      result.messages.push({
+        index: i,
+        deltaTime: deltaTime,
+        type: messageType
+      });
+    }
+    
+    // Read room name (varint length + string)
     const roomName = readString();
     console.log(`  Room name: ${roomName}`);
     result.roomInfo.name = roomName;
-    result.roomInfo.state = roomState;
     
     // Read game settings
     const teamsLocked = readByte();
-    const scoreLimit = readInt32();
-    const timeLimit = readInt32();
-    const unknown = readInt32();
+    const scoreLimit = view.getUint32(offset, false); // big-endian
+    offset += 4;
+    const timeLimit = view.getUint32(offset, false); // big-endian
+    offset += 4;
+    const kickRateLimitBurst = view.getUint16(offset, false); // big-endian
+    offset += 2;
+    const kickRateLimit = readByte();
+    const kickTimeout = readByte();
     
     console.log(`  Teams locked: ${teamsLocked}`);
     console.log(`  Score limit: ${scoreLimit}`);
     console.log(`  Time limit: ${timeLimit}`);
+    console.log(`  Kick rate limit burst: ${kickRateLimitBurst}`);
+    console.log(`  Kick rate limit: ${kickRateLimit}`);
+    console.log(`  Kick timeout: ${kickTimeout}`);
     
     result.gameState = {
       teamsLocked: teamsLocked === 1,
       scoreLimit: scoreLimit,
       timeLimit: timeLimit,
+      kickRateLimitBurst: kickRateLimitBurst,
+      kickRateLimit: kickRateLimit,
+      kickTimeout: kickTimeout,
       redScore: 0,
       blueScore: 0
     };
@@ -251,48 +275,52 @@ function parseDecompressedData(data, ad) {
       console.log(`  Predefined stadium: ${result.stadium.name}`);
     }
     
-    // Parse the event data that follows
-    console.log(`  Remaining data: ${data.length - offset} bytes`);
-    console.log(`  Events start at offset: ${offset}`);
-    
     // Store raw event data info
     result.eventsDataOffset = offset;
     result.eventsDataSize = data.length - offset;
     
-    // Try to parse some events
-    let eventCount = 0;
-    try {
-      // The first part might be event count or compressed event stream
-      const eventStreamSize = readVarInt();
-      console.log(`  Event stream size: ${eventStreamSize}`);
-      
-      // Read events (simplified)
-      while (offset < data.length && eventCount < 100) {
-        try {
-          const timeDelta = readVarInt();
-          const eventType = readByte();
-          
-          const event = {
-            time: timeDelta,
-            type: eventType,
-            typeHex: '0x' + eventType.toString(16).padStart(2, '0')
-          };
-          
-          result.events.push(event);
-          eventCount++;
-          
-          // Break if we're at the end or hit invalid data
-          if (offset >= data.length - 4) break;
-        } catch (e) {
-          console.log(`  Stopped parsing events at offset ${offset}: ${e.message}`);
-          break;
+    // Note: Full event/action parsing would require implementing the complete
+    // state machine from the original Haxball code. For now, we extract the
+    // basic metadata (room info, stadium, game settings).
+    console.log(`  Actions/Events data: ${result.eventsDataSize} bytes (not fully parsed)`);
+    
+    // Try to identify game active flag
+    const gameActiveByte = readByte();
+    console.log(`  Game active byte: ${gameActiveByte}`);
+    result.gameState.gameActive = gameActiveByte !== 0;
+    
+    // Try to read player count
+    if (offset < data.length) {
+      try {
+        const playerCount = readByte();
+        console.log(`  Player count: ${playerCount}`);
+        
+        // Attempt to parse basic player info
+        for (let i = 0; i < playerCount && offset < data.length - 10; i++) {
+          try {
+            // This is a simplified parser - full player parsing is more complex
+            const playerId = readByte();
+            const playerName = readString();
+            
+            result.players.push({
+              id: playerId,
+              name: playerName,
+              // Additional fields would require more complex parsing
+            });
+            
+            console.log(`    Player ${i+1}: ${playerName} (ID: ${playerId})`);
+          } catch (e) {
+            console.log(`    Failed to parse player ${i+1}: ${e.message}`);
+            break;
+          }
         }
+      } catch (e) {
+        console.log(`  Player parsing error: ${e.message}`);
       }
-    } catch (e) {
-      console.log(`  Event parsing ended: ${e.message}`);
     }
     
-    console.log(`  Parsed ${eventCount} events`);
+    console.log(`  Note: Full action/event stream parsing requires implementing`);
+    console.log(`        the complete state machine from original Haxball code.`);
     
   } catch (error) {
     console.error(`  Parsing error at offset ${offset}:`, error);
@@ -317,7 +345,8 @@ try {
   console.log(`  Stadium: ${decoded.stadium.name}`);
   console.log(`  Score limit: ${decoded.gameState.scoreLimit}`);
   console.log(`  Time limit: ${decoded.gameState.timeLimit}`);
-  console.log(`  Events parsed: ${decoded.events.length}`);
+  console.log(`  Messages: ${decoded.messages.length}`);
+  console.log(`  Players found: ${decoded.players.length}`);
   
 } catch (error) {
   console.error('\n✗ Error:', error.message);
