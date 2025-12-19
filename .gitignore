@@ -20,3 +20,7 @@ __pycache__/
 package-lock.json
 
 src/out/
+
+# Generated JSON from decoder (except examples)
+src/replays/*.json
+!src/replays/examples/*.json
