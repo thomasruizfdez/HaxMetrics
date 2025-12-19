@@ -235,6 +235,8 @@ const exposePatch = `
   ub.I = I;
   ub.O = O;
   ub.p = p;
+  ub.rb = rb;
+  ub.k = k;
 `;
 
 // Replace the C.cj(); line to add our patch before it
@@ -265,9 +267,16 @@ console.log('Decoding replay data...');
 try {
   const ab = sandbox.window.ab;
   const ca = sandbox.window.ca;
+  const rb = sandbox.window.rb;
   
   if (!ab || !ca) {
     throw new Error('Required classes (ab, ca) not exposed properly');
+  }
+  
+  // Initialize message classes first (required for custom stadiums)
+  if (rb && typeof rb.Xe === 'function') {
+    console.log('  Initializing message classes...');
+    rb.Xe();
   }
   
   console.log('  Creating room instance...');
