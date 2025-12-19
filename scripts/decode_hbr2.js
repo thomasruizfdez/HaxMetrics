@@ -167,10 +167,12 @@ function parseDecompressedData(data, ad) {
   }
   
   // Helper to read string
+  // String format: varint length followed by (length-1) bytes of UTF-8 text
+  // The length includes a null terminator byte that we don't need to read
   function readString() {
     const length = readVarInt();
     if (length === 0) return null;
-    const actualLength = length - 1; // Python code subtracts 1
+    const actualLength = length - 1;
     const bytes = new Uint8Array(data.buffer, data.byteOffset + offset, actualLength);
     offset += actualLength;
     return new TextDecoder().decode(bytes);
@@ -285,42 +287,18 @@ function parseDecompressedData(data, ad) {
     console.log(`  Actions/Events data: ${result.eventsDataSize} bytes (not fully parsed)`);
     
     // Try to identify game active flag
-    const gameActiveByte = readByte();
-    console.log(`  Game active byte: ${gameActiveByte}`);
-    result.gameState.gameActive = gameActiveByte !== 0;
-    
-    // Try to read player count
     if (offset < data.length) {
       try {
-        const playerCount = readByte();
-        console.log(`  Player count: ${playerCount}`);
-        
-        // Attempt to parse basic player info
-        for (let i = 0; i < playerCount && offset < data.length - 10; i++) {
-          try {
-            // This is a simplified parser - full player parsing is more complex
-            const playerId = readByte();
-            const playerName = readString();
-            
-            result.players.push({
-              id: playerId,
-              name: playerName,
-              // Additional fields would require more complex parsing
-            });
-            
-            console.log(`    Player ${i+1}: ${playerName} (ID: ${playerId})`);
-          } catch (e) {
-            console.log(`    Failed to parse player ${i+1}: ${e.message}`);
-            break;
-          }
-        }
+        const gameActiveByte = readByte();
+        console.log(`  Game active byte: ${gameActiveByte}`);
+        result.gameState.gameActive = gameActiveByte !== 0;
       } catch (e) {
-        console.log(`  Player parsing error: ${e.message}`);
+        console.log(`  Failed to read game active byte: ${e.message}`);
       }
     }
     
-    console.log(`  Note: Full action/event stream parsing requires implementing`);
-    console.log(`        the complete state machine from original Haxball code.`);
+    console.log(`\n  Note: Full action/event stream parsing requires implementing` +
+                `\n        the complete state machine from original Haxball code.`);
     
   } catch (error) {
     console.error(`  Parsing error at offset ${offset}:`, error);
@@ -346,7 +324,6 @@ try {
   console.log(`  Score limit: ${decoded.gameState.scoreLimit}`);
   console.log(`  Time limit: ${decoded.gameState.timeLimit}`);
   console.log(`  Messages: ${decoded.messages.length}`);
-  console.log(`  Players found: ${decoded.players.length}`);
   
 } catch (error) {
   console.error('\n✗ Error:', error.message);
