@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "decode": "node scripts/decode_hbr2.js"
+    "decode": "node scripts/decode_hbr2.js",
+    "decode:full": "node scripts/decode_hbr2_complete.js"
   },
   "repository": {
     "type": "git",
