@@ -213,8 +213,13 @@ sandbox.global = sandbox.window;
 sandbox.self = sandbox.window;
 
 // Load pako for decompression
-const pako = require('pako');
-sandbox.pako = pako;
+try {
+  const pako = require('pako');
+  sandbox.pako = pako;
+} catch (error) {
+  console.error('Error: pako module not found. Please run: npm install');
+  process.exit(1);
+}
 
 console.log('Loading Haxball replay decoder...');
 
@@ -222,10 +227,11 @@ console.log('Loading Haxball replay decoder...');
 const replayScriptPath = path.join(__dirname, '..', 'original_script', 'replay-min.js');
 let replayScript = fs.readFileSync(replayScriptPath, 'utf8');
 
-// Modify the script to expose internal classes
+// Modify the script to expose internal classes to the window object
+// The IIFE passes window (or global/self) as the 'ub' parameter
 // Insert code right before C.cj(); at the end
 const exposePatch = `
-  // Expose internal classes to window for extraction
+  // Expose internal classes to ub (which is window/global)
   ub.ab = ab;
   ub.ca = ca;
   ub.hb = hb;
@@ -249,7 +255,7 @@ try {
   console.log('Decoder loaded successfully');
   
   // Debug: Check what's available now
-  const exposed = ['ab', 'ca', 'hb', 'C', 'g', 'T', 'I', 'O', 'p'].filter(k => sandbox.window[k]);
+  const exposed = ['ab', 'ca', 'hb', 'C', 'g', 'T', 'I', 'O', 'p', 'rb', 'k'].filter(k => sandbox.window[k]);
   console.log('Exposed classes:', exposed.join(', '));
   
   if (exposed.length === 0) {
@@ -263,7 +269,7 @@ try {
 
 console.log('Decoding replay data...');
 
-// Now we can directly access the exposed classes
+// Access the exposed classes from sandbox.window (where ub points to)
 try {
   const ab = sandbox.window.ab;
   const ca = sandbox.window.ca;
@@ -290,8 +296,6 @@ try {
   const decoder = new ab(new Uint8Array(replayData), room, 3);
   
   console.log('  Replay decoded successfully');
-  
-  const { decoder: _, room: __ } = { decoder, room }; // Keep the names consistent with later code
   
   console.log('Extracting data from decoded replay...');
   
