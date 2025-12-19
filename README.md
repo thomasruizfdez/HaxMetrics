@@ -2,6 +2,84 @@
 
 HaxMetrics es una herramienta para analizar replays de Haxball en formato .hbr2 y extraer métricas útiles para el análisis de partidos.
 
+## Herramientas
+
+### Decoder HBR2 a JSON
+
+El proyecto incluye un script de Node.js que decodifica archivos .hbr2 y exporta los metadatos a formato JSON.
+
+#### Instalación
+
+```bash
+npm install
+```
+
+#### Uso
+
+```bash
+# Usar con npm
+npm run decode -- <archivo.hbr2> [salida.json]
+
+# Ejemplo
+npm run decode -- src/replays/prueba.hbr2 output.json
+
+# Si no se especifica archivo de salida, se usa el mismo nombre con .json
+npm run decode -- src/replays/prueba.hbr2
+```
+
+#### Datos Extraídos
+
+El script extrae los siguientes datos del replay:
+
+- **Metadata**: Versión del formato, duración, tamaño del archivo
+- **Room Info**: Nombre de la sala
+- **Game Settings**: 
+  - Equipos bloqueados
+  - Límite de goles
+  - Límite de tiempo
+  - Configuración de kick (rate limit, burst, timeout)
+- **Stadium**: 
+  - Nombre del estadio
+  - Tipo (predefinido o personalizado)
+- **Messages**: Mensajes del sistema (si existen)
+- **Game State**: Estado del juego (activo/inactivo)
+
+#### Ejemplo de Salida JSON
+
+```json
+{
+  "metadata": {
+    "version": 3,
+    "duration": 34,
+    "fileSize": 76,
+    "decompressedSize": 94
+  },
+  "roomInfo": {
+    "name": "Bandolero's room"
+  },
+  "stadium": {
+    "name": "Huge",
+    "customStadium": false
+  },
+  "gameState": {
+    "teamsLocked": false,
+    "scoreLimit": 8,
+    "timeLimit": 9,
+    "kickRateLimitBurst": 1,
+    "kickRateLimit": 0,
+    "kickTimeout": 2,
+    "gameActive": false
+  },
+  "messages": []
+}
+```
+
+#### Limitaciones
+
+El parser actual extrae los metadatos principales del replay. El análisis completo del flujo de acciones/eventos requeriría implementar la máquina de estados completa del código original de Haxball, lo cual está fuera del alcance de esta versión.
+
+Para análisis detallado de acciones y eventos, se recomienda usar el parser Python incluido en el proyecto.
+
 ## Formato de archivo .hbr2
 
 El formato de archivo .hbr2 es el formato utilizado por Haxball para almacenar las replays de los partidos. A continuación se detalla la estructura de estos archivos:
