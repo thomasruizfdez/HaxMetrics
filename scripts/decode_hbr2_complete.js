@@ -128,6 +128,66 @@ function extractGameState(gameState) {
   };
 }
 
+/**
+ * Map event kind to event type name
+ * Based on MessageType constants from Python code
+ */
+function getEventTypeName(kind) {
+  const eventTypes = {
+    0: 'ANNOUNCEMENT',
+    1: 'CHAT',
+    2: 'GOAL',
+    3: 'TEAM_GOAL',
+    4: 'GAME_START',
+    5: 'GAME_STOP',
+    6: 'PLAYER_JOIN',
+    7: 'PLAYER_LEAVE',
+    8: 'PLAYER_TEAM_CHANGE',
+    9: 'PAUSE',
+    10: 'UNPAUSE',
+    11: 'ADMIN_CHANGE',
+    12: 'STADIUM_CHANGE',
+    13: 'KICK',
+    14: 'POSITION_CHANGE'
+  };
+  
+  return eventTypes[kind] || `UNKNOWN_${kind}`;
+}
+
+/**
+ * Extract event timeline from decoder markers
+ */
+function extractEvents(decoder) {
+  if (!decoder.eg || !Array.isArray(decoder.eg)) {
+    console.log('  No events found in decoder');
+    return [];
+  }
+  
+  const events = [];
+  
+  for (let i = 0; i < decoder.eg.length; i++) {
+    const marker = decoder.eg[i];
+    
+    if (!marker) continue;
+    
+    // Extract event information from marker
+    const event = {
+      index: i,
+      // Zk is timestamp as fraction of total duration (0.0 to 1.0)
+      timePercent: marker.Zk,
+      // Calculate actual time in milliseconds
+      time: marker.Zk * decoder.ad,
+      // kind is the event type ID
+      kind: marker.kind,
+      type: getEventTypeName(marker.kind)
+    };
+    
+    events.push(event);
+  }
+  
+  return events;
+}
+
 // Create a sandbox environment with necessary globals
 const sandbox = {
   console: console,
@@ -320,7 +380,8 @@ try {
     stadium: null,
     players: [],
     gameState: null,
-    teams: {}
+    teams: {},
+    events: []
   };
   
   // Extract stadium data using the built-in yk() method
@@ -360,6 +421,10 @@ try {
     };
   }
   
+  // Extract events from decoder markers
+  result.events = extractEvents(decoder);
+  console.log(`  Events: ${result.events.length}`);
+  
   // Write output
   console.log(`\nWriting output to: ${outputFile}`);
   fs.writeFileSync(outputFile, JSON.stringify(result, null, 2));
@@ -369,6 +434,7 @@ try {
   console.log(`  Room: ${result.roomInfo.name}`);
   console.log(`  Stadium: ${result.stadium?.name || 'Unknown'}`);
   console.log(`  Players: ${result.players.length}`);
+  console.log(`  Events: ${result.events.length}`);
   console.log(`  Score limit: ${result.roomInfo.scoreLimit}`);
   console.log(`  Time limit: ${result.roomInfo.timeLimit}`);
   if (result.gameState) {
