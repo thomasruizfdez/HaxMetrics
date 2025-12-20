@@ -8,7 +8,9 @@
     "decode": "node scripts/decode_hbr2.js",
     "decode:full": "node scripts/decode_hbr2_complete.js",
     "decode:v2": "node scripts/decode_hbr2_complete_v2.js",
-    "debug:replay": "node scripts/debug_replay_script.js"
+    "debug:replay": "node scripts/debug_replay_script.js",
+    "playtime": "node scripts/extract_playtime.js",
+    "playtime:test": "npm run playtime -- src/replays/prueba.hbr2"
   },
   "repository": {
     "type": "git",
