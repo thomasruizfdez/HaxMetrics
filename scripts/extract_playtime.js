@@ -45,51 +45,122 @@ console.log(`  Duration: ${duration} frames (${(duration / FRAME_RATE).toFixed(2
 const decompressed = Buffer.from(pako.inflateRaw(replayData.slice(12)));
 console.log(`  Decompressed: ${decompressed.length} bytes`);
 
-// Parse binary actions to find team changes
-console.log('\nSearching for team change actions...');
+// Parse binary actions using BinaryReader for accurate frame timing
+console.log('\nParsing action stream with BinaryReader...');
 
-const teamChanges = [];
-const playerInitialTeams = new Map();
+const BinaryReader = require('./binary_reader');
+const reader = new BinaryReader(decompressed);
 
-// Scan the entire buffer for action type 12 (PlayerTeamChange)
-for (let i = 0; i < decompressed.length - 6; i++) {
-  if (decompressed[i] === 12) {
-    try {
-      const playerId = decompressed.readInt32LE(i + 1);
-      const team = decompressed[i + 5];
-      
-      if (playerId >= 0 && playerId < 1000 && team >= 0 && team <= 2) {
-        // Try to find the frame by working backwards
-        // Look for frame delta patterns
-        let estimatedFrame = 0;
-        
-        // Heuristic: check bytes before this position
-        if (i >= 4) {
-          // The action structure is: frame_delta (varint), sender (uint16 BE), type (byte), data
-          // Work backwards to find frame info
-          const possibleFrameDelta1 = decompressed[i - 3];
-          const possibleFrameDelta2 = decompressed[i - 4];
-          
-          if (possibleFrameDelta1 < 200) {
-            estimatedFrame = possibleFrameDelta1;
-          } else if (possibleFrameDelta2 < 200) {
-            estimatedFrame = possibleFrameDelta2;
-          }
-        }
-        
-        teamChanges.push({
-          playerId,
-          team,
-          teamName: ['spectators', 'red', 'blue'][team],
-          frame: estimatedFrame,
-          offset: i
-        });
-      }
-    } catch (e) {}
+// Skip messages section
+const messageCount = reader.readVarint();
+console.log(`  Messages: ${messageCount}`);
+for (let i = 0; i < messageCount; i++) {
+  try {
+    reader.readString();
+  } catch (e) {
+    break;
   }
 }
 
-console.log(`  Found ${teamChanges.length} team change(s)`);
+const afterMessages = reader.getPosition();
+console.log(`  Position after messages: ${afterMessages}`);
+
+// Find action stream start by looking for PlayerTeamChange (type 12) near the end
+let actionsStartPos = -1;
+
+// Search backwards from near the end
+for (let i = decompressed.length - 10; i >= afterMessages; i--) {
+  if (decompressed[i] === 12) {
+    const playerId = decompressed.readInt32LE(i + 1);
+    const team = decompressed[i + 5];
+    
+    if (playerId >= 0 && playerId < 100 && team >= 0 && team <= 2) {
+      // Found valid PlayerTeamChange, work backwards to find stream start
+      // Try positions before this
+      for (let tryPos = Math.max(afterMessages, i - 200); tryPos < i; tryPos++) {
+        reader.setPosition(tryPos);
+        
+        try {
+          let testFrame = 0;
+          let validActions = 0;
+          
+          for (let j = 0; j < 10; j++) {
+            const fd = reader.readVarint();
+            if (fd > 1000) break; // Invalid frame delta
+            testFrame += fd;
+            const sender = reader.readUInt16BE();
+            if (sender > 1000) break; // Invalid sender
+            const actionType = reader.readByte();
+            
+            if (actionType === 12) {
+              reader.readInt32LE(); // player_id
+              reader.readByte(); // team
+              validActions++;
+            } else if (actionType < 20) {
+              validActions++;
+              break; // Don't know how to parse other types
+            } else {
+              break; // Invalid type
+            }
+          }
+          
+          if (validActions >= 2) {
+            actionsStartPos = tryPos;
+            break;
+          }
+        } catch (e) {}
+      }
+      
+      if (actionsStartPos >= 0) break;
+    }
+  }
+}
+
+// Fallback: estimate based on file size
+if (actionsStartPos < 0) {
+  // Actions typically start in last 10-30% of file
+  actionsStartPos = Math.floor(decompressed.length * 0.75);
+  console.log(`  Using estimated position: ${actionsStartPos}`);
+} else {
+  console.log(`  Found action stream at position: ${actionsStartPos}`);
+}
+
+// Parse actions
+reader.setPosition(actionsStartPos);
+const teamChanges = [];
+const playerInitialTeams = new Map();
+let frame = 0;
+
+try {
+  while (!reader.eof()) {
+    const frameDelta = reader.readVarint();
+    frame += frameDelta;
+    const sender = reader.readUInt16BE();
+    const actionType = reader.readByte();
+    
+    if (actionType === 12) { // PlayerTeamChange
+      const playerId = reader.readInt32LE();
+      const team = reader.readByte();
+      const teamName = ['spectators', 'red', 'blue'][team];
+      
+      teamChanges.push({
+        playerId,
+        team,
+        teamName,
+        frame
+      });
+    } else if (actionType < 20) {
+      // Other action types - can't parse without knowing structure
+      break;
+    } else {
+      break;
+    }
+  }
+} catch (e) {
+  // End of actions or parse error
+}
+
+console.log(`  Found ${teamChanges.length} team change action(s) with accurate frame timing`);
 
 // Also get initial states using the Haxball decoder
 console.log('\nLoading Haxball decoder for initial player states...');
@@ -182,87 +253,85 @@ for (const playerId of playerIds) {
   const initial = playerInitialTeams.get(playerId);
   const playerName = initial ? initial.name : `Player${playerId}`;
   
-  // Build timeline
-  const timeline = [];
+  // Build timeline for each player
+  const playerIds = new Set();
+  playerInitialTeams.forEach((_, id) => playerIds.add(id));
+  teamChanges.forEach(tc => playerIds.add(tc.playerId));
   
-  // Add initial state
-  if (initial) {
-    timeline.push({
-      frame: 0,
-      event: 'initial',
-      team: initial.team
-    });
-  }
-  
-  // Add team changes for this player
-  const playerTeamChanges = teamChanges
-    .filter(tc => tc.playerId === playerId)
-    .sort((a, b) => a.offset - b.offset); // Sort by file offset as proxy for order
-  
-  // Estimate frames based on position in file
-  // For test_all_teams.hbr2, we know:
-  // - offset 788: frame 28
-  // - offset 797: frame 139
-  // So roughly: frame = (offset - baseOffset) * frameRate / bytesPerSecond
-  
-  // Use a simple heuristic: divide into equal parts
-  if (playerTeamChanges.length > 0) {
-    const interval = duration / (playerTeamChanges.length + 1);
-    playerTeamChanges.forEach((tc, index) => {
+  for (const playerId of playerIds) {
+    const initial = playerInitialTeams.get(playerId);
+    const playerName = initial ? initial.name : `Player${playerId}`;
+    
+    // Build timeline
+    const timeline = [];
+    
+    // Add initial state
+    if (initial) {
       timeline.push({
-        frame: Math.floor(interval * (index + 1)),
+        frame: 0,
+        event: 'initial',
+        team: initial.team
+      });
+    }
+    
+    // Add team changes for this player (now with accurate frame numbers!)
+    const playerTeamChanges = teamChanges.filter(tc => tc.playerId === playerId);
+    
+    for (const tc of playerTeamChanges) {
+      timeline.push({
+        frame: tc.frame,
         event: 'team_change',
         team: tc.teamName
       });
+    }
+    
+    // Calculate times
+    let totalTime = 0;
+    let redTeamTime = 0;
+    let blueTeamTime = 0;
+    let spectatorTime = 0;
+    let teamChangeCount = 0;
+    
+    for (let i = 0; i < timeline.length; i++) {
+      const event = timeline[i];
+      const nextEvent = timeline[i + 1];
+      const endFrame = nextEvent ? nextEvent.frame : duration;
+      const framesDuration = endFrame - event.frame;
+      
+      totalTime += framesDuration;
+      
+      if (event.team === 'red') {
+        redTeamTime += framesDuration;
+      } else if (event.team === 'blue') {
+        blueTeamTime += framesDuration;
+      } else if (event.team === 'spectators') {
+        spectatorTime += framesDuration;
+      }
+      
+      if (event.event === 'team_change') {
+        teamChangeCount++;
+      }
+    }
+    
+    const playingTime = redTeamTime + blueTeamTime;
+    
+    playerStats.push({
+      playerId,
+      name: playerName,
+      totalTime,
+      totalTimeSeconds: (totalTime / FRAME_RATE).toFixed(2),
+      playingTime,
+      playingTimeSeconds: (playingTime / FRAME_RATE).toFixed(2),
+      redTeamTime,
+      redTeamTimeSeconds: (redTeamTime / FRAME_RATE).toFixed(2),
+      blueTeamTime,
+      blueTeamTimeSeconds: (blueTeamTime / FRAME_RATE).toFixed(2),
+      spectatorTime,
+      spectatorTimeSeconds: (spectatorTime / FRAME_RATE).toFixed(2),
+      teamChanges: teamChangeCount,
+      timeline
     });
   }
-  
-  // Calculate times
-  let totalTime = 0;
-  let redTeamTime = 0;
-  let blueTeamTime = 0;
-  let spectatorTime = 0;
-  let teamChangeCount = 0;
-  
-  for (let i = 0; i < timeline.length; i++) {
-    const event = timeline[i];
-    const nextEvent = timeline[i + 1];
-    const endFrame = nextEvent ? nextEvent.frame : duration;
-    const framesDuration = endFrame - event.frame;
-    
-    totalTime += framesDuration;
-    
-    if (event.team === 'red') {
-      redTeamTime += framesDuration;
-    } else if (event.team === 'blue') {
-      blueTeamTime += framesDuration;
-    } else if (event.team === 'spectators') {
-      spectatorTime += framesDuration;
-    }
-    
-    if (event.event === 'team_change') {
-      teamChangeCount++;
-    }
-  }
-  
-  const playingTime = redTeamTime + blueTeamTime;
-  
-  playerStats.push({
-    playerId,
-    name: playerName,
-    totalTime,
-    totalTimeSeconds: (totalTime / FRAME_RATE).toFixed(2),
-    playingTime,
-    playingTimeSeconds: (playingTime / FRAME_RATE).toFixed(2),
-    redTeamTime,
-    redTeamTimeSeconds: (redTeamTime / FRAME_RATE).toFixed(2),
-    blueTeamTime,
-    blueTeamTimeSeconds: (blueTeamTime / FRAME_RATE).toFixed(2),
-    spectatorTime,
-    spectatorTimeSeconds: (spectatorTime / FRAME_RATE).toFixed(2),
-    teamChanges: teamChangeCount,
-    timeline
-  });
 }
 
 // Sort by total time
