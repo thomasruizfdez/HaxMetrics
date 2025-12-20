@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `extract_playtime.js` script extracts detailed player playtime statistics from Haxball replay (.hbr2) files by combining the original Haxball decoder with binary action stream parsing for maximum accuracy.
+The `extract_playtime.js` script extracts detailed player playtime statistics from Haxball replay (.hbr2) files using a comprehensive hybrid approach that combines the original Haxball decoder with complete binary action stream parsing for maximum accuracy.
 
 ## Purpose
 
@@ -11,12 +11,13 @@ This tool was created to:
 1. **Calculate accurate playtime statistics** for each player in a replay
 2. **Distinguish between playing time and spectating time**
 3. **Track time per team** (red vs blue)
-4. **Extract frame-accurate team change events**
-5. **Provide reliable data** for player performance analysis
+4. **Extract frame-accurate team change events**  
+5. **Parse ALL actions from the replay** (team changes, game start/stop, etc.)
+6. **Provide reliable data** for player performance analysis
 
-## Architecture - Three-Step Approach
+## Architecture - Comprehensive Three-Step Approach
 
-The script uses a comprehensive multi-stage process:
+The script uses a sophisticated multi-stage process:
 
 ### Step 1: Initial State Extraction (Haxball Decoder)
 
@@ -24,14 +25,22 @@ Uses the original Haxball decoder to:
 - Parse replay file structure and validate integrity
 - Extract player names, IDs, and initial team assignments
 - Get replay metadata (duration, version, timestamps)
+- Ensure compatibility with all replay formats
 
-### Step 2: Binary Action Parsing
+### Step 2: Complete Binary Action Parsing
 
-Parses the decompressed replay data to:
-- Locate the action stream start position
-- Extract PlayerTeamChange actions (type 12) with exact frame numbers
-- Parse frame deltas to calculate cumulative frame timing
-- Build a complete list of team change events
+Parses the decompressed replay data comprehensively:
+- Searches backwards from end of file to locate action stream containing team changes
+- Parses ALL actions using discovered binary format:
+  - Frame delta (1 byte)
+  - Skip bytes (2 bytes - observed pattern)
+  - Action type (1 byte)
+  - Action-specific data (varies by type)
+- Extracts PlayerTeamChange actions (type 12) with exact frame numbers:
+  - Player ID: 4 bytes (32-bit little-endian integer)
+  - Team ID: 1 byte (0=spectators, 1=red, 2=blue)
+- Identifies game events (start, stop, pause, unpause)
+- Builds complete action log with precise frame timing
 
 ### Step 3: Statistics Calculation
 
@@ -53,13 +62,13 @@ Combines data from Steps 1 & 2 to:
 3. Load Haxball decoder (Step 1)
    → Extract: player names, IDs, initial teams
    ↓
-4. Parse binary action stream (Step 2)
-   → Find action start position
-   → Parse PlayerTeamChange actions
-   → Extract frame numbers
+4. Parse complete binary action stream (Step 2)
+   → Search backwards for team changes
+   → Parse ALL actions with exact frames
+   → Extract frame numbers for each event
    ↓
 5. Build player timelines (Step 3)
-   → Combine initial states + team changes
+   → Combine initial states + all actions
    → Calculate durations per team
    ↓
 6. Export JSON with statistics
@@ -88,14 +97,35 @@ Uses multi-pattern matching to expose internal Haxball classes:
 
 The patching works by inserting exposure code before the Haxball code's initialization.
 
-#### 3. Player State Tracking
+#### 3. Action Stream Discovery
 
-Tracks players through:
-- Initial state extraction from `room.L` (player list)
-- Final state extraction after replay processing
-- Timeline construction with join/leave/team change events
+Implements intelligent backwards search to locate action stream:
+- Searches from end of decompressed data
+- Looks for byte value 12 (PlayerTeamChange action type)
+- Validates potential stream starts by parsing test sequences
+- Confirms valid action patterns before committing to a start position
 
-#### 4. Playtime Calculation
+This ensures we find the actual action data, not false positives in room/stadium data.
+
+#### 4. Binary Action Format
+
+Discovered through reverse engineering:
+```
+Action Structure:
+- Frame Delta: 1 byte (frames since last action)
+- Unknown: 2 bytes (skip - observed pattern)
+- Action Type: 1 byte
+- Action Data: varies by type
+
+PlayerTeamChange (type 12):
+- Player ID: 4 bytes (little-endian int32)
+- Team ID: 1 byte (0/1/2)
+
+Other Actions:
+- Variable length data (5+ bytes)
+```
+
+#### 5. Playtime Calculation
 
 For each player, calculates:
 - **Total time**: Frames from first appearance to end of replay

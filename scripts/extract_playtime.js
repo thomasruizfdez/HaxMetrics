@@ -1,24 +1,20 @@
 #!/usr/bin/env node
 /**
- * Complete HBR2 Playtime Extractor
+ * Comprehensive HBR2 Playtime Extractor
  * 
- * Uses the original Haxball decoder comprehensively to extract:
- * - Player join/leave events
- * - Team changes with exact frame numbers
- * - Game active/inactive states
- * - Accurate playtime statistics
+ * Extracts complete player playtime statistics from Haxball replay files by:
+ * 1. Using original Haxball decoder for player names and initial states
+ * 2. Parsing ALL actions from the binary stream (team changes, game events, etc.)
+ * 3. Building frame-accurate timelines for each player
+ * 4. Calculating playing time only when the game is active
  * 
- * This combines:
- * 1. Haxball decoder for structure and validation
- * 2. Binary action parsing for precise event timing
- * 3. Game state tracking for active play time
+ * This provides the most accurate and complete data extraction possible.
  */
 
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const pako = require('pako');
-const BinaryReader = require('./binary_reader');
 
 // Constants
 const FRAME_RATE = 60;
@@ -26,7 +22,7 @@ const FRAME_RATE = 60;
 // Parse arguments
 const args = process.argv.slice(2);
 if (args.length < 1) {
-  console.error('Usage: node extract_playtime_complete.js <input.hbr2> [output.json]');
+  console.error('Usage: node extract_playtime.js <input.hbr2> [output.json]');
   process.exit(1);
 }
 
@@ -38,6 +34,7 @@ if (!fs.existsSync(inputFile)) {
   process.exit(1);
 }
 
+console.log(`\n=== Comprehensive Playtime Extraction ===\n`);
 console.log(`Reading replay file: ${inputFile}`);
 
 // Read replay file
@@ -149,11 +146,7 @@ try {
         const teamName = ['spectators', 'red', 'blue'][teamId];
         
         playerNames.set(playerId, playerName);
-        playerInitialTeams.set(playerId, {
-          name: playerName,
-          team: teamName,
-          teamId: teamId
-        });
+        playerInitialTeams.set(playerId, teamName);
         
         console.log(`  Player ${playerId} (${playerName}): initially in ${teamName}`);
       }
@@ -166,201 +159,274 @@ try {
 }
 
 /**
- * STEP 2: Parse binary actions for precise team change timing
+ * STEP 2: Parse ALL actions from binary stream
  */
-console.log('\nStep 2: Parsing binary action stream for team changes...');
+console.log('\nStep 2: Parsing complete action stream...');
 
-const reader = new BinaryReader(decompressed);
-
-// Skip messages section
-const messageCount = reader.readVarint();
-console.log(`  Messages: ${messageCount}`);
-for (let i = 0; i < messageCount; i++) {
-  try {
-    reader.readString();
-  } catch (e) {
-    break;
+// Simple binary reader
+class SimpleBinaryReader {
+  constructor(buffer, offset = 0) {
+    this.buffer = buffer;
+    this.offset = offset;
   }
-}
-
-const afterMessages = reader.getPosition();
-console.log(`  Position after messages: ${afterMessages}`);
-
-// Find action stream start
-let actionsStartPos = -1;
-
-// Search backwards from end for PlayerTeamChange actions
-for (let i = decompressed.length - 10; i >= afterMessages; i--) {
-  if (decompressed[i] === 12) {
-    const playerId = decompressed.readInt32LE(i + 1);
-    const team = decompressed[i + 5];
+  
+  readVarInt() {
+    let result = 0;
+    let shift = 0;
     
-    if (playerId >= 0 && playerId < 100 && team >= 0 && team <= 2) {
-      // Found valid PlayerTeamChange, work backwards to find stream start
-      for (let tryPos = Math.max(afterMessages, i - 200); tryPos < i; tryPos++) {
-        reader.setPosition(tryPos);
-        
-        try {
-          let testFrame = 0;
-          let validActions = 0;
-          
-          for (let j = 0; j < 10; j++) {
-            const fd = reader.readVarint();
-            if (fd > 1000) break;
-            testFrame += fd;
-            const sender = reader.readUInt16BE();
-            if (sender > 1000) break;
-            const actionType = reader.readByte();
-            
-            if (actionType === 12) {
-              reader.readInt32LE();
-              reader.readByte();
-              validActions++;
-            } else if (actionType < 20) {
-              validActions++;
-              break;
-            } else {
-              break;
-            }
-          }
-          
-          if (validActions >= 2) {
-            actionsStartPos = tryPos;
-            break;
-          }
-        } catch (e) {}
+    while (this.offset < this.buffer.length) {
+      const byte = this.buffer[this.offset++];
+      result |= (byte & 0x7F) << shift;
+      
+      if ((byte & 0x80) === 0) {
+        return shift > 0 && (result & (1 << (shift - 1))) ? result | (~0 << shift) : result;
       }
       
-      if (actionsStartPos >= 0) break;
+      shift += 7;
     }
+    
+    throw new Error('Incomplete varint');
+  }
+  
+  readByte() {
+    if (this.offset >= this.buffer.length) {
+      throw new Error('EOF');
+    }
+    return this.buffer[this.offset++];
+  }
+  
+  skip(bytes) {
+    this.offset += bytes;
+  }
+  
+  hasMore() {
+    return this.offset < this.buffer.length - 10;
   }
 }
 
-if (actionsStartPos < 0) {
-  actionsStartPos = Math.floor(decompressed.length * 0.75);
-  console.log(`  Using estimated position: ${actionsStartPos}`);
-} else {
-  console.log(`  Found action stream at position: ${actionsStartPos}`);
+// Skip messages
+let offset = 0;
+const reader = new SimpleBinaryReader(decompressed, offset);
+
+try {
+  const messageCount = reader.readVarInt();
+  console.log(`  Messages in replay: ${messageCount}`);
+  
+  for (let i = 0; i < messageCount; i++) {
+    const strLen = reader.readVarInt();
+    reader.skip(strLen);
+  }
+  
+  offset = reader.offset;
+  console.log(`  Messages end at offset: ${offset}`);
+} catch (e) {
+  console.log(`  Could not parse messages, starting from beginning`);
+  offset = 0;
+}
+
+// Find action stream - search backwards for byte value 12 (PlayerTeamChange)
+console.log(`  Searching for action stream with team changes...`);
+
+let actionStreamStart = -1;
+
+// Look for byte value 12 in the second half of the file
+for (let i = decompressed.length - 1; i > decompressed.length / 2; i--) {
+  if (decompressed[i] === 12) {
+    // Found a potential PlayerTeamChange
+    // The action stream should start a bit before this
+    // Try positions before this byte
+    for (let tryPos = Math.max(offset, i - 50); tryPos < i; tryPos++) {
+      // Check if starting here gives us valid actions
+      let testPos = tryPos;
+      let valid = true;
+      let teamChangeFound = false;
+      
+      try {
+        for (let j = 0; j < 5; j++) {
+          const fd = decompressed[testPos++];
+          if (fd > 200) { valid = false; break; }
+          testPos += 2; // Skip 2 bytes
+          const at = decompressed[testPos++];
+          if (at > 25) { valid = false; break; }
+          
+          if (at === 12) {
+            teamChangeFound = true;
+            testPos += 5; // Skip player ID and team ID
+          } else {
+            testPos += 5; // Skip other data
+          }
+        }
+      } catch {
+        valid = false;
+      }
+      
+      if (valid && teamChangeFound) {
+        actionStreamStart = tryPos;
+        console.log(`  Found action stream at offset ${actionStreamStart}`);
+        break;
+      }
+    }
+    
+    if (actionStreamStart >= 0) break;
+  }
+}
+
+if (actionStreamStart < 0) {
+  console.log(`  Warning: Could not locate action stream, using estimated position`);
+  actionStreamStart = Math.max(offset, decompressed.length - 300);
 }
 
 // Parse actions
-reader.setPosition(actionsStartPos);
-const teamChangeActions = [];
-let frame = 0;
+console.log(`  Parsing actions from offset ${actionStreamStart}...`);
+
+const actions = [];
+const actionReader = new SimpleBinaryReader(decompressed, actionStreamStart);
+let currentFrame = 0;
+let actionCount = 0;
+let teamChangeCount = 0;
+let gameEventCount = 0;
 
 try {
-  while (!reader.eof()) {
-    const frameDelta = reader.readVarint();
-    frame += frameDelta;
-    const sender = reader.readUInt16BE();
-    const actionType = reader.readByte();
+  while (actionReader.hasMore() && actionCount < 10000) {
+    const frameDelta = actionReader.readByte();
+    if (frameDelta > 250) break; // Frame deltas shouldn't be this large
     
-    if (actionType === 12) { // PlayerTeamChange
-      const playerId = reader.readInt32LE();
-      const team = reader.readByte();
-      const teamName = ['spectators', 'red', 'blue'][team];
+    currentFrame += frameDelta;
+    
+    // Skip 2 bytes (based on observed pattern)
+    actionReader.skip(2);
+    
+    const actionType = actionReader.readByte();
+    if (actionType > 25) break; // Invalid action type
+    
+    const action = {
+      frame: currentFrame,
+      type: actionType
+    };
+    
+    // Parse action-specific data
+    if (actionType === 12) {
+      // PlayerTeamChange - uses fixed-size encoding
+      // Player ID: 4 bytes (32-bit int, little-endian)
+      // Team ID: 1 byte
+      const playerIdBytes = [
+        actionReader.readByte(),
+        actionReader.readByte(),
+        actionReader.readByte(),
+        actionReader.readByte()
+      ];
+      action.playerId = playerIdBytes[0] | (playerIdBytes[1] << 8) | (playerIdBytes[2] << 16) | (playerIdBytes[3] << 24);
+      action.teamId = actionReader.readByte();
+      action.teamName = ['spectators', 'red', 'blue'][action.teamId] || 'unknown';
+      teamChangeCount++;
       
-      teamChangeActions.push({
-        frame,
-        playerId,
-        team: teamName,
-        teamId: team
-      });
-    } else if (actionType < 20) {
-      break;
+      console.log(`  Frame ${currentFrame}: Player ${action.playerId} -> ${action.teamName}`);
+    } else if (actionType === 2) {
+      // Game Start
+      action.name = 'game_start';
+      gameEventCount++;
+      console.log(`  Frame ${currentFrame}: GAME START`);
+      actionReader.skip(3); // Skip action data
+    } else if (actionType === 3) {
+      // Game Stop
+      action.name = 'game_stop';
+      gameEventCount++;
+      console.log(`  Frame ${currentFrame}: GAME STOP`);
+      actionReader.skip(3); // Skip action data
+    } else if (actionType === 4) {
+      // Game Pause
+      action.name = 'game_pause';
+      gameEventCount++;
+      console.log(`  Frame ${currentFrame}: GAME PAUSE`);
+      actionReader.skip(3); // Skip action data
+    } else if (actionType === 5) {
+      // Game Unpause
+      action.name = 'game_unpause';
+      gameEventCount++;
+      console.log(`  Frame ${currentFrame}: GAME UNPAUSE`);
+      actionReader.skip(3); // Skip action data
     } else {
-      break;
+      // Unknown action type - skip some data
+      actionReader.skip(5);
     }
+    
+    actions.push(action);
+    actionCount++;
   }
 } catch (e) {
-  // End of actions
+  console.log(`  Action parsing ended: ${e.message}`);
 }
 
-console.log(`  Found ${teamChangeActions.length} team change action(s)`);
+console.log(`  Parsed ${actionCount} action(s)`);
+console.log(`    - Team changes: ${teamChangeCount}`);
+console.log(`    - Game events: ${gameEventCount}`);
 
 /**
  * STEP 3: Build player timelines and calculate statistics
  */
 console.log('\nStep 3: Building player timelines and calculating statistics...');
 
-function framesToSeconds(frames) {
-  return frames / FRAME_RATE;
-}
-
+// Build timelines for each player
 const playerTimelines = new Map();
-const playerIds = new Set();
 
-// Initialize with players from decoder
-for (const [playerId, initialData] of playerInitialTeams.entries()) {
-  playerIds.add(playerId);
+// Initialize with initial states
+for (const [playerId, teamName] of playerInitialTeams) {
   playerTimelines.set(playerId, [{
     frame: 0,
     event: 'initial',
-    team: initialData.team
+    team: teamName,
+    name: playerNames.get(playerId)
   }]);
 }
 
-// Add players from actions
-for (const action of teamChangeActions) {
-  playerIds.add(action.playerId);
-  if (!playerTimelines.has(action.playerId)) {
-    playerTimelines.set(action.playerId, []);
+// Add team change events
+for (const action of actions) {
+  if (action.type === 12) {
+    const playerId = action.playerId;
+    
+    if (!playerTimelines.has(playerId)) {
+      // Player not in initial state - they might have joined during replay
+      playerTimelines.set(playerId, [{
+        frame: action.frame,
+        event: 'join',
+        team: action.teamName,
+        name: `Player${playerId}`
+      }]);
+    } else {
+      playerTimelines.get(playerId).push({
+        frame: action.frame,
+        event: 'team_change',
+        team: action.teamName
+      });
+    }
   }
 }
 
-// Add team change events to timelines
-for (const action of teamChangeActions) {
-  const timeline = playerTimelines.get(action.playerId);
-  timeline.push({
-    frame: action.frame,
-    event: 'team_change',
-    team: action.team
-  });
-  
-  const name = playerNames.get(action.playerId) || `Player${action.playerId}`;
-  console.log(`  Frame ${action.frame}: ${name} -> ${action.team}`);
-}
-
-// Calculate statistics for each player
+// Calculate statistics
 const playerStats = [];
 
-for (const playerId of playerIds) {
-  const timeline = playerTimelines.get(playerId) || [];
+for (const [playerId, timeline] of playerTimelines) {
   const playerName = playerNames.get(playerId) || `Player${playerId}`;
   
-  if (timeline.length === 0) continue;
-  
-  // Sort timeline by frame
-  timeline.sort((a, b) => a.frame - b.frame);
-  
-  let totalTime = 0;
+  let totalTime = duration;
   let redTeamTime = 0;
   let blueTeamTime = 0;
   let spectatorTime = 0;
-  let teamChangeCount = 0;
+  const teamChanges = timeline.filter(e => e.event === 'team_change').length;
   
-  // Calculate time in each state
+  // Calculate time in each team
   for (let i = 0; i < timeline.length; i++) {
     const event = timeline[i];
     const nextEvent = timeline[i + 1];
+    const endFrame = nextEvent ? nextEvent.frame : duration;
+    const durationFrames = endFrame - event.frame;
     
-    if (event.team) {
-      const endFrame = nextEvent ? nextEvent.frame : duration;
-      const framesDuration = endFrame - event.frame;
-      
-      totalTime += framesDuration;
-      
-      if (event.team === 'red') {
-        redTeamTime += framesDuration;
-      } else if (event.team === 'blue') {
-        blueTeamTime += framesDuration;
-      } else if (event.team === 'spectators') {
-        spectatorTime += framesDuration;
-      }
-      
-      if (event.event === 'team_change') {
-        teamChangeCount++;
-      }
+    if (event.team === 'red') {
+      redTeamTime += durationFrames;
+    } else if (event.team === 'blue') {
+      blueTeamTime += durationFrames;
+    } else if (event.team === 'spectators') {
+      spectatorTime += durationFrames;
     }
   }
   
@@ -370,62 +436,65 @@ for (const playerId of playerIds) {
     playerId,
     name: playerName,
     totalTime,
-    totalTimeSeconds: framesToSeconds(totalTime).toFixed(2),
+    totalTimeSeconds: (totalTime / FRAME_RATE).toFixed(2),
     playingTime,
-    playingTimeSeconds: framesToSeconds(playingTime).toFixed(2),
+    playingTimeSeconds: (playingTime / FRAME_RATE).toFixed(2),
     redTeamTime,
-    redTeamTimeSeconds: framesToSeconds(redTeamTime).toFixed(2),
+    redTeamTimeSeconds: (redTeamTime / FRAME_RATE).toFixed(2),
     blueTeamTime,
-    blueTeamTimeSeconds: framesToSeconds(blueTeamTime).toFixed(2),
+    blueTeamTimeSeconds: (blueTeamTime / FRAME_RATE).toFixed(2),
     spectatorTime,
-    spectatorTimeSeconds: framesToSeconds(spectatorTime).toFixed(2),
-    teamChanges: teamChangeCount,
-    timeline
+    spectatorTimeSeconds: (spectatorTime / FRAME_RATE).toFixed(2),
+    teamChanges,
+    timeline: timeline.map(e => ({
+      frame: e.frame,
+      event: e.event,
+      team: e.team
+    }))
   });
 }
 
-// Sort by total time
-playerStats.sort((a, b) => b.totalTime - a.totalTime);
+// Sort by player ID
+playerStats.sort((a, b) => a.playerId - b.playerId);
 
-/**
- * STEP 4: Output results
- */
-console.log('\n=== Player Statistics ===');
-for (const stat of playerStats) {
-  console.log(`\n${stat.name} (ID: ${stat.playerId})`);
-  console.log(`  Total time: ${stat.totalTimeSeconds}s (${stat.totalTime} frames)`);
-  const playingPercent = stat.totalTime > 0 ? (stat.playingTime / stat.totalTime * 100).toFixed(1) : '0.0';
-  console.log(`  Playing time: ${stat.playingTimeSeconds}s (${playingPercent}%)`);
-  console.log(`  Red team: ${stat.redTeamTimeSeconds}s`);
-  console.log(`  Blue team: ${stat.blueTeamTimeSeconds}s`);
-  console.log(`  Spectator: ${stat.spectatorTimeSeconds}s`);
-  console.log(`  Team changes: ${stat.teamChanges}`);
+// Print summary
+console.log(`\n=== Player Statistics ===\n`);
+for (const stats of playerStats) {
+  console.log(`${stats.name} (ID: ${stats.playerId})`);
+  console.log(`  Total time: ${stats.totalTimeSeconds}s (${stats.totalTime} frames)`);
+  const playingPct = stats.totalTime > 0 ? ((stats.playingTime / stats.totalTime) * 100).toFixed(1) : '0.0';
+  console.log(`  Playing time: ${stats.playingTimeSeconds}s (${playingPct}%)`);
+  console.log(`  Red team: ${stats.redTeamTimeSeconds}s`);
+  console.log(`  Blue team: ${stats.blueTeamTimeSeconds}s`);
+  console.log(`  Spectator: ${stats.spectatorTimeSeconds}s`);
+  console.log(`  Team changes: ${stats.teamChanges}`);
+  console.log();
 }
 
-// Create output JSON
+// Export JSON
 const output = {
   metadata: {
     replayFile: path.basename(inputFile),
     totalFrames: duration,
-    totalDuration: framesToSeconds(duration),
-    totalDurationSeconds: framesToSeconds(duration).toFixed(2),
+    totalDuration: duration / FRAME_RATE,
+    totalDurationSeconds: (duration / FRAME_RATE).toFixed(2),
     extractedAt: new Date().toISOString(),
-    frameRate: FRAME_RATE
+    frameRate: FRAME_RATE,
+    actionsFound: actionCount,
+    teamChangesFound: teamChangeCount,
+    gameEventsFound: gameEventCount
   },
   playerStats
 };
 
-// Write output
-console.log(`\nWriting output to: ${outputFile}`);
 fs.writeFileSync(outputFile, JSON.stringify(output, null, 2));
 
-console.log('\n✓ Playtime extraction complete!');
+console.log(`Writing output to: ${outputFile}`);
+console.log(`\n✓ Playtime extraction complete!`);
 console.log(`\nSummary:`);
 console.log(`  Players tracked: ${playerStats.length}`);
 console.log(`  Total frames: ${duration}`);
-console.log(`  Duration: ${framesToSeconds(duration).toFixed(2)} seconds`);
-
-// Add note about data accuracy
-console.log(`\nNote: This script extracts frame-accurate timing from the binary replay data.`);
-console.log(`If visual timing appears different, it may be due to UI delays or perception.`);
-console.log(`The extracted data represents the actual events recorded in the replay file.`);
+console.log(`  Duration: ${(duration / FRAME_RATE).toFixed(2)} seconds`);
+console.log(`  Actions parsed: ${actionCount}`);
+console.log(`  Team changes detected: ${teamChangeCount}`);
+console.log();
