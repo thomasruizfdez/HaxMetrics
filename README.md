@@ -4,6 +4,69 @@ HaxMetrics es una herramienta para analizar replays de Haxball en formato .hbr2 
 
 ## Herramientas
 
+### 🎮 Extractor de Tiempos de Juego (Playtime)
+
+**NUEVO**: Herramienta especializada para extraer estadísticas de tiempo de juego por jugador.
+
+El extractor de playtime analiza archivos .hbr2 y calcula automáticamente:
+
+- ⏱️ **Tiempo total** de cada jugador en la sala
+- 🏃 **Tiempo jugando** (en equipo rojo o azul)
+- 👀 **Tiempo como espectador**
+- 🔴 **Tiempo en equipo rojo** vs 🔵 **tiempo en equipo azul**
+- 🔄 **Número de cambios de equipo**
+- 📊 **Timeline completo** de eventos por jugador
+
+#### Uso del Extractor de Playtime
+
+```bash
+# Extraer tiempos de juego de un replay
+npm run playtime -- <archivo.hbr2> [salida.json]
+
+# Ejemplo con replay de prueba
+npm run playtime:test
+
+# Ejemplo con replay específico
+npm run playtime -- src/replays/partido.hbr2 estadisticas.json
+```
+
+#### Ejemplo de Salida
+
+```json
+{
+  "metadata": {
+    "replayFile": "partido.hbr2",
+    "totalFrames": 212157,
+    "totalDurationSeconds": "3535.95"
+  },
+  "playerStats": [
+    {
+      "playerId": 445,
+      "name": "Cubone",
+      "totalTimeSeconds": "3535.95",
+      "playingTimeSeconds": "3535.95",
+      "redTeamTimeSeconds": "3535.95",
+      "blueTeamTimeSeconds": "0.00",
+      "spectatorTimeSeconds": "0.00",
+      "teamChanges": 0
+    }
+  ]
+}
+```
+
+#### Documentación Detallada
+
+- **[PLAYTIME_EXTRACTION.md](docs/PLAYTIME_EXTRACTION.md)** - Documentación técnica completa
+- **[JSON_OUTPUT_FORMAT.md](docs/JSON_OUTPUT_FORMAT.md)** - Especificación del formato de salida
+
+#### Ventajas del Extractor de Playtime
+
+- ✅ **Usa código original de Haxball** - Máxima fiabilidad
+- ✅ **Rápido** - Procesa replays largos en segundos
+- ✅ **Preciso** - Cálculos a nivel de frame (60 FPS)
+- ✅ **Formato JSON** - Fácil de procesar con cualquier lenguaje
+- ✅ **Sin dependencias externas** - Solo Node.js y npm
+
 ### Decoder HBR2 a JSON
 
 El proyecto incluye tres decoders de Node.js para archivos .hbr2:
