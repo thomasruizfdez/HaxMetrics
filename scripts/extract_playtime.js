@@ -35,6 +35,10 @@ if (args.length < 1) {
 const inputFile = args[0];
 const outputFile = args[1] || inputFile.replace(/\.hbr2$/, '_playtime.json');
 
+// Constants
+const FRAME_RATE = 60; // Haxball uses 60 FPS
+const EXPOSED_CLASSES = ['ab', 'ca', 'rb']; // Decoder, Room, Message classes
+
 // Check if input file exists
 if (!fs.existsSync(inputFile)) {
   console.error(`Error: Input file not found: ${inputFile}`);
@@ -51,6 +55,13 @@ const playerTimeline = new Map(); // Map<playerId, Array<event>>
 const playerSnapshots = new Map(); // Map<playerId, currentState>
 let currentFrame = 0;
 let totalFrames = 0;
+
+/**
+ * Convert frames to seconds
+ */
+function framesToSeconds(frames) {
+  return frames / FRAME_RATE;
+}
 
 /**
  * Record a player event in the timeline
@@ -429,11 +440,7 @@ function patchReplayScript(replayScript) {
   const pattern5 = /(\}\)\(global\);?\s*$)/;
   
   // Classes to expose
-  const classesToExpose = [
-    'ab',  // Decoder class
-    'ca',  // Room class
-    'rb'   // Message class
-  ];
+  const classesToExpose = EXPOSED_CLASSES;
   
   const exposePatch = `
   // Expose internal classes to ub (which is window/global)
@@ -488,8 +495,9 @@ try {
 sandbox.ub = sandbox.window;
 
 // Verify classes are exposed
-if (!sandbox.window.ab || !sandbox.window.ca) {
-  console.error('Error: Required classes not exposed (ab, ca)');
+const missingClasses = EXPOSED_CLASSES.filter(cls => !sandbox.window[cls]);
+if (missingClasses.length > 0) {
+  console.error(`Error: Required classes not exposed: ${missingClasses.join(', ')}`);
   console.error('Available in window:', Object.keys(sandbox.window).filter(k => k.length < 4).join(', '));
   process.exit(1);
 }
@@ -656,15 +664,15 @@ function calculatePlaytimeStats() {
       playerId: playerId,
       name: playerName,
       totalTime: totalTime,
-      totalTimeSeconds: (totalTime / 60).toFixed(2),
+      totalTimeSeconds: framesToSeconds(totalTime).toFixed(2),
       playingTime: playingTime,
-      playingTimeSeconds: (playingTime / 60).toFixed(2),
+      playingTimeSeconds: framesToSeconds(playingTime).toFixed(2),
       redTeamTime: redTeamTime,
-      redTeamTimeSeconds: (redTeamTime / 60).toFixed(2),
+      redTeamTimeSeconds: framesToSeconds(redTeamTime).toFixed(2),
       blueTeamTime: blueTeamTime,
-      blueTeamTimeSeconds: (blueTeamTime / 60).toFixed(2),
+      blueTeamTimeSeconds: framesToSeconds(blueTeamTime).toFixed(2),
       spectatorTime: spectatorTime,
-      spectatorTimeSeconds: (spectatorTime / 60).toFixed(2),
+      spectatorTimeSeconds: framesToSeconds(spectatorTime).toFixed(2),
       teamChanges: teamChanges,
       timeline: timeline
     });
@@ -682,7 +690,13 @@ console.log('\n=== Player Statistics ===');
 for (const stat of playtimeStats) {
   console.log(`\n${stat.name} (ID: ${stat.playerId})`);
   console.log(`  Total time: ${stat.totalTimeSeconds}s (${stat.totalTime} frames)`);
-  console.log(`  Playing time: ${stat.playingTimeSeconds}s (${(stat.playingTime / stat.totalTime * 100).toFixed(1)}%)`);
+  
+  // Avoid division by zero
+  const playingPercent = stat.totalTime > 0 
+    ? (stat.playingTime / stat.totalTime * 100).toFixed(1) 
+    : '0.0';
+  
+  console.log(`  Playing time: ${stat.playingTimeSeconds}s (${playingPercent}%)`);
   console.log(`  Red team: ${stat.redTeamTimeSeconds}s`);
   console.log(`  Blue team: ${stat.blueTeamTimeSeconds}s`);
   console.log(`  Spectator: ${stat.spectatorTimeSeconds}s`);
@@ -694,12 +708,12 @@ const output = {
   metadata: {
     replayFile: path.basename(inputFile),
     totalFrames: totalFrames,
-    totalDuration: totalFrames / 60,
-    totalDurationSeconds: (totalFrames / 60).toFixed(2),
+    totalDuration: framesToSeconds(totalFrames),
+    totalDurationSeconds: framesToSeconds(totalFrames).toFixed(2),
     recordingStart: decoder.le,
     recordingStartISO: new Date(decoder.le).toISOString(),
     extractedAt: new Date().toISOString(),
-    frameRate: 60
+    frameRate: FRAME_RATE
   },
   playerStats: playtimeStats
 };
@@ -715,4 +729,4 @@ console.log('\n✓ Playtime extraction complete!');
 console.log(`\nSummary:`);
 console.log(`  Players tracked: ${playtimeStats.length}`);
 console.log(`  Total frames: ${totalFrames}`);
-console.log(`  Duration: ${(totalFrames / 60).toFixed(2)} seconds`);
+console.log(`  Duration: ${framesToSeconds(totalFrames).toFixed(2)} seconds`);
