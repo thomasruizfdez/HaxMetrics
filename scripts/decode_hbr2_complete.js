@@ -175,7 +175,7 @@ function extractEvents(decoder) {
       index: i,
       // Zk is timestamp as fraction of total duration (0.0 to 1.0)
       timePercent: marker.Zk,
-      // Calculate actual time in seconds
+      // Calculate actual time in milliseconds
       time: marker.Zk * decoder.ad,
       // kind is the event type ID
       kind: marker.kind,
