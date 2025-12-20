@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `extract_playtime.js` script extracts detailed player playtime statistics from Haxball replay (.hbr2) files by processing the replay using the original Haxball JavaScript decoder.
+The `extract_playtime.js` script extracts detailed player playtime statistics from Haxball replay (.hbr2) files by combining the original Haxball decoder with binary action stream parsing for maximum accuracy.
 
 ## Purpose
 
@@ -11,23 +11,58 @@ This tool was created to:
 1. **Calculate accurate playtime statistics** for each player in a replay
 2. **Distinguish between playing time and spectating time**
 3. **Track time per team** (red vs blue)
-4. **Provide ground truth data** for validating the Python parser
-5. **Enable detailed player performance analysis**
+4. **Extract frame-accurate team change events**
+5. **Provide reliable data** for player performance analysis
+
+## Architecture - Three-Step Approach
+
+The script uses a comprehensive multi-stage process:
+
+### Step 1: Initial State Extraction (Haxball Decoder)
+
+Uses the original Haxball decoder to:
+- Parse replay file structure and validate integrity
+- Extract player names, IDs, and initial team assignments
+- Get replay metadata (duration, version, timestamps)
+
+### Step 2: Binary Action Parsing
+
+Parses the decompressed replay data to:
+- Locate the action stream start position
+- Extract PlayerTeamChange actions (type 12) with exact frame numbers
+- Parse frame deltas to calculate cumulative frame timing
+- Build a complete list of team change events
+
+### Step 3: Statistics Calculation
+
+Combines data from Steps 1 & 2 to:
+- Build complete player timelines with all state changes
+- Calculate time spent in each team (red, blue, spectators)
+- Compute playing time vs spectator time
+- Generate JSON output with frame-accurate statistics
 
 ## How It Works
 
-### Architecture
-
-The script follows this flow:
+### Data Flow
 
 ```
-1. Load replay file (.hbr2)
-2. Create sandboxed environment with browser API mocks
-3. Load and patch original Haxball decoder (replay-min.js)
-4. Create Room and Decoder instances
-5. Extract player states from decoded replay
-6. Calculate playtime statistics per player
-7. Export results as JSON
+1. Read .hbr2 file
+   ↓
+2. Decompress with pako (zlib)
+   ↓
+3. Load Haxball decoder (Step 1)
+   → Extract: player names, IDs, initial teams
+   ↓
+4. Parse binary action stream (Step 2)
+   → Find action start position
+   → Parse PlayerTeamChange actions
+   → Extract frame numbers
+   ↓
+5. Build player timelines (Step 3)
+   → Combine initial states + team changes
+   → Calculate durations per team
+   ↓
+6. Export JSON with statistics
 ```
 
 ### Key Components
@@ -36,7 +71,7 @@ The script follows this flow:
 
 Creates a complete mock browser environment including:
 - Canvas 2D context
-- Audio API
+- Audio API  
 - DOM elements
 - localStorage/sessionStorage
 - Performance API
