@@ -331,25 +331,36 @@ def analyze_step_by_step(replay_path: str):
     show_bytes(decompressed, reader.position, 80, "Next 80 bytes")
     
     # this.mb[1].ma(a); - red team
+    # According to ta.ma() in game-min.js:
+    # this.sd = a.F(); - angle is a BYTE
+    # this.pd = a.N(); - text color is uint32_be
+    # let b = a.F(); - num stripes is a BYTE
+    # this.hb.push(a.N()); - each stripe is uint32_be
     print("\n  Red team:")
-    angle = reader.read_uint32_be()
-    print(f"    Angle: 0x{angle:08x}")
+    angle = reader.read_byte()  # FIX: Changed from read_uint32_be()
+    print(f"    Angle: {angle}")
     text_color = reader.read_uint32_be()
     print(f"    Text color: 0x{text_color:08x}")
     num_stripes = reader.read_byte()
     print(f"    Num stripes: {num_stripes}")
+    if num_stripes > 3:
+        print(f"    WARNING: Invalid num_stripes {num_stripes} (max 3)")
+        num_stripes = 0
     for j in range(num_stripes):
         stripe_color = reader.read_uint32_be()
         print(f"      Stripe {j}: 0x{stripe_color:08x}")
     
     # this.mb[2].ma(a); - blue team
     print("\n  Blue team:")
-    angle = reader.read_uint32_be()
-    print(f"    Angle: 0x{angle:08x}")
+    angle = reader.read_byte()  # FIX: Changed from read_uint32_be()
+    print(f"    Angle: {angle}")
     text_color = reader.read_uint32_be()
     print(f"    Text color: 0x{text_color:08x}")
     num_stripes = reader.read_byte()
     print(f"    Num stripes: {num_stripes}")
+    if num_stripes > 3:
+        print(f"    WARNING: Invalid num_stripes {num_stripes} (max 3)")
+        num_stripes = 0
     for j in range(num_stripes):
         stripe_color = reader.read_uint32_be()
         print(f"      Stripe {j}: 0x{stripe_color:08x}")

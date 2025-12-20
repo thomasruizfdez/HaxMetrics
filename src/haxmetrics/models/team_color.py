@@ -10,36 +10,21 @@ class TeamColor:
     @classmethod
     def parse(cls, reader):
         """
-        Parse team color from binary data according to HaxBall's ta.ma(a) method.
-        Based on game-min.js class ta, method ma().
-        
-        Structure:
-        - sd: byte (angle)
-        - pd: int32 big-endian (text color)
-        - num_stripes: byte (max 3)
-        - stripes: array of int32 big-endian
+        Parse team color from binary data according to HaxBall original scripts (wa class).
+        Colors are stored as uint32 big-endian values.
         """
         model = cls()
-        
-        # this.sd = a.F(); - angle is a BYTE, not uint32!
-        model.set_angle(reader.read_byte())
-        
-        # this.pd = a.N(); - text color is int32 big-endian
+        # Angle is uint32 big-endian (N() method in original)
+        model.set_angle(reader.read_uint32_be())
+        # Text color is uint32 big-endian
         model.set_text_color(hex(reader.read_uint32_be())[2:])
-        
-        # let b = a.F(); - number of stripes (byte)
+        # Number of stripes/colors
         num_stripes = reader.read_byte()
-        
-        # if (3 < b) throw v.C("too many"); - max 3 stripes
-        if num_stripes > 3:
-            raise ValueError(f"Too many stripes: {num_stripes} (max 3)")
-        
         stripes = []
         for _ in range(num_stripes):
-            # this.hb.push(a.N()); - each stripe color is int32 big-endian
+            # Each color is uint32 big-endian
             stripes.append(hex(reader.read_uint32_be())[2:])
         model.set_stripes(stripes)
-        
         return model
 
     def json_serialize(self) -> Dict[str, Any]:

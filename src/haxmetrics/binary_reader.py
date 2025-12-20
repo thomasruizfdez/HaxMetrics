@@ -41,18 +41,6 @@ class BinaryReader:
         self.position += 2
         return result
 
-    def read_int16(self) -> int:
-        """Read signed 16-bit integer (little-endian by default)"""
-        if self.position + 2 > self.length:
-            raise EOFError("No hay suficientes bytes para leer int16")
-
-        result = struct.unpack(
-            "<h" if self.little_endian else ">h",
-            self.data[self.position : self.position + 2],
-        )[0]
-        self.position += 2
-        return result
-
     def read_int32(self) -> int:
         if self.position + 4 > self.length:
             raise EOFError("No hay suficientes bytes para leer int32")
@@ -144,17 +132,6 @@ class BinaryReader:
             return self.read_string()
         return None
 
-    def read_nullable_byte(self) -> Optional[int]:
-        """Read a signed byte (int8) that can represent null values.
-        Used in game state parsing for team indicators."""
-        if self.position >= self.length:
-            raise EOFError("No hay suficientes bytes para leer byte")
-        
-        # Read as signed byte (int8)
-        result = struct.unpack('b', self.data[self.position:self.position + 1])[0]
-        self.position += 1
-        return result if result >= 0 else None
-
     def peek_byte(self) -> int:
         if self.position >= self.length:
             raise EOFError("Fin de datos")
@@ -214,15 +191,6 @@ class BinaryReader:
             raise EOFError("No hay suficientes bytes para leer uint16")
 
         result = struct.unpack(">H", self.data[self.position : self.position + 2])[0]
-        self.position += 2
-        return result
-
-    def read_int16_be(self) -> int:
-        """Read signed int16 in big-endian format (for HaxBall compatibility)"""
-        if self.position + 2 > self.length:
-            raise EOFError("No hay suficientes bytes para leer int16")
-
-        result = struct.unpack(">h", self.data[self.position : self.position + 2])[0]
         self.position += 2
         return result
 

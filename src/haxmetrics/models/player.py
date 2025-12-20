@@ -19,68 +19,30 @@ class Player:
     @classmethod
     def parse(cls, reader, version: int):
         """
-        Parse player from binary data according to HaxBall's ua.xa(a, b) method.
-        Based on game-min.js class ua, method xa().
-        
-        IMPORTANT: HaxBall uses BIG-ENDIAN by default in the binary reader!
+        Parse player from binary data according to HaxBall original scripts.
+        Uses read_int32() for IDs, read_string() for strings, read_byte() for bytes.
         """
         player = cls()
-        
-        # this.fb = 0 != a.F(); - admin flag
-        player.set_admin(reader.read_byte() != 0)
-        
-        # this.Nb = a.N(); - player ID (big-endian int32)
-        player.set_id(reader.read_uint32_be())
-        
-        # this.Zb = a.Ab(); - avatar string
-        player.set_avatar(reader.read_string())
-        
-        # this.Sd = a.Ab(); - unknown string (maybe secondary ID or session?)
-        unknown_str = reader.read_string()
-        
-        # this.Td = 0 != a.F(); - unknown bool flag
-        unknown_flag = reader.read_byte() != 0
-        
-        # this.country = a.Ab(); - country string
-        player.set_country(reader.read_string())
-        
-        # this.gh = a.N(); - unknown int32 (big-endian)
-        unknown_int = reader.read_uint32_be()
-        
-        # this.D = a.Ab(); - player name
+        player.set_id(reader.read_int32())
         player.set_name(reader.read_string())
-        
-        # this.W = a.N(); - unknown int32 (input state?) (big-endian)
-        player.set_input(reader.read_uint32_be())
-        
-        # this.Z = a.Bb(); - unknown int16 (big-endian)
-        unknown_int16 = reader.read_uint16_be()
-        
-        # this.Yb = 0 != a.F(); - kicking flag
-        player.set_kicking(reader.read_byte() != 0)
-        
-        # this.Bc = a.Di(); - unknown int16 (Di() uses endianness, so big-endian)
-        unknown_int16_2 = reader.read_int16_be()
-        
-        # this.Zc = a.F(); - unknown byte
-        unknown_byte = reader.read_byte()
-        
-        # let c = a.zf(); - team (signed byte)
-        # this.fa = 1 == c ? u.ia : 2 == c ? u.Da : u.Oa;
-        team_byte = reader.read_byte()
-        team_signed = team_byte if team_byte < 128 else team_byte - 256
-        if team_signed == 1:
-            player.set_team("Red")
-        elif team_signed == 2:
-            player.set_team("Blue")
+        player.set_admin(reader.read_byte())
+        team_val = reader.read_byte()
+        # Stadium.parse_team emulated below, replace with Stadium.parse_team if available
+        if hasattr(reader, "stadium") and hasattr(reader.stadium, "parse_team"):
+            player.set_team(reader.stadium.parse_team(team_val))
         else:
-            player.set_team("Spectators")
-        
-        # a = a.Di(); - disc ID (int16, big-endian)
-        # this.I = 0 > a ? null : b[a];
-        disc_id = reader.read_int16_be()
-        player.set_disc_id(disc_id if disc_id >= 0 else None)
-        
+            from .stadium.stadium import Stadium
+
+            player.set_team(Stadium.parse_team(team_val))
+        player.set_number(reader.read_byte())
+        player.set_avatar(reader.read_string())
+        player.set_input(reader.read_int32())
+        player.set_kicking(reader.read_byte())
+        player.set_desynced(reader.read_byte())
+        player.set_country(reader.read_string())
+        if version >= 11:
+            player.set_handicap(reader.read_uint16())
+        player.set_disc_id(reader.read_int32())
         return player
 
     def json_serialize(self) -> Dict[str, Any]:
