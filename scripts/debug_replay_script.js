@@ -81,11 +81,8 @@ patterns.forEach(p => {
   }
 });
 
-// Add a patch to expose all top-level variables
-const patchedScript = replayScript.replace(
-  /(function\s*\([^)]*\)\s*\{)/,
-  '$1\nvar __exposed = {}; (function() { var _vars = []; '
-) + `
+// Patch code to expose internal classes
+const exposePatchCode = `
 ; try {
   // Try to expose everything to the passed parameter (ub)
   if (typeof ub !== 'undefined') {
@@ -97,6 +94,12 @@ const patchedScript = replayScript.replace(
   }
 } catch(e) {}
 `;
+
+// Add a patch to expose all top-level variables
+const patchedScript = replayScript.replace(
+  /(function\s*\([^)]*\)\s*\{)/,
+  '$1\nvar __exposed = {}; (function() { var _vars = []; '
+) + exposePatchCode;
 
 console.log('\n3. Executing script in sandbox...');
 

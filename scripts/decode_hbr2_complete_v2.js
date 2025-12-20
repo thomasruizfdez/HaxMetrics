@@ -20,6 +20,10 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
+// Configuration constants
+const MAX_RECURSION_DEPTH = 10; // Maximum depth for recursive data extraction
+const MIN_COMPLETE_OUTPUT_KB = 10; // Minimum size (KB) for complete extraction warning
+
 // Parse command line arguments
 const args = process.argv.slice(2);
 if (args.length < 1) {
@@ -45,7 +49,7 @@ const replayData = fs.readFileSync(inputFile);
 /**
  * Recursively extract data from objects, handling circular references
  */
-function extractData(obj, depth = 0, maxDepth = 10, seen = new WeakSet()) {
+function extractData(obj, depth = 0, maxDepth = MAX_RECURSION_DEPTH, seen = new WeakSet()) {
   // Prevent infinite recursion
   if (depth > maxDepth) return '[Max Depth Reached]';
   
@@ -611,24 +615,30 @@ function patchReplayScript(replayScript) {
   
   // The patch code to expose internal classes
   // Try multiple possible class names based on different minification versions
+  const classesToExpose = [
+    { name: 'ab', comment: 'Decoder class' },
+    { name: 'Jb', comment: 'Alternative Decoder name' },
+    { name: 'ca', comment: 'Room class' },
+    { name: 'fa', comment: 'Alternative Room name' },
+    { name: 'rb', comment: 'Message classes' },
+    { name: 'Vb', comment: 'Replay player' },
+    { name: 'hb', comment: '' },
+    { name: 'C', comment: '' },
+    { name: 'g', comment: '' },
+    { name: 'T', comment: '' },
+    { name: 'I', comment: '' },
+    { name: 'O', comment: 'DataView helper' },
+    { name: 'F', comment: 'Reader helper' },
+    { name: 'p', comment: '' },
+    { name: 'k', comment: '' }
+  ];
+  
   const exposePatch = `
   // Expose internal classes to ub (which is window/global)
   // Multiple names for compatibility across versions
-  if (typeof ab !== 'undefined') ub.ab = ab; // Decoder class
-  if (typeof Jb !== 'undefined') ub.Jb = Jb; // Alternative Decoder name
-  if (typeof ca !== 'undefined') ub.ca = ca; // Room class
-  if (typeof fa !== 'undefined') ub.fa = fa; // Alternative Room name
-  if (typeof rb !== 'undefined') ub.rb = rb; // Message classes
-  if (typeof Vb !== 'undefined') ub.Vb = Vb; // Replay player
-  if (typeof hb !== 'undefined') ub.hb = hb;
-  if (typeof C !== 'undefined') ub.C = C;
-  if (typeof g !== 'undefined') ub.g = g;
-  if (typeof T !== 'undefined') ub.T = T;
-  if (typeof I !== 'undefined') ub.I = I;
-  if (typeof O !== 'undefined') ub.O = O; // DataView helper
-  if (typeof F !== 'undefined') ub.F = F; // Reader helper
-  if (typeof p !== 'undefined') ub.p = p;
-  if (typeof k !== 'undefined') ub.k = k;
+${classesToExpose.map(cls => 
+    `  if (typeof ${cls.name} !== 'undefined') ub.${cls.name} = ${cls.name};${cls.comment ? ' // ' + cls.comment : ''}`
+  ).join('\n')}
 `;
   
   // Try each pattern in order
@@ -912,8 +922,8 @@ try {
     console.log(`  Discs: ${result.gameState.discs.length}`);
   }
   
-  if (outputSize < 10) {
-    console.log(`\n⚠ Warning: Output size is ${outputSize} KB (expected >10 KB for complete extraction)`);
+  if (outputSize < MIN_COMPLETE_OUTPUT_KB) {
+    console.log(`\n⚠ Warning: Output size is ${outputSize} KB (expected >${MIN_COMPLETE_OUTPUT_KB} KB for complete extraction)`);
   }
   
 } catch (error) {
