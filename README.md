@@ -6,10 +6,11 @@ HaxMetrics es una herramienta para analizar replays de Haxball en formato .hbr2 
 
 ### Decoder HBR2 a JSON
 
-El proyecto incluye dos decoders de Node.js para archivos .hbr2:
+El proyecto incluye tres decoders de Node.js para archivos .hbr2:
 
 1. **Decoder Básico** (`decode_hbr2.js`): Extrae metadatos básicos
 2. **Decoder Completo** (`decode_hbr2_complete.js`): Extrae TODOS los datos usando el código original de Haxball
+3. **Decoder Completo V2** (`decode_hbr2_complete_v2.js`): **[RECOMENDADO]** Versión mejorada con mejor manejo de errores, sandbox completo y extracción de física detallada
 
 #### Instalación
 
@@ -17,9 +18,33 @@ El proyecto incluye dos decoders de Node.js para archivos .hbr2:
 npm install
 ```
 
-#### Uso del Decoder Completo (Recomendado)
+#### Uso del Decoder V2 (Recomendado)
 
-El decoder completo utiliza el código JavaScript original de Haxball para decodificar completamente los archivos .hbr2:
+El decoder V2 es una versión mejorada que incluye:
+
+- **Sandbox completo**: Entorno de ejecución con mocks completos de Canvas, Audio, DOM
+- **Multi-pattern matching**: Detecta automáticamente diferentes versiones del código minificado
+- **Extracción mejorada**: Velocidades de discos, física completa (masa, damping, invMass), 14 tipos de eventos
+- **Mejor manejo de errores**: Fallback automático cuando falla la extracción completa del estadio
+- **Soporte completo para estadios personalizados**: Inicialización correcta de las clases de mensajes
+
+```bash
+# Usar con npm
+npm run decode:v2 -- <archivo.hbr2> [salida.json]
+
+# Ejemplo con estadio estándar
+npm run decode:v2 -- src/replays/prueba.hbr2 output.json
+
+# Ejemplo con estadio personalizado
+npm run decode:v2 -- src/replays/prueba_custom.hbr2 output.json
+
+# Si no se especifica archivo de salida, se usa el mismo nombre con .json
+npm run decode:v2 -- src/replays/prueba.hbr2
+```
+
+#### Uso del Decoder V1 (Completo Original)
+
+El decoder completo V1 utiliza el código JavaScript original de Haxball para decodificar completamente los archivos .hbr2:
 
 ```bash
 # Usar con npm
@@ -32,9 +57,22 @@ npm run decode:full -- src/replays/prueba.hbr2 output.json
 npm run decode:full -- src/replays/prueba.hbr2
 ```
 
-#### Datos Extraídos por el Decoder Completo
+#### Diferencias entre V1 y V2
 
-El decoder completo extrae TODA la información del replay:
+| Característica | V1 (decode:full) | V2 (decode:v2) |
+|----------------|------------------|----------------|
+| Sandbox Environment | Básico | Completo (Canvas, Audio, DOM) |
+| Pattern Matching | Un patrón | Multi-patrón con fallbacks |
+| Extracción de Física | Básica | Completa (velocidades, masa, damping) |
+| Manejo de Errores | Básico | Granular con fallbacks |
+| Estadios Personalizados | Soportado | Mejor soporte con inicialización correcta |
+| Extracción de Velocidades | No | Sí (xSpeed, ySpeed) |
+| Fallback Manual Stadium | No | Sí |
+| Output Size | Variable | Típicamente mayor (14+ KB) |
+
+#### Datos Extraídos por los Decoders Completos
+
+Los decoders completos (V1 y V2) extraen TODA la información del replay:
 
 - **Metadata**: 
   - Versión del formato
@@ -53,22 +91,30 @@ El decoder completo extrae TODA la información del replay:
   - Física del estadio (playerPhysics, ballPhysics)
   - Background settings
   - Funciona con estadios predefinidos Y personalizados
+  - **[V2]** Fallback a extracción manual si falla yk()
 - **Players** (Jugadores):
   - ID, nombre, admin status
   - Avatar, país
   - Equipo asignado
   - Posición en el campo (x, y)
   - Radio del disco
+  - **[V2]** Velocidades (xSpeed, ySpeed)
+  - **[V2]** Física detallada (invMass, damping, bCoef)
 - **Game State** (Estado del juego):
   - Tiempo actual
   - Límites de tiempo y score
   - Score actual (rojo vs azul)
   - Posiciones y velocidades de todos los discos (pelota + jugadores)
+  - **[V2]** Física completa de cada disco (masa, damping, colisiones)
 - **Teams** (Equipos):
   - Configuración de colores
   - Información de espectadores, equipo rojo y azul
+- **Events** (Eventos):
+  - Timeline completa con 14 tipos de eventos
+  - Porcentaje de tiempo y tiempo absoluto
+  - Tipo de evento (CHAT, GOAL, PLAYER_JOIN, etc.)
 
-#### Ejemplo de Salida JSON (Decoder Completo)
+#### Ejemplo de Salida JSON (Decoder V2)
 
 ```json
 {
@@ -118,17 +164,96 @@ El decoder completo extrae TODA la información del replay:
         "id": 0,
         "name": "Spectators"
       },
-      "disc": null
+      "disc": {
+        "x": 0,
+        "y": 0,
+        "xSpeed": 0,
+        "ySpeed": 0,
+        "radius": 15,
+        "invMass": 0.5,
+        "damping": 0.96,
+        "bCoef": 0.5
+      }
     }
   ],
-  "gameState": null,
+  "gameState": {
+    "time": 0,
+    "timeLimit": 9,
+    "scoreLimit": 8,
+    "redScore": 0,
+    "blueScore": 0,
+    "discs": [
+      {
+        "x": 0,
+        "y": 0,
+        "xSpeed": 0,
+        "ySpeed": 0,
+        "radius": 10,
+        "invMass": 1,
+        "damping": 0.99,
+        "bCoef": 0.5
+      }
+    ]
+  },
   "teams": {
-    "spectators": null,
+    "spectators": { /* configuración */ },
     "red": { /* colores y configuración */ },
     "blue": { /* colores y configuración */ }
-  }
+  },
+  "events": [
+    {
+      "index": 0,
+      "timePercent": 0.25,
+      "time": 8500,
+      "kind": 2,
+      "type": "GOAL"
+    }
+  ]
 }
 ```
+
+#### Script de Debugging
+
+Si el decoder tiene problemas identificando las clases internas (debido a cambios en el código minificado), puedes usar el script de debugging:
+
+```bash
+npm run debug:replay
+```
+
+Este script lista todas las clases y funciones disponibles en `replay-min.js`, lo que ayuda a identificar los nombres correctos cuando cambia la versión del código.
+
+#### Troubleshooting (Solución de Problemas)
+
+**Problema: "Required classes not exposed"**
+
+- **Causa**: El código minificado de Haxball ha cambiado y los nombres de las clases son diferentes
+- **Solución**: 
+  1. Ejecutar `npm run debug:replay` para ver las clases disponibles
+  2. Buscar clases con 2-3 caracteres en mayúsculas
+  3. Actualizar el script v2 con los nuevos nombres de clases
+
+**Problema: "Stadium extraction warning" o "yk() method failed"**
+
+- **Causa**: Estadio personalizado que requiere procesamiento especial
+- **Efecto**: El decoder V2 automáticamente hace una extracción manual con información básica
+- **Solución**: No requiere acción, la información básica del estadio se extrae correctamente
+
+**Problema: Output size muy pequeño (<5 KB)**
+
+- **Causa**: El replay puede no contener un juego activo o tiene pocos datos
+- **Verificación**: Revisar el JSON de salida para ver qué secciones están vacías
+- **Solución**: Intentar con un replay de un partido completo con múltiples eventos
+
+**Problema: "pako module not found"**
+
+- **Causa**: Dependencias no instaladas
+- **Solución**: Ejecutar `npm install`
+
+**Problema: Errores al extraer physics/velocities**
+
+- **Causa**: Estructura interna del replay ha cambiado
+- **Efecto**: El decoder V2 tiene manejo de errores granular y continúa con las demás secciones
+- **Solución**: Revisar el output JSON - las secciones con error tendrán valores null pero el resto estará disponible
 
 #### Uso del Decoder Básico
 
@@ -144,7 +269,7 @@ npm run decode -- src/replays/prueba.hbr2 output.json
 
 #### Limitaciones del Decoder Básico
 
-El decoder básico extrae los metadatos principales del replay. Para análisis completo, **use el decoder completo** (`npm run decode:full`).
+El decoder básico extrae los metadatos principales del replay. Para análisis completo, **use el decoder V2** (`npm run decode:v2`) que incluye todas las mejoras y mejor manejo de errores.
 
 ## Formato de archivo .hbr2
 
