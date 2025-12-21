@@ -407,6 +407,10 @@ class BinaryReader:
         self.position += 4
         return result
 
+    def read_float64_be(self) -> float:
+        """Alias for read_double_be() for consistency with problem statement."""
+        return self.read_double_be()
+
     def get_input_string(self) -> bytes:
         """Alias for read_remaining() for compatibility"""
         return self.read_remaining()
