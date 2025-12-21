@@ -86,14 +86,15 @@ class CustomStadium(Stadium):
         """
         Parse custom stadium from binary reader.
         
-        Parsing order follows the original implementation in stadium.py:
+        Parsing order follows game-min.js class q.ws(a):
         1. Stadium name
-        2. Background (type + 5 floats + color)
-        3. Max view width/height  
-        4. Spawn distance
-        5. Player physics
-        6. Additional fields
-        7. Component arrays (6 arrays)
+        2. Background (type + 5 floats + color = 48 bytes)
+        3. Max view width/height (16 bytes)
+        4. Spawn distance (8 bytes)
+        5. Player physics (92 bytes - 12 fields)
+        6. Additional fields (nullable_int32 + 3 bytes)
+        7. Component arrays (6 arrays with counts)
+        8. Spawn points (red + blue teams)
         
         Args:
             reader: BinaryReader instance
@@ -115,37 +116,32 @@ class CustomStadium(Stadium):
         bg_goal_line = reader.read_double_be()  # 8 bytes
         bg_color = reader.read_uint32_be()  # 4 bytes
         
-        # 3. Max view dimensions
+        # 3. Max view dimensions (16 bytes)
         max_view_width = reader.read_double_be()
         max_view_height = reader.read_double_be()
         
-        # 4. Spawn distance
+        # 4. Spawn distance (8 bytes)
         spawn_distance = reader.read_double_be()
         
-        # 5. Player physics (7 fields in old code, missing radius)
-        player_physics = PlayerPhysics(
-            radius=15.0,  # Default value, not parsed here
-            b_coef=reader.read_double_be(),
-            inv_mass=reader.read_double_be(),
-            damping=reader.read_double_be(),
-            acceleration=reader.read_double_be(),
-            kick_acceleration=reader.read_double_be(),
-            kick_damping=reader.read_double_be(),
-            kick_strength=reader.read_double_be()
-        )
+        # 5. Player physics (92 bytes - 12 fields from game-min.js)
+        player_physics = PlayerPhysics.parse(reader)
         
         # 6. Additional fields
-        max_view_width_override = reader.read_nullable_int32()
-        camera_follow = reader.read_byte()
-        can_be_stored = reader.read_byte() != 0
-        kick_off_reset = reader.read_byte() != 0
+        max_view_width_override = reader.read_nullable_int32()  # 1 or 5 bytes
+        camera_follow = reader.read_byte()  # 1 byte
+        can_be_stored = reader.read_byte() != 0  # 1 byte
+        kick_off_reset = reader.read_byte() != 0  # 1 byte
+        
+        # NOTE: There's an extra 0x00 byte here in the actual data that's not in game-min.js
+        # This might be a version difference or undocumented field
+        _ = reader.read_byte()  # Skip 1 byte
         
         # 7. Component arrays (each starts with count byte)
-        # Vertices
+        # Vertices (32 bytes each with c_mask/c_group as uint32)
         vertex_count = reader.read_byte()
         vertices = [Vertex.parse(reader) for _ in range(vertex_count)]
         
-        # Segments
+        # Segments (variable size with flags system)
         segment_count = reader.read_byte()
         segments = [Segment.parse(reader) for _ in range(segment_count)]
         
@@ -164,6 +160,19 @@ class CustomStadium(Stadium):
         # Joints
         joint_count = reader.read_byte()
         joints = [Joint.parse(reader) for _ in range(joint_count)]
+        
+        # 8. Spawn points (after component arrays, not before)
+        # Red team spawn points
+        red_spawn_count = reader.read_byte()
+        for _ in range(red_spawn_count):
+            _ = reader.read_double_be()  # x
+            _ = reader.read_double_be()  # y
+        
+        # Blue team spawn points
+        blue_spawn_count = reader.read_byte()
+        for _ in range(blue_spawn_count):
+            _ = reader.read_double_be()  # x
+            _ = reader.read_double_be()  # y
         
         return cls(
             name=name,

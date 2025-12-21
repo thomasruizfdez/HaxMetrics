@@ -18,29 +18,38 @@ from typing import Optional
 @dataclass(frozen=True)
 class Vertex:
     """
-    Stadium vertex (24 bytes).
+    Stadium vertex (32 bytes).
     
     Represents a point in 2D space used by segments.
+    From game-min.js class G.ma(a):
+    - x, y, bcoef as float64
+    - c_mask, c_group as uint32 (NOT float64)
     
     Attributes:
         x: X coordinate
         y: Y coordinate
         b_coef: Bounce coefficient
+        c_mask: Collision mask (uint32)
+        c_group: Collision group (uint32)
     """
     
     x: float
     y: float
     b_coef: float
+    c_mask: int
+    c_group: int
     
     @classmethod
     def parse(cls, reader) -> "Vertex":
         """
         Parse vertex from binary reader.
         
-        Structure (24 bytes):
+        Structure (32 bytes total):
         - x: float64_be (8 bytes)
         - y: float64_be (8 bytes)
         - b_coef: float64_be (8 bytes)
+        - c_mask: uint32_be (4 bytes)
+        - c_group: uint32_be (4 bytes)
         
         Args:
             reader: BinaryReader instance
@@ -51,7 +60,9 @@ class Vertex:
         return cls(
             x=reader.read_double_be(),
             y=reader.read_double_be(),
-            b_coef=reader.read_double_be()
+            b_coef=reader.read_double_be(),
+            c_mask=reader.read_uint32_be(),
+            c_group=reader.read_uint32_be()
         )
     
     def to_dict(self):
@@ -59,51 +70,61 @@ class Vertex:
         return {
             "x": self.x,
             "y": self.y,
-            "bCoef": self.b_coef
+            "bCoef": self.b_coef,
+            "cMask": self.c_mask,
+            "cGroup": self.c_group
         }
 
 
 @dataclass(frozen=True)
 class Segment:
     """
-    Stadium segment (39 bytes, not 36 - documentation error in problem statement).
+    Stadium segment (variable size 19-39 bytes).
     
     Represents a line between two vertices with physics properties.
+    From game-min.js class I.ma(a, b): uses flags byte for optional fields.
     
     Attributes:
         v0: Index of first vertex
         v1: Index of second vertex
-        bias: Bias value
-        b_coef: Bounce coefficient
-        curve: Curve value
-        curve_f: Curve F value
+        bias: Bias value (optional, default 0)
+        curve: Curve value (optional, default infinity)
+        color: ARGB color value (optional, default 0)
         visible: Whether segment is visible
-        color: ARGB color value
+        b_coef: Bounce coefficient
+        c_mask: Collision mask (uint32)
+        c_group: Collision group (uint32)
     """
     
     v0: int
     v1: int
     bias: float
-    b_coef: float
     curve: float
-    curve_f: float
-    visible: bool
     color: int
+    visible: bool
+    b_coef: float
+    c_mask: int
+    c_group: int
     
     @classmethod
     def parse(cls, reader) -> "Segment":
         """
         Parse segment from binary reader.
         
-        Structure (39 bytes total: 1+1+8+8+8+8+1+4):
+        Structure (variable size):
+        - flags: byte (1 byte) - bit flags for optional fields
         - v0: byte (1 byte) - vertex 0 index
         - v1: byte (1 byte) - vertex 1 index
-        - bias: float64_be (8 bytes)
+        - bias: float64_be (8 bytes) - only if flags & 1
+        - curve: float64_be (8 bytes) - only if flags & 2
+        - color: uint32_be (4 bytes) - only if flags & 4
+        - visible: boolean from flags & 8
         - b_coef: float64_be (8 bytes)
-        - curve: float64_be (8 bytes)
-        - curve_f: float64_be (8 bytes)
-        - visible: byte→bool (1 byte)
-        - color: uint32_be (4 bytes)
+        - c_mask: uint32_be (4 bytes)
+        - c_group: uint32_be (4 bytes)
+        
+        Min size: 1 + 1 + 1 + 8 + 4 + 4 = 19 bytes
+        Max size: 1 + 1 + 1 + 8 + 8 + 4 + 8 + 4 + 4 = 39 bytes
         
         Args:
             reader: BinaryReader instance
@@ -111,38 +132,54 @@ class Segment:
         Returns:
             Segment: Parsed segment
         """
+        flags = reader.read_byte()
         v0 = reader.read_byte()
         v1 = reader.read_byte()
-        bias = reader.read_double_be()
+        
+        # Optional fields based on flags
+        bias = reader.read_double_be() if (flags & 1) != 0 else 0.0
+        curve = reader.read_double_be() if (flags & 2) != 0 else float('inf')
+        color = reader.read_uint32_be() if (flags & 4) != 0 else 0
+        visible = (flags & 8) != 0
+        
+        # Required fields
         b_coef = reader.read_double_be()
-        curve = reader.read_double_be()
-        curve_f = reader.read_double_be()
-        visible = bool(reader.read_byte())
-        color = reader.read_uint32_be()
+        c_mask = reader.read_uint32_be()
+        c_group = reader.read_uint32_be()
         
         return cls(
             v0=v0,
             v1=v1,
             bias=bias,
-            b_coef=b_coef,
             curve=curve,
-            curve_f=curve_f,
+            color=color,
             visible=visible,
-            color=color
+            b_coef=b_coef,
+            c_mask=c_mask,
+            c_group=c_group
         )
     
     def to_dict(self):
         """Convert to dictionary."""
-        return {
+        result = {
             "v0": self.v0,
             "v1": self.v1,
-            "bias": self.bias,
             "bCoef": self.b_coef,
-            "curve": self.curve,
-            "curveF": self.curve_f,
-            "vis": self.visible,
-            "color": f"{self.color:08x}"
+            "cMask": self.c_mask,
+            "cGroup": self.c_group
         }
+        
+        # Only include optional fields if they have non-default values
+        if self.bias != 0.0:
+            result["bias"] = self.bias
+        if self.curve != float('inf'):
+            result["curve"] = self.curve
+        if self.color != 0:
+            result["color"] = self.color
+        if self.visible:
+            result["vis"] = self.visible
+            
+        return result
 
 
 @dataclass(frozen=True)
@@ -427,12 +464,12 @@ class Joint:
 @dataclass(frozen=True)
 class PlayerPhysics:
     """
-    Player physics parameters (64 bytes).
+    Player physics parameters (92 bytes).
     
     Defines default physics for players in the stadium.
+    From game-min.js class Ub.ma(a): 12 fields total.
     
     Attributes:
-        radius: Player disc radius
         b_coef: Bounce coefficient
         inv_mass: Inverse mass
         damping: Damping coefficient
@@ -440,9 +477,13 @@ class PlayerPhysics:
         kick_acceleration: Acceleration when kicking
         kick_damping: Damping when kicking
         kick_strength: Kick strength
+        gravity_x: Gravity X component
+        gravity_y: Gravity Y component
+        c_group: Collision group (uint32)
+        radius: Player disc radius
+        inv_mass_2: Second inverse mass value
     """
     
-    radius: float
     b_coef: float
     inv_mass: float
     damping: float
@@ -450,14 +491,18 @@ class PlayerPhysics:
     kick_acceleration: float
     kick_damping: float
     kick_strength: float
+    gravity_x: float
+    gravity_y: float
+    c_group: int
+    radius: float
+    inv_mass_2: float
     
     @classmethod
     def parse(cls, reader) -> "PlayerPhysics":
         """
         Parse player physics from binary reader.
         
-        Structure (64 bytes):
-        - radius: float64_be (8 bytes)
+        Structure (92 bytes total):
         - b_coef: float64_be (8 bytes)
         - inv_mass: float64_be (8 bytes)
         - damping: float64_be (8 bytes)
@@ -465,6 +510,13 @@ class PlayerPhysics:
         - kick_acceleration: float64_be (8 bytes)
         - kick_damping: float64_be (8 bytes)
         - kick_strength: float64_be (8 bytes)
+        - gravity_x: float64_be (8 bytes)
+        - gravity_y: float64_be (8 bytes)
+        - c_group: uint32_be (4 bytes)
+        - radius: float64_be (8 bytes)
+        - inv_mass_2: float64_be (8 bytes)
+        
+        Total: 11*8 + 4 = 92 bytes
         
         Args:
             reader: BinaryReader instance
@@ -473,25 +525,31 @@ class PlayerPhysics:
             PlayerPhysics: Parsed player physics
         """
         return cls(
-            radius=reader.read_double_be(),
             b_coef=reader.read_double_be(),
             inv_mass=reader.read_double_be(),
             damping=reader.read_double_be(),
             acceleration=reader.read_double_be(),
             kick_acceleration=reader.read_double_be(),
             kick_damping=reader.read_double_be(),
-            kick_strength=reader.read_double_be()
+            kick_strength=reader.read_double_be(),
+            gravity_x=reader.read_double_be(),
+            gravity_y=reader.read_double_be(),
+            c_group=reader.read_uint32_be(),
+            radius=reader.read_double_be(),
+            inv_mass_2=reader.read_double_be()
         )
     
     def to_dict(self):
         """Convert to dictionary."""
         return {
-            "radius": self.radius,
             "bCoef": self.b_coef,
             "invMass": self.inv_mass,
             "damping": self.damping,
             "acceleration": self.acceleration,
             "kickingAcceleration": self.kick_acceleration,
             "kickingDamping": self.kick_damping,
-            "kickStrength": self.kick_strength
+            "kickStrength": self.kick_strength,
+            "gravity": [self.gravity_x, self.gravity_y],
+            "cGroup": self.c_group,
+            "radius": self.radius
         }
