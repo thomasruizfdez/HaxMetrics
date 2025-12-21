@@ -353,6 +353,22 @@ class BinaryReader:
         self.position += 2
         return result
 
+    def read_int32_be(self) -> int:
+        """
+        Read int32 in big-endian format (for HaxBall compatibility).
+
+        Corresponds to: Sb() in game-min.js
+
+        Returns:
+            int: Signed 32-bit integer (big-endian)
+        """
+        if self.position + 4 > self.length:
+            raise EOFError("Not enough bytes to read int32_be")
+
+        result = struct.unpack(">i", self.data[self.position : self.position + 4])[0]
+        self.position += 4
+        return result
+
     def read_string_auto(self) -> Optional[str]:
         """Alias for read_string() for compatibility with original scripts."""
         return self.read_string()
