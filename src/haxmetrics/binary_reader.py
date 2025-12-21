@@ -201,7 +201,7 @@ class BinaryReader:
     def read_int16_be(self) -> int:
         """Read int16 in big-endian format (for HaxBall compatibility)"""
         if self.position + 2 > self.length:
-            raise EOFError("No hay suficientes bytes para leer int16")
+            raise EOFError("Not enough bytes to read int16")
 
         result = struct.unpack(">h", self.data[self.position : self.position + 2])[0]
         self.position += 2

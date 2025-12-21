@@ -66,7 +66,8 @@ def test_parse_room_basic_from_basic_replay():
 def test_parse_room_name_field():
     """Debe extraer nombre de sala correctamente."""
     # Crear datos sintéticos
-    # String "Test Room" = varint(10) + "Test Room" (9 bytes)
+    # String "Test Room" = varint(10) + "Test Room"
+    # (varint is length+1, so 9 bytes + 1 = 10)
     data = bytes([10]) + b"Test Room"
     # Locked = 0
     data += bytes([0])
