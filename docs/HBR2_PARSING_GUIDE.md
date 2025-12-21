@@ -660,6 +660,8 @@ Si el stadium es predefinido (0-11), NO se leen más bytes. El parser carga el s
 
 **Ubicación:** Después del stadium parsing, en el stream de room state
 
+**⚠️ ORDEN CRÍTICO:** Los discos se parsean **PRIMERO**, luego los campos de estado del juego.
+
 ```
 Offset | Bytes | Método | Tipo         | Campo       | Notas
 -------|-------|--------|--------------|-------------|-------
@@ -668,57 +670,76 @@ Offset | Bytes | Método | Tipo         | Campo       | Notas
 
 #### IF game_active == true:
 
-**Clase:** `Y` (Game State)  
-**Método:** `ma(a, parent)` (ubicación en game-min.js a determinar)
+**Clase:** `Y` (Game State) - línea 7448 en game-min.js  
+**Método:** `ma(a, parent)` - línea 7585 en game-min.js
 
-##### 6.3.1 Discs (Game State)
+##### 6.3.1 Discs (Game State) - **PARSEADOS PRIMERO**
+
+**Clase:** `Sa` (Discs Container) - línea 61 en game-min.js  
+**Método:** `this.va.ma(a)` - línea 78 en game-min.js
 
 ```
 Offset | Bytes | Método | Tipo    | Campo      | Notas
 -------|-------|--------|---------|------------|-------
-0x00   | 1     | F()    | byte    | disc_count | Número de discos en juego (típicamente 6)
+0x00   | 1     | F()    | byte    | disc_count | Número de discos en juego (típicamente 5-6)
 ```
 
 **Por cada disco (i = 0 to disc_count-1):**
 
+**Clase:** `qa` (Disc) - línea 7927 en game-min.js  
+**Método:** `d.ma(a)` - línea 8109 en game-min.js
+
 ```
-Offset | Bytes | Método | Tipo         | Campo      | Notas
--------|-------|--------|--------------|------------|-------
-0x00   | 8     | w()    | float64_be   | pos_x      | Posición X
-0x08   | 8     | w()    | float64_be   | pos_y      | Posición Y
-0x10   | 8     | w()    | float64_be   | speed_x    | Velocidad X
-0x18   | 8     | w()    | float64_be   | speed_y    | Velocidad Y
-0x20   | 8     | w()    | float64_be   | radius     | Radio
-0x28   | 8     | w()    | float64_be   | bCoef      | Bounce coefficient
-0x30   | 8     | w()    | float64_be   | inv_mass   | Masa inversa
-0x38   | 8     | w()    | float64_be   | damping    | Damping
-0x40   | 8     | w()    | float64_be   | gravity_x  | Gravedad X (probablemente)
-0x48   | 8     | w()    | float64_be   | gravity_y  | Gravedad Y (probablemente)
-0x50   | 4     | N()    | uint32_be    | color      | Color ARGB (**SIEMPRE presente**)
-0x54   | 4     | N()    | uint32_be    | cMask      | Collision mask
-0x58   | 4     | N()    | uint32_be    | cGroup     | Collision group
+Offset | Bytes | Método | Tipo         | Campo      | JS Field | Notas
+-------|-------|--------|--------------|------------|----------|-------
+0x00   | 8     | w()    | float64_be   | pos_x      | a.x      | Posición X
+0x08   | 8     | w()    | float64_be   | pos_y      | a.y      | Posición Y
+0x10   | 8     | w()    | float64_be   | vel_x      | G.x      | Velocidad X
+0x18   | 8     | w()    | float64_be   | vel_y      | G.y      | Velocidad Y
+0x20   | 8     | w()    | float64_be   | ra_x       | ra.x     | Unknown (acceleration?)
+0x28   | 8     | w()    | float64_be   | ra_y       | ra.y     | Unknown (acceleration?)
+0x30   | 8     | w()    | float64_be   | radius     | V        | Radio del disco
+0x38   | 8     | w()    | float64_be   | bCoef      | o        | Bounce coefficient
+0x40   | 8     | w()    | float64_be   | inv_mass   | ca       | Masa inversa
+0x48   | 8     | w()    | float64_be   | damping    | Ea       | Damping
+0x50   | 4     | jb()   | uint32_be    | color      | S        | Color ARGB (**SIEMPRE presente**)
+0x54   | 4     | N()    | uint32_be    | cMask      | i        | Collision mask
+0x58   | 4     | N()    | uint32_be    | cGroup     | B        | Collision group
 ```
 
-**CRÍTICO:** El campo `color` es **SIEMPRE uint32_be**, no es nullable. Valor típico: 0x00RRGGBB.
+**CRÍTICO:** 
+- El campo `color` es **SIEMPRE uint32_be**, no es nullable. Valor típico: 0x00RRGGBB.
+- El primer disco (disc[0]) es típicamente la pelota (radio=10.0, color=0xFFFFFF)
+- Los discos 1..n son discos de jugadores
 
 **Total por disco (game state):** 92 bytes
 
-##### 6.3.2 Game Fields
+##### 6.3.2 Game Fields - **PARSEADOS DESPUÉS DE DISCOS**
 
-Después de los discos, vienen los campos del estado del juego:
+Después de parsear TODOS los discos, vienen los campos del estado del juego:
+
+**Ubicación en Y.ma():** Líneas 7586-7593 en game-min.js
 
 ```
-Offset | Bytes | Método | Tipo         | Campo          | Notas
--------|-------|--------|--------------|----------------|-------
-0x00   | 4     | Sb()   | int32_be     | red_score      | Puntuación team red
-0x04   | 4     | Sb()   | int32_be     | blue_score     | Puntuación team blue
-0x08   | 4     | Sb()   | int32_be     | time           | Tiempo de juego (frames o segundos?)
-0x0C   | 4     | Sb()   | int32_be     | time_limit     | Límite de tiempo
-0x10   | 4     | Sb()   | int32_be     | score_limit    | Límite de puntuación
-0x14   | 1     | F()    | byte         | game_state     | Estado (0=stopped, 1=playing, 2=paused?)
+Offset | Bytes | Método | Tipo         | Campo          | JS Field | Significado Confirmado
+-------|-------|--------|--------------|----------------|----------|------------------------
+0x00   | 4     | N()    | uint32_be    | frame          | yc       | Frame number (típ. 0 en snapshots)
+0x04   | 4     | N()    | uint32_be    | field_cb       | Cb       | Unknown (0 o 1)
+0x08   | 4     | N()    | uint32_be    | score_red      | Tb       | **Puntuación team red** ✓
+0x0C   | 4     | N()    | uint32_be    | score_blue     | Ob       | **Puntuación team blue** ✓
+0x10   | 8     | w()    | float64_be   | match_time     | Nc       | **Tiempo en segundos** ✓
+0x18   | 4     | N()    | uint32_be    | time_or_pause  | Ta       | Time limit o Pause timer (0 o >0)
+0x1C   | 1     | zf()   | byte         | kickoff_team   | ke       | Equipo kickoff (1=red, 2=blue, 0=none) ✓
 ```
 
-**Total game fields:** ~21 bytes (aproximado, puede variar)
+**Total game fields:** 29 bytes
+
+**Mapeo verificado con fixtures:**
+- `Tb` (score_red): Confirmado en red_winning_1_0 (Tb=1, Ob=0) ✓
+- `Ob` (score_blue): Confirmado en red_winning_2_1 (Tb=2, Ob=1) ✓
+- `Nc` (match_time): Confirmado en time_played_32_seconds (Nc≈32.98s) ✓
+- `Ta` (time_or_pause): 0 normalmente, 120 en game_paused ✓
+- `zf()` (kickoff_team): 1=red, 2=blue observado en fixtures ✓
 
 #### IF game_active == false:
 

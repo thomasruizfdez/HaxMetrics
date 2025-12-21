@@ -131,40 +131,113 @@ class GameState:
     Represents the state of an active game.
     
     This class contains the current game state including scores, time,
-    ball position, and all disc states. Some fields are conditional
-    based on game flags.
+    and all disc states. Parsing follows game-min.js Y.ma() structure.
     
     Attributes:
-        frame (int): Current frame number
-        score_red (int): Red team score
-        score_blue (int): Blue team score
-        match_time (float): Time elapsed in seconds
-        pause_timer (Optional[float]): Pause timer (only if has_pause=true)
-        kickoff_team (Optional[int]): Team for kickoff (only if has_kickoff=true, 1=red, 2=blue)
-        kickoff_taken (bool): Whether kickoff has been taken
-        rules_timer (Optional[float]): Rules timer (only if has_rules_timer=true)
-        ball_x (float): Ball X position
-        ball_y (float): Ball Y position
-        discs (List[GameDisc]): List of all discs (ball + players)
+        discs (List[GameDisc]): List of all discs (ball + players) - parsed FIRST
+        frame (int): Current frame number (yc in game-min.js)
+        field_cb (int): Unknown field (Cb in game-min.js) 
+        score_red (int): Red team score (Tb in game-min.js)
+        score_blue (int): Blue team score (Ob in game-min.js)
+        match_time (float): Time elapsed in seconds (Nc in game-min.js)
+        time_limit_or_pause (int): Time limit or pause timer (Ta in game-min.js)
+        kickoff_team (Optional[int]): Team for kickoff (1=red, 2=blue, None=no kickoff)
     """
-    # Required fields
+    # Discs are parsed FIRST
+    discs: List[GameDisc]
+    
+    # Game state fields (parsed after discs)
     frame: int
+    field_cb: int  # Unknown purpose
     score_red: int
     score_blue: int
     match_time: float
+    time_limit_or_pause: int  # Unknown if this is time_limit or pause_timer
+    kickoff_team: Optional[int]  # 1=red, 2=blue, None=no team
     
-    # Conditional fields
-    pause_timer: Optional[float]      # Only if has_pause=true
-    kickoff_team: Optional[int]       # Only if has_kickoff=true (1=red, 2=blue)
-    kickoff_taken: bool
-    rules_timer: Optional[float]      # Only if has_rules_timer=true
+    # Legacy compatibility fields (computed from discs)
+    @property
+    def ball_x(self) -> float:
+        """Get ball X position from first disc (if exists)"""
+        return self.discs[0].x if self.discs else 0.0
     
-    # Ball position
-    ball_x: float
-    ball_y: float
+    @property
+    def ball_y(self) -> float:
+        """Get ball Y position from first disc (if exists)"""
+        return self.discs[0].y if self.discs else 0.0
     
-    # Discs array
-    discs: List[GameDisc]
+    @property
+    def pause_timer(self) -> Optional[float]:
+        """
+        Get pause timer value.
+        Returns time_limit_or_pause as float if paused, None otherwise.
+        """
+        return float(self.time_limit_or_pause) if self.is_paused else None
+    
+    @property
+    def kickoff_taken(self) -> bool:
+        """Placeholder for kickoff taken (mapping TBD)"""
+        return False
+    
+    @property
+    def rules_timer(self) -> Optional[float]:
+        """Placeholder for rules timer (mapping TBD)"""
+        return None
+    
+    @property
+    def is_paused(self) -> bool:
+        """Check if game is paused (Ta > 0 likely means pause timer is active)"""
+        return self.time_limit_or_pause > 0
+    
+    @property
+    def has_kickoff(self) -> bool:
+        """Check if there's a kickoff state"""
+        return self.kickoff_team is not None
+    
+    @property
+    def has_rules_timer(self) -> bool:
+        """Placeholder for rules timer (mapping TBD)"""
+        return False
+    
+    @property
+    def winner(self) -> Optional[str]:
+        """
+        Get current winner based on scores.
+        
+        Returns:
+            "red" if red is winning, "blue" if blue is winning, "tie" if tied, None if 0-0
+        """
+        if self.score_red == 0 and self.score_blue == 0:
+            return None
+        elif self.score_red > self.score_blue:
+            return "red"
+        elif self.score_blue > self.score_red:
+            return "blue"
+        else:
+            return "tie"
+    
+    def to_dict(self) -> Dict:
+        """Convert to dictionary representation"""
+        return {
+            "frame": self.frame,
+            "field_cb": self.field_cb,
+            "score_red": self.score_red,
+            "score_blue": self.score_blue,
+            "match_time": self.match_time,
+            "time_limit_or_pause": self.time_limit_or_pause,
+            "kickoff_team": self.kickoff_team,
+            # Computed/legacy properties
+            "pause_timer": self.pause_timer,
+            "kickoff_taken": self.kickoff_taken,
+            "rules_timer": self.rules_timer,
+            "ball_x": self.ball_x,
+            "ball_y": self.ball_y,
+            "discs": [disc.to_dict() for disc in self.discs],
+            "is_paused": self.is_paused,
+            "has_kickoff": self.has_kickoff,
+            "has_rules_timer": self.has_rules_timer,
+            "winner": self.winner
+        }
     
     @classmethod
     def parse(cls, reader: BinaryReader) -> 'GameState':
@@ -187,62 +260,27 @@ class GameState:
         discs = [GameDisc.parse(reader) for _ in range(disc_count)]
         
         # 2. Parse game state fields (following Y.ma())
-        # this.yc = a.N()
-        frame = reader.read_uint32_be()
+        frame = reader.read_uint32_be()  # this.yc = a.N()
+        field_cb = reader.read_uint32_be()  # this.Cb = a.N()
+        score_red = reader.read_uint32_be()  # this.Tb = a.N()
+        score_blue = reader.read_uint32_be()  # this.Ob = a.N()
+        match_time = reader.read_float64_be()  # this.Nc = a.w()
+        time_limit_or_pause = reader.read_uint32_be()  # this.Ta = a.N()
+        kickoff_team_byte = reader.read_byte()  # a = a.zf()
         
-        # this.Cb = a.N()
-        field_cb = reader.read_uint32_be()
-        
-        # this.Tb = a.N()
-        score_red = reader.read_uint32_be()
-        
-        # this.Ob = a.N()
-        score_blue = reader.read_uint32_be()
-        
-        # this.Nc = a.w()
-        match_time = reader.read_float64_be()
-        
-        # this.Ta = a.N()
-        pause_timer_or_time_limit = reader.read_uint32_be()
-        
-        # a = a.zf() - read byte for kickoff team
-        kickoff_team_byte = reader.read_byte()
-        # this.ke = 1 == a ? u.ia : 2 == a ? u.Da : u.Oa
-        # 1 = red team, 2 = blue team, 0 = no team
+        # Map kickoff team: 1 = red, 2 = blue, 0 = no team
         kickoff_team = kickoff_team_byte if kickoff_team_byte in [1, 2] else None
         
-        # For now, map the parsed fields to the expected GameState structure
-        # We'll need to interpret these fields correctly
-        # Based on the fixtures being correct, let's try different interpretations
-        
         return cls(
+            discs=discs,
             frame=frame,
-            score_red=score_red,  # Using Tb
-            score_blue=score_blue,  # Using Ob
-            match_time=match_time,  # Using Nc
-            pause_timer=None,  # TODO: determine from fields
-            kickoff_team=kickoff_team,
-            kickoff_taken=False,  # TODO: determine from fields
-            rules_timer=None,  # TODO: determine from fields
-            ball_x=0.0,  # TODO: extract from discs or fields
-            ball_y=0.0,  # TODO: extract from discs or fields
-            discs=discs
+            field_cb=field_cb,
+            score_red=score_red,
+            score_blue=score_blue,
+            match_time=match_time,
+            time_limit_or_pause=time_limit_or_pause,
+            kickoff_team=kickoff_team
         )
-    
-    @property
-    def is_paused(self) -> bool:
-        """Check if game is paused"""
-        return self.pause_timer is not None
-    
-    @property
-    def has_kickoff(self) -> bool:
-        """Check if there's a kickoff state"""
-        return self.kickoff_team is not None
-    
-    @property
-    def has_rules_timer(self) -> bool:
-        """Check if rules timer is active"""
-        return self.rules_timer is not None
     
     @property
     def winner(self) -> Optional[str]:
@@ -260,26 +298,6 @@ class GameState:
             return "blue"
         else:
             return "tie"
-    
-    def to_dict(self) -> Dict:
-        """Convert to dictionary representation"""
-        return {
-            "frame": self.frame,
-            "score_red": self.score_red,
-            "score_blue": self.score_blue,
-            "match_time": self.match_time,
-            "pause_timer": self.pause_timer,
-            "kickoff_team": self.kickoff_team,
-            "kickoff_taken": self.kickoff_taken,
-            "rules_timer": self.rules_timer,
-            "ball_x": self.ball_x,
-            "ball_y": self.ball_y,
-            "discs": [disc.to_dict() for disc in self.discs],
-            "is_paused": self.is_paused,
-            "has_kickoff": self.has_kickoff,
-            "has_rules_timer": self.has_rules_timer,
-            "winner": self.winner
-        }
 
 
 def parse_game_state(reader: BinaryReader) -> Optional[GameState]:

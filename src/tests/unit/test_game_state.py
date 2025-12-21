@@ -217,20 +217,16 @@ class TestGameStateScores:
     
     def test_winner_property_blue(self):
         """Verify winner='blue' when blue winning"""
-        # Would need a blue_winning fixture for this
-        # For now, test with manual construction
+        # Manual construction with correct GameState structure
         state = GameState(
+            discs=[],
             frame=100,
+            field_cb=0,
             score_red=0,
             score_blue=1,
             match_time=10.0,
-            pause_timer=None,
-            kickoff_team=None,
-            kickoff_taken=False,
-            rules_timer=None,
-            ball_x=0.0,
-            ball_y=0.0,
-            discs=[]
+            time_limit_or_pause=0,
+            kickoff_team=None
         )
         
         assert state.winner == "blue"
@@ -238,17 +234,14 @@ class TestGameStateScores:
     def test_winner_property_tie(self):
         """Verify winner='tie' when tied"""
         state = GameState(
+            discs=[],
             frame=100,
+            field_cb=0,
             score_red=1,
             score_blue=1,
             match_time=10.0,
-            pause_timer=None,
-            kickoff_team=None,
-            kickoff_taken=False,
-            rules_timer=None,
-            ball_x=0.0,
-            ball_y=0.0,
-            discs=[]
+            time_limit_or_pause=0,
+            kickoff_team=None
         )
         
         assert state.winner == "tie"
@@ -256,17 +249,14 @@ class TestGameStateScores:
     def test_winner_property_none(self):
         """Verify winner=None when 0-0"""
         state = GameState(
+            discs=[],
             frame=100,
+            field_cb=0,
             score_red=0,
             score_blue=0,
             match_time=10.0,
-            pause_timer=None,
-            kickoff_team=None,
-            kickoff_taken=False,
-            rules_timer=None,
-            ball_x=0.0,
-            ball_y=0.0,
-            discs=[]
+            time_limit_or_pause=0,
+            kickoff_team=None
         )
         
         assert state.winner is None
@@ -297,32 +287,59 @@ class TestGameDisc:
     """Test GameDisc parsing"""
     
     def test_parse_game_disc(self):
-        """Verify GameDisc parses all 4 fields"""
-        # Create synthetic data: 4 float64_be values
+        """Verify GameDisc parses all 13 fields (92 bytes)"""
+        # Create synthetic data: 10 float64_be + 3 uint32_be values
         import struct
-        data = struct.pack(">dddd", 1.0, 2.0, 3.0, 4.0)
-        reader = BinaryReader(data)
+        data = b''
+        # Position and velocity (4 float64_be)
+        data += struct.pack(">dddd", 1.0, 2.0, 3.0, 4.0)
+        # ra (2 float64_be)
+        data += struct.pack(">dd", 5.0, 6.0)
+        # Physics (4 float64_be)
+        data += struct.pack(">dddd", 10.0, 0.5, 1.0, 0.99)
+        # Color and collision (3 uint32_be)
+        data += struct.pack(">III", 0xFFFFFF, 63, 193)
         
+        reader = BinaryReader(data)
         disc = GameDisc.parse(reader)
         
         assert disc.x == 1.0
         assert disc.y == 2.0
         assert disc.vx == 3.0
         assert disc.vy == 4.0
+        assert disc.ra_x == 5.0
+        assert disc.ra_y == 6.0
+        assert disc.radius == 10.0
+        assert disc.bounce_coef == 0.5
+        assert disc.inv_mass == 1.0
+        assert disc.damping == 0.99
+        assert disc.color == 0xFFFFFF
+        assert disc.c_mask == 63
+        assert disc.c_group == 193
     
     def test_game_disc_to_dict(self):
         """Verify GameDisc serialization"""
-        disc = GameDisc(x=1.0, y=2.0, vx=3.0, vy=4.0)
+        disc = GameDisc(
+            x=1.0, y=2.0, vx=3.0, vy=4.0, ra_x=5.0, ra_y=6.0,
+            radius=10.0, bounce_coef=0.5, inv_mass=1.0, damping=0.99,
+            color=0xFFFFFF, c_mask=63, c_group=193
+        )
         result = disc.to_dict()
         
         assert result["x"] == 1.0
         assert result["y"] == 2.0
         assert result["vx"] == 3.0
         assert result["vy"] == 4.0
+        assert result["radius"] == 10.0
+        assert result["color"] == 0xFFFFFF
     
     def test_game_disc_immutability(self):
         """Verify GameDisc is frozen"""
-        disc = GameDisc(x=1.0, y=2.0, vx=3.0, vy=4.0)
+        disc = GameDisc(
+            x=1.0, y=2.0, vx=3.0, vy=4.0, ra_x=0.0, ra_y=0.0,
+            radius=10.0, bounce_coef=0.5, inv_mass=1.0, damping=0.99,
+            color=0xFFFFFF, c_mask=63, c_group=193
+        )
         
         with pytest.raises(AttributeError):
             disc.x = 5.0
@@ -392,17 +409,15 @@ class TestGameStateProperties:
     """Test computed properties"""
     
     def test_is_paused_property(self):
-        """Verify is_paused = (pause_timer is not None)"""
+        """Verify is_paused = (time_limit_or_pause > 0)"""
         state1 = GameState(
-            frame=100, score_red=0, score_blue=0, match_time=10.0,
-            pause_timer=5.0, kickoff_team=None, kickoff_taken=False,
-            rules_timer=None, ball_x=0.0, ball_y=0.0, discs=[]
+            discs=[], frame=100, field_cb=0, score_red=0, score_blue=0, 
+            match_time=10.0, time_limit_or_pause=120, kickoff_team=None
         )
         
         state2 = GameState(
-            frame=100, score_red=0, score_blue=0, match_time=10.0,
-            pause_timer=None, kickoff_team=None, kickoff_taken=False,
-            rules_timer=None, ball_x=0.0, ball_y=0.0, discs=[]
+            discs=[], frame=100, field_cb=0, score_red=0, score_blue=0,
+            match_time=10.0, time_limit_or_pause=0, kickoff_team=None
         )
         
         assert state1.is_paused is True
@@ -411,36 +426,27 @@ class TestGameStateProperties:
     def test_has_kickoff_property(self):
         """Verify has_kickoff = (kickoff_team is not None)"""
         state1 = GameState(
-            frame=100, score_red=0, score_blue=0, match_time=10.0,
-            pause_timer=None, kickoff_team=1, kickoff_taken=False,
-            rules_timer=None, ball_x=0.0, ball_y=0.0, discs=[]
+            discs=[], frame=100, field_cb=0, score_red=0, score_blue=0,
+            match_time=10.0, time_limit_or_pause=0, kickoff_team=1
         )
         
         state2 = GameState(
-            frame=100, score_red=0, score_blue=0, match_time=10.0,
-            pause_timer=None, kickoff_team=None, kickoff_taken=False,
-            rules_timer=None, ball_x=0.0, ball_y=0.0, discs=[]
+            discs=[], frame=100, field_cb=0, score_red=0, score_blue=0,
+            match_time=10.0, time_limit_or_pause=0, kickoff_team=None
         )
         
         assert state1.has_kickoff is True
         assert state2.has_kickoff is False
     
     def test_has_rules_timer_property(self):
-        """Verify has_rules_timer = (rules_timer is not None)"""
-        state1 = GameState(
-            frame=100, score_red=0, score_blue=0, match_time=10.0,
-            pause_timer=None, kickoff_team=None, kickoff_taken=False,
-            rules_timer=10.0, ball_x=0.0, ball_y=0.0, discs=[]
+        """Verify has_rules_timer property"""
+        state = GameState(
+            discs=[], frame=100, field_cb=0, score_red=0, score_blue=0,
+            match_time=10.0, time_limit_or_pause=0, kickoff_team=None
         )
         
-        state2 = GameState(
-            frame=100, score_red=0, score_blue=0, match_time=10.0,
-            pause_timer=None, kickoff_team=None, kickoff_taken=False,
-            rules_timer=None, ball_x=0.0, ball_y=0.0, discs=[]
-        )
-        
-        assert state1.has_rules_timer is True
-        assert state2.has_rules_timer is False
+        # Currently always False as mapping is TBD
+        assert state.has_rules_timer is False
 
 
 class TestGameStateSerialization:
@@ -448,44 +454,40 @@ class TestGameStateSerialization:
     
     def test_to_dict_complete(self):
         """Verify to_dict includes all fields"""
-        disc1 = GameDisc(x=1.0, y=2.0, vx=3.0, vy=4.0)
+        disc1 = GameDisc(
+            x=1.0, y=2.0, vx=3.0, vy=4.0, ra_x=0.0, ra_y=0.0,
+            radius=10.0, bounce_coef=0.5, inv_mass=1.0, damping=0.99,
+            color=0xFFFFFF, c_mask=63, c_group=193
+        )
         state = GameState(
-            frame=100, score_red=1, score_blue=0, match_time=10.0,
-            pause_timer=None, kickoff_team=1, kickoff_taken=True,
-            rules_timer=5.0, ball_x=10.0, ball_y=20.0, discs=[disc1]
+            discs=[disc1], frame=100, field_cb=1, score_red=1, score_blue=0,
+            match_time=10.0, time_limit_or_pause=0, kickoff_team=1
         )
         
         result = state.to_dict()
         
         assert result["frame"] == 100
+        assert result["field_cb"] == 1
         assert result["score_red"] == 1
         assert result["score_blue"] == 0
         assert result["match_time"] == 10.0
-        assert result["pause_timer"] is None
+        assert result["time_limit_or_pause"] == 0
         assert result["kickoff_team"] == 1
-        assert result["kickoff_taken"] is True
-        assert result["rules_timer"] == 5.0
-        assert result["ball_x"] == 10.0
-        assert result["ball_y"] == 20.0
         assert len(result["discs"]) == 1
         assert result["is_paused"] is False
         assert result["has_kickoff"] is True
-        assert result["has_rules_timer"] is True
         assert result["winner"] == "red"
     
     def test_to_dict_with_optional_fields(self):
         """Verify to_dict handles None values correctly"""
         state = GameState(
-            frame=100, score_red=0, score_blue=0, match_time=0.0,
-            pause_timer=None, kickoff_team=None, kickoff_taken=False,
-            rules_timer=None, ball_x=0.0, ball_y=0.0, discs=[]
+            discs=[], frame=100, field_cb=0, score_red=0, score_blue=0,
+            match_time=0.0, time_limit_or_pause=0, kickoff_team=None
         )
         
         result = state.to_dict()
         
-        assert result["pause_timer"] is None
         assert result["kickoff_team"] is None
-        assert result["rules_timer"] is None
         assert result["is_paused"] is False
         assert result["has_kickoff"] is False
         assert result["has_rules_timer"] is False
@@ -494,9 +496,8 @@ class TestGameStateSerialization:
     def test_game_state_immutability(self):
         """Verify GameState is frozen"""
         state = GameState(
-            frame=100, score_red=0, score_blue=0, match_time=0.0,
-            pause_timer=None, kickoff_team=None, kickoff_taken=False,
-            rules_timer=None, ball_x=0.0, ball_y=0.0, discs=[]
+            discs=[], frame=100, field_cb=0, score_red=0, score_blue=0,
+            match_time=0.0, time_limit_or_pause=0, kickoff_team=None
         )
         
         with pytest.raises(AttributeError):
