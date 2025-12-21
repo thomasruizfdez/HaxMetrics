@@ -66,7 +66,7 @@ class Vertex:
 @dataclass(frozen=True)
 class Segment:
     """
-    Stadium segment (36 bytes).
+    Stadium segment (39 bytes, not 36 - documentation error in problem statement).
     
     Represents a line between two vertices with physics properties.
     
@@ -95,7 +95,7 @@ class Segment:
         """
         Parse segment from binary reader.
         
-        Structure (36 bytes):
+        Structure (39 bytes total: 1+1+8+8+8+8+1+4):
         - v0: byte (1 byte) - vertex 0 index
         - v1: byte (1 byte) - vertex 1 index
         - bias: float64_be (8 bytes)
