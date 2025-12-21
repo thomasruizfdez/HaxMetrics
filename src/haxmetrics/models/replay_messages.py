@@ -79,7 +79,7 @@ class ReplayMessages:
     """
     Class to parse and represent messages at the start of a HaxBall replay
     after the header and decompression.
-    
+
     .. deprecated:: 1.0.0
         Use `Messages` class from haxmetrics.models.messages instead.
         This class will be removed in version 2.0.0.
@@ -152,7 +152,7 @@ class ReplayMessages:
         Parse message metadata. In HaxBall replays, messages only store the type
         and timestamp - the actual data (player names, text, etc.) is reconstructed
         from the actions during playback.
-        
+
         Args:
             data: DataReader object positioned just after the message type
             msg_type: Message type

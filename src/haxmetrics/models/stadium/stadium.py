@@ -1,17 +1,30 @@
 from typing import Any, Dict, List, Optional
-from .vertex import Vertex
-from .segment import Segment
-from .plane import Plane
-from .goal import Goal
-from .disc import Disc
-from .joint import Joint
-from .player_physics import PlayerPhysics
-from .ball_physics import BallPhysics
+
 from .background import Background
+from .ball_physics import BallPhysics
+from .disc import Disc
+from .goal import Goal
+from .joint import Joint
 from .masked_item import MaskedItem
+from .plane import Plane
+from .player_physics import PlayerPhysics
+from .segment import Segment
+from .vertex import Vertex
 
 
 class Stadium:
+    """
+    Stadium configuration.
+
+    TODO: Refactor to match HBR2_PARSING_GUIDE.md Section 6.2
+          - Separate PredefinedStadium (types 0-9) and CustomStadium (type 255)
+          - Follow exact parsing order from game-min.js ws() method
+          - This will be addressed in PR #3
+
+    Current implementation handles both predefined and custom stadiums,
+    but needs refactoring for better separation of concerns.
+    """
+
     # Predefined stadiums and masks
     STADIUMS = [
         "Classic",

@@ -7,13 +7,13 @@ from typing import Optional, Tuple, Union
 class BinaryReader:
     """
     Binary data reader following HaxBall HBR2 format specification.
-    
+
     All multi-byte integers use BIG-ENDIAN byte order unless specified.
     Corresponds to JavaScript class `J` in game-min.js.
-    
+
     See: docs/HBR2_PARSING_GUIDE.md Section 3
     """
-    
+
     def __init__(self, data):
         self.data = data
         self.position = 0
@@ -23,9 +23,9 @@ class BinaryReader:
     def read_byte(self) -> int:
         """
         Read 1 unsigned byte (0-255).
-        
+
         Corresponds to: F() in game-min.js
-        
+
         Returns:
             int: Unsigned byte value
         """
@@ -43,12 +43,12 @@ class BinaryReader:
     def read_fixed_string(self, length: int) -> str:
         """
         Read a fixed-length string (no varint prefix).
-        
+
         Used for header magic "HBR2".
-        
+
         Args:
             length: Number of bytes to read
-            
+
         Returns:
             str: Decoded UTF-8 string
         """
@@ -62,7 +62,7 @@ class BinaryReader:
     def read_uint16(self) -> int:
         """
         Read 2-byte unsigned integer (little-endian by default).
-        
+
         Returns:
             int: Unsigned 16-bit integer value
         """
@@ -79,9 +79,9 @@ class BinaryReader:
     def read_int32(self) -> int:
         """
         Read 4-byte signed integer (little-endian by default).
-        
+
         Corresponds to: Sb() in game-min.js (when little-endian)
-        
+
         Returns:
             int: Signed 32-bit integer value
         """
@@ -98,7 +98,7 @@ class BinaryReader:
     def read_uint32(self) -> int:
         """
         Read 4-byte unsigned integer (little-endian by default).
-        
+
         Returns:
             int: Unsigned 32-bit integer value
         """
@@ -115,9 +115,9 @@ class BinaryReader:
     def read_float64(self) -> float:
         """
         Read 8-byte double-precision float (little-endian by default).
-        
+
         Corresponds to: w() in game-min.js (when little-endian)
-        
+
         Returns:
             float: 64-bit floating point value
         """
@@ -134,9 +134,9 @@ class BinaryReader:
     def read_string(self) -> Optional[str]:
         """
         Read a variable-length string with varint prefix.
-        
+
         Corresponds to: Ab()/kc() in game-min.js
-        
+
         Returns:
             Optional[str]: Decoded string or None if length is 0
         """
@@ -161,9 +161,9 @@ class BinaryReader:
     def read_varint(self) -> int:
         """
         Read a variable-length integer (LEB128 encoding).
-        
+
         Corresponds to: Cg() in game-min.js
-        
+
         Returns:
             int: Decoded variable-length integer
         """
@@ -185,7 +185,7 @@ class BinaryReader:
     def read_remaining(self) -> bytes:
         """
         Read all remaining bytes from current position to end.
-        
+
         Returns:
             bytes: Remaining data
         """
@@ -200,10 +200,10 @@ class BinaryReader:
     def read_bytes(self, length: int) -> bytes:
         """
         Read a specific number of bytes.
-        
+
         Args:
             length: Number of bytes to read
-            
+
         Returns:
             bytes: Read data
         """
@@ -229,7 +229,7 @@ class BinaryReader:
     def peek_byte(self) -> int:
         """
         Peek at the next byte without advancing position.
-        
+
         Returns:
             int: Next byte value
         """
@@ -241,10 +241,10 @@ class BinaryReader:
     def peek_bytes(self, count: int) -> bytes:
         """
         Peek at multiple bytes without advancing position.
-        
+
         Args:
             count: Number of bytes to peek
-            
+
         Returns:
             bytes: Peeked data (may be less than count if at end)
         """
@@ -262,10 +262,10 @@ class BinaryReader:
     def set_position(self, position: int) -> None:
         """
         Set the read position.
-        
+
         Args:
             position: New position to set
-            
+
         Raises:
             ValueError: If position is out of range
         """
@@ -300,7 +300,7 @@ class BinaryReader:
     def read_uint8(self) -> int:
         """
         Alias for read_byte() for compatibility with original scripts.
-        
+
         Corresponds to: F() in game-min.js
         """
         return self.read_byte()
@@ -308,9 +308,9 @@ class BinaryReader:
     def read_uint32_be(self) -> int:
         """
         Read uint32 in big-endian format (for HaxBall compatibility).
-        
+
         Corresponds to: N() in game-min.js
-        
+
         Returns:
             int: Unsigned 32-bit integer (big-endian)
         """
@@ -324,9 +324,9 @@ class BinaryReader:
     def read_uint16_be(self) -> int:
         """
         Read uint16 in big-endian format (for HaxBall compatibility).
-        
+
         Corresponds to: Bb() in game-min.js
-        
+
         Returns:
             int: Unsigned 16-bit integer (big-endian)
         """
@@ -340,9 +340,9 @@ class BinaryReader:
     def read_int16_be(self) -> int:
         """
         Read int16 in big-endian format (for HaxBall compatibility).
-        
+
         Corresponds to: Di() in game-min.js
-        
+
         Returns:
             int: Signed 16-bit integer (big-endian)
         """
@@ -364,9 +364,9 @@ class BinaryReader:
     def read_double_be(self) -> float:
         """
         Read double in big-endian format (for HaxBall stadium data).
-        
+
         Corresponds to: w() in game-min.js (big-endian mode)
-        
+
         Returns:
             float: 64-bit floating point value (big-endian)
         """
@@ -380,7 +380,7 @@ class BinaryReader:
     def read_float_le(self) -> float:
         """
         Read 32-bit float in little-endian format (for HaxBall action data).
-        
+
         Returns:
             float: 32-bit floating point value (little-endian)
         """

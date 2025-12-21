@@ -7,7 +7,7 @@ Legacy HBR2 replay parser.
     - `Messages` for messages parsing
     - `RoomBasic` for room parsing
     - etc.
-    
+
     This module will be removed in version 2.0.0.
     See docs/HBR2_PARSING_GUIDE.md for the new architecture.
 """
@@ -35,16 +35,17 @@ warnings.warn(
 class Parser:
     """
     Legacy replay parser.
-    
+
     .. deprecated:: 1.0.0
         Use new modular parser. See docs/HBR2_PARSING_GUIDE.md
-        
+
         New approach:
         1. Use Header.parse() for header parsing
         2. Use Messages.parse() for messages parsing
         3. Use RoomBasic.parse() for room parsing
         4. Parse stadium, players, actions separately as needed
     """
+
     ACTION_TYPES = ACTION_TYPES
 
     def __init__(self, replay_data: bytes):
@@ -75,7 +76,7 @@ class Parser:
         """
         Parse the replay file according to HaxBall original scripts structure.
         Order: messages -> room (includes players and team colors) -> actions
-        
+
         TODO: Migrate to use new modular parser architecture
         See: docs/HBR2_PARSING_GUIDE.md for new architecture
         """
@@ -120,7 +121,7 @@ class Parser:
     def parse_discs(self, reader):
         """
         Parse discs from the replay. Count is a single byte (F() in original).
-        
+
         TODO: Migrate to stadium parsing from HBR2_PARSING_GUIDE.md Section 6.2
         """
         discs = []
@@ -135,7 +136,7 @@ class Parser:
 
         Note: Player structure appears to differ between replay types.
         Some replays may have simplified player data or different field ordering.
-        
+
         TODO: Migrate to player parsing from HBR2_PARSING_GUIDE.md Section 6.4
         """
         players = []
@@ -153,7 +154,7 @@ class Parser:
     def parse_team_colors(self, reader):
         """
         Parse team colors. May fail if prior parsing (players) consumed incorrect bytes.
-        
+
         TODO: Migrate to team colors parsing from HBR2_PARSING_GUIDE.md Section 6.5
         """
         try:
@@ -172,7 +173,7 @@ class Parser:
         - Sender ID is a uint16 big-endian (Sb())
         - Action type is a byte (F())
         - Then action-specific data is parsed by the action class
-        
+
         TODO: Migrate to actions parsing from HBR2_PARSING_GUIDE.md Section 7
         """
         actions = []
