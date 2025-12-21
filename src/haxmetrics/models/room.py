@@ -50,6 +50,7 @@ class RoomBasic:
                 f"Time limit must be non-negative, got {self.time_limit}"
             )
 
+
     @classmethod
     def parse(cls, reader: BinaryReader) -> "RoomBasic":
         """
