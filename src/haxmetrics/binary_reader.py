@@ -347,7 +347,7 @@ class BinaryReader:
             int: Signed 16-bit integer (big-endian)
         """
         if self.position + 2 > self.length:
-            raise EOFError("Not enough bytes to read int16")
+            raise EOFError("Not enough bytes to read int16_be")
 
         result = struct.unpack(">h", self.data[self.position : self.position + 2])[0]
         self.position += 2

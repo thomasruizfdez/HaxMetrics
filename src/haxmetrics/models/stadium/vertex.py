@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from typing import Any
 
 
@@ -7,8 +7,8 @@ class Vertex:
     x: float
     y: float
     b_coef: float
-    c_mask: Any = field(default=None)
-    c_group: Any = field(default=None)
+    c_mask: Any = None
+    c_group: Any = None
 
     @staticmethod
     def parse(reader, stadium_cls):
