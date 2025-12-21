@@ -1,6 +1,147 @@
-from typing import Any, Dict, Optional, List
-from haxmetrics.models.stadium.stadium import Stadium
+"""
+HBR2 Room State Parser
+
+This module contains parsers for room state information from HaxBall replays.
+"""
+
+from dataclasses import dataclass
+from typing import Any, Dict
+
+from haxmetrics.binary_reader import BinaryReader
 from haxmetrics.models.game import Game
+from haxmetrics.models.stadium.stadium import Stadium
+
+
+@dataclass(frozen=True)
+class RoomBasic:
+    """
+    Representa los campos básicos de configuración de una sala de HaxBall.
+
+    Esta clase contiene solo los campos de configuración inicial,
+    sin incluir stadium, game state, players ni team colors.
+
+    Atributos:
+        name (str): Nombre de la sala
+        locked (bool): Si la sala está cerrada (True) o abierta (False)
+        score_limit (int): Límite de puntuación (0 = sin límite)
+        time_limit (int): Límite de tiempo en minutos (0 = sin límite)
+        unknown_int16 (int): Campo desconocido (me en game-min.js)
+        rules_type (int): Tipo de reglas (0 = default)
+        unknown_byte (int): Campo desconocido (Gd en game-min.js)
+    """
+
+    name: str
+    locked: bool
+    score_limit: int
+    time_limit: int
+    unknown_int16: int
+    rules_type: int
+    unknown_byte: int
+
+    def __post_init__(self):
+        """Valida los datos de room basic."""
+        if self.score_limit < 0:
+            raise ValueError(
+                f"Score limit must be non-negative, got {self.score_limit}"
+            )
+
+        if self.time_limit < 0:
+            raise ValueError(
+                f"Time limit must be non-negative, got {self.time_limit}"
+            )
+
+    @classmethod
+    def parse(cls, reader: BinaryReader) -> "RoomBasic":
+        """
+        Parsea los campos básicos de room desde un BinaryReader.
+
+        IMPORTANTE: El reader debe estar posicionado en la sección
+        descomprimida del replay, justo después de Messages.
+
+        Orden de parsing (según game-min.js línea 293-303):
+        1. name: Ab() - read_string
+        2. locked: F() - read_byte → bool (0=false, !0=true)
+        3. score_limit: N() - read_uint32_be
+        4. time_limit: N() - read_uint32_be
+        5. unknown_int16: Di() - read_int16_be
+        6. rules_type: F() - read_byte
+        7. unknown_byte: F() - read_byte
+
+        Args:
+            reader: BinaryReader con datos descomprimidos
+
+        Returns:
+            RoomBasic: Instancia con los campos básicos parseados
+
+        Ejemplo:
+            >>> # Después de parsear messages
+            >>> room_basic = RoomBasic.parse(reader)
+            >>> print(room_basic.name)
+            'My HaxBall Room'
+        """
+        # 1. Name (string)
+        name = reader.read_string()
+        if name is None:
+            name = ""  # Tratar null como string vacío
+
+        # 2. Locked (bool from byte)
+        locked_byte = reader.read_byte()
+        locked = locked_byte != 0
+
+        # 3. Score limit (uint32_be)
+        score_limit = reader.read_uint32_be()
+
+        # 4. Time limit (uint32_be)
+        time_limit = reader.read_uint32_be()
+
+        # 5. Unknown int16 (int16_be)
+        unknown_int16 = reader.read_int16_be()
+
+        # 6. Rules type (byte)
+        rules_type = reader.read_byte()
+
+        # 7. Unknown byte (byte)
+        unknown_byte = reader.read_byte()
+
+        return cls(
+            name=name,
+            locked=locked,
+            score_limit=score_limit,
+            time_limit=time_limit,
+            unknown_int16=unknown_int16,
+            rules_type=rules_type,
+            unknown_byte=unknown_byte,
+        )
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Serializa room basic a un diccionario.
+
+        Returns:
+            dict: Representación serializable
+        """
+        return {
+            "name": self.name,
+            "locked": self.locked,
+            "score_limit": self.score_limit,
+            "time_limit": self.time_limit,
+            "unknown_int16": self.unknown_int16,
+            "rules_type": self.rules_type,
+            "unknown_byte": self.unknown_byte,
+        }
+
+    def __str__(self) -> str:
+        """Representación legible de room basic."""
+        lock_status = "🔒 Locked" if self.locked else "🔓 Open"
+        limits = []
+        if self.score_limit > 0:
+            limits.append(f"Score: {self.score_limit}")
+        if self.time_limit > 0:
+            limits.append(f"Time: {self.time_limit}min")
+
+        limits_str = f" ({', '.join(limits)})" if limits else ""
+
+        return f"Room(name='{self.name}', {lock_status}{limits_str})"
 
 
 class Room:

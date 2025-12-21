@@ -89,7 +89,7 @@ class BinaryReader:
         except UnicodeDecodeError:
             # Fall back to latin-1 which accepts all byte values
             result = self.data[self.position : self.position + length].decode("latin-1")
-        
+
         self.position += length
         return result
 
@@ -195,6 +195,15 @@ class BinaryReader:
             raise EOFError("No hay suficientes bytes para leer uint16")
 
         result = struct.unpack(">H", self.data[self.position : self.position + 2])[0]
+        self.position += 2
+        return result
+
+    def read_int16_be(self) -> int:
+        """Read int16 in big-endian format (for HaxBall compatibility)"""
+        if self.position + 2 > self.length:
+            raise EOFError("No hay suficientes bytes para leer int16")
+
+        result = struct.unpack(">h", self.data[self.position : self.position + 2])[0]
         self.position += 2
         return result
 
