@@ -23,4 +23,5 @@ src/out/
 
 # Generated JSON from decoder (except examples)
 src/replays/*.json
-!src/replays/examples/*.json
+!src/replays/examples/*.json.coverage
+.pytest_cache/

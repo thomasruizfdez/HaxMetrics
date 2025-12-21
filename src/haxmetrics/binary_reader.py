@@ -1,7 +1,7 @@
 # haxmetrics/utils/binary_reader.py
 
 import struct
-from typing import Optional, Union, Tuple
+from typing import Optional, Tuple, Union
 
 
 class BinaryReader:
@@ -113,6 +113,10 @@ class BinaryReader:
         result = self.data[self.position :]
         self.position = self.length
         return result
+
+    def get_remaining_bytes(self) -> bytes:
+        """Alias for read_remaining() for compatibility"""
+        return self.read_remaining()
 
     def read_bytes(self, length: int) -> bytes:
         if self.position + length > self.length:
