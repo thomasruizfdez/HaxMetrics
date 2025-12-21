@@ -1,13 +1,28 @@
 # haxmetrics/models/replay_messages.py
 
-import struct
-from typing import List, Dict, Any, Tuple, Optional
+"""
+Legacy replay messages model.
+
+.. deprecated:: 1.0.0
+    Use `haxmetrics.models.messages.Messages` instead.
+    This module will be removed in version 2.0.0.
+"""
+
+import warnings
 from dataclasses import dataclass
+from typing import Any, Dict, List
+
+warnings.warn(
+    "replay_messages.py is deprecated. Use messages.Messages instead. "
+    "This module will be removed in v2.0.0.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 
 @dataclass
 class ReplayMessage:
-    """Representa un mensaje dentro del replay de HaxBall"""
+    """Represents a message within a HaxBall replay"""
 
     index: int
     delta_time: int
@@ -17,29 +32,29 @@ class ReplayMessage:
 
 class MessageType:
     """
-    Constantes para los tipos de mensajes en replays de HaxBall
-    basados en el código fuente original
+    Constants for message types in HaxBall replays
+    based on the original source code
     """
 
-    ANNOUNCEMENT = 0  # Mensaje de anuncio del sistema
-    CHAT = 1  # Mensaje de chat de jugador
-    GOAL = 2  # Gol anotado
-    TEAM_GOAL = 3  # Gol de equipo
-    GAME_START = 4  # Inicio del juego
-    GAME_STOP = 5  # Fin del juego
-    PLAYER_JOIN = 6  # Jugador se une
-    PLAYER_LEAVE = 7  # Jugador se va
-    PLAYER_TEAM_CHANGE = 8  # Cambio de equipo
-    PAUSE = 9  # Juego pausado
-    UNPAUSE = 10  # Juego reanudado
-    ADMIN_CHANGE = 11  # Cambio de admin
-    STADIUM_CHANGE = 12  # Cambio de estadio
-    KICK = 13  # Jugador expulsado
-    POSITION_CHANGE = 14  # Cambio de posición
+    ANNOUNCEMENT = 0  # System announcement message
+    CHAT = 1  # Player chat message
+    GOAL = 2  # Goal scored
+    TEAM_GOAL = 3  # Team goal
+    GAME_START = 4  # Game start
+    GAME_STOP = 5  # Game end
+    PLAYER_JOIN = 6  # Player joins
+    PLAYER_LEAVE = 7  # Player leaves
+    PLAYER_TEAM_CHANGE = 8  # Team change
+    PAUSE = 9  # Game paused
+    UNPAUSE = 10  # Game resumed
+    ADMIN_CHANGE = 11  # Admin change
+    STADIUM_CHANGE = 12  # Stadium change
+    KICK = 13  # Player kicked
+    POSITION_CHANGE = 14  # Position change
 
     @staticmethod
     def get_name(type_id: int) -> str:
-        """Devuelve el nombre del tipo de mensaje"""
+        """Returns the name of the message type"""
         types = {
             0: "ANNOUNCEMENT",
             1: "CHAT",
@@ -62,14 +77,18 @@ class MessageType:
 
 class ReplayMessages:
     """
-    Clase para parsear y representar los mensajes al inicio de un replay HaxBall
-    después de la cabecera y la descompresión.
+    Class to parse and represent messages at the start of a HaxBall replay
+    after the header and decompression.
+
+    .. deprecated:: 1.0.0
+        Use `Messages` class from haxmetrics.models.messages instead.
+        This class will be removed in version 2.0.0.
     """
 
     def __init__(self):
         self.count: int = 0
         self.messages: List[ReplayMessage] = []
-        self.end_position: int = 0  # Posición después del último mensaje
+        self.end_position: int = 0  # Position after last message
 
     def __len__(self) -> int:
         """Return the number of messages for len() support"""
@@ -86,37 +105,37 @@ class ReplayMessages:
     @classmethod
     def parse(cls, data) -> "ReplayMessages":
         """
-        Parsea los mensajes desde datos binarios descomprimidos.
+        Parse messages from decompressed binary data.
 
         Args:
-            data: Objeto DataReader posicionado al comienzo de la sección de mensajes
+            data: DataReader object positioned at the start of the messages section
 
         Returns:
-            ReplayMessages: Objeto con los mensajes parseados
+            ReplayMessages: Object with parsed messages
         """
         messages = cls()
 
-        # 1. Leer contador de mensajes (2 bytes big-endian)
+        # 1. Read message count (2 bytes big-endian)
         messages.count = data.read_uint16_be()
 
-        # 2. Leer cada mensaje
+        # 2. Read each message
         for i in range(messages.count):
-            # Leer delta tiempo (VarInt)
+            # Read delta time (VarInt)
             delta_time = data.read_varint()
 
-            # Leer tipo de mensaje
+            # Read message type
             msg_type = data.read_uint8()
 
-            # Leer datos adicionales según el tipo
+            # Read additional data based on type
             msg_data = cls._parse_message_data(data, msg_type)
 
-            # Crear y añadir el mensaje
+            # Create and add the message
             message = ReplayMessage(
                 index=i, delta_time=delta_time, type=msg_type, data=msg_data
             )
             messages.messages.append(message)
 
-        # Guardar la posición actual para saber dónde termina la sección de mensajes
+        # Save current position to know where messages section ends
         messages.end_position = data.position
 
         print(f"Parsed {messages.count} messages")
@@ -133,10 +152,10 @@ class ReplayMessages:
         Parse message metadata. In HaxBall replays, messages only store the type
         and timestamp - the actual data (player names, text, etc.) is reconstructed
         from the actions during playback.
-        
+
         Args:
-            data: Objeto DataReader posicionado justo después del tipo de mensaje
-            msg_type: Tipo de mensaje
+            data: DataReader object positioned just after the message type
+            msg_type: Message type
 
         Returns:
             Dict: Empty dict or minimal metadata for the message type

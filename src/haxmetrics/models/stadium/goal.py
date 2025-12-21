@@ -1,5 +1,5 @@
-from dataclasses import dataclass, asdict
-from typing import List, Any
+from dataclasses import asdict, dataclass
+from typing import Any, List
 
 
 @dataclass
@@ -10,8 +10,8 @@ class Goal:
 
     @staticmethod
     def parse(reader, stadium_cls):
-        # reader: debe tener métodos read_double_be() y read_uint8()
-        # stadium_cls: clase Stadium con método parse_team
+        # reader: must have read_double_be() and read_uint8() methods
+        # stadium_cls: Stadium class with parse_team method
         pos_start = [reader.read_double_be(), reader.read_double_be()]
         pos_end = [reader.read_double_be(), reader.read_double_be()]
         team_val = reader.read_uint8()

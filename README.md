@@ -2,6 +2,72 @@
 
 HaxMetrics es una herramienta para analizar replays de Haxball en formato .hbr2 y extraer métricas útiles para el análisis de partidos.
 
+## Python Parser Architecture (v1.0+)
+
+The Python parser now follows a **modular architecture** based on the official HBR2 format specification documented in `docs/HBR2_PARSING_GUIDE.md`.
+
+### Parser Modules
+
+```
+src/haxmetrics/
+├── binary_reader.py          # Low-level binary reading (Section 3)
+│
+├── models/                    # Data models (SOLID design)
+│   ├── header.py             # ✅ Header (Section 4)
+│   ├── messages.py           # ✅ Messages (Section 5)
+│   ├── room.py               # ✅ Room Basic (Section 6.1)
+│   ├── stadium/              # 🚧 Stadium (Section 6.2) [PR #3]
+│   ├── game.py               # 🚧 Game State (Section 6.3) [PR #4]
+│   ├── player.py             # 🚧 Players (Section 6.4) [PR #5]
+│   ├── team_color.py         # 🚧 Team Colors (Section 6.5) [PR #6]
+│   └── actions/              # 🚧 Actions (Section 7) [PR #7+]
+│
+└── parser.py                 # ⚠️ Legacy parser (deprecated, removal in v2.0.0)
+```
+
+### Usage Example
+
+```python
+import zlib
+from haxmetrics.binary_reader import BinaryReader
+from haxmetrics.models.header import Header
+from haxmetrics.models.messages import Messages
+from haxmetrics.models.room import RoomBasic
+
+# Load replay file
+with open('replay.hbr2', 'rb') as f:
+    data = f.read()
+
+# Parse header
+reader = BinaryReader(data)
+header = Header.parse(reader)
+print(f"Version: {header.version}, Duration: {header.duration_seconds}s")
+
+# Decompress and parse content
+compressed = reader.get_remaining_bytes()
+decompressed = zlib.decompress(compressed, wbits=-15)
+reader = BinaryReader(decompressed)
+
+# Parse sections
+messages = Messages.parse(reader)
+print(f"Messages: {messages.count}")
+
+room = RoomBasic.parse(reader)
+print(f"Room: {room.name}, Score Limit: {room.score_limit}")
+```
+
+### Documentation
+
+- 📖 **[HBR2_PARSING_GUIDE.md](docs/HBR2_PARSING_GUIDE.md)** - Complete format specification
+- 📖 **[MIGRATION.md](MIGRATION.md)** - Migration guide from old parser
+- 📖 **[CHANGELOG.md](CHANGELOG.md)** - Version history
+
+### Legacy Parser (Deprecated)
+
+The old `Parser` class is deprecated and will be removed in v2.0.0. See [MIGRATION.md](MIGRATION.md) for migration guide.
+
+---
+
 ## Herramientas
 
 ### Decoder HBR2 a JSON

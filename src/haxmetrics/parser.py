@@ -1,20 +1,58 @@
-from haxmetrics.models.replay_messages import ReplayMessages
-from haxmetrics.models.room import Room
-from haxmetrics.models.player import Player
-from haxmetrics.models.team_color import TeamColor
+"""
+Legacy HBR2 replay parser.
+
+.. deprecated:: 1.0.0
+    This module is deprecated. Use the new modular parser:
+    - `Header` for header parsing
+    - `Messages` for messages parsing
+    - `RoomBasic` for room parsing
+    - etc.
+
+    This module will be removed in version 2.0.0.
+    See docs/HBR2_PARSING_GUIDE.md for the new architecture.
+"""
+
+import warnings
+import zlib
+
+from haxmetrics.binary_reader import BinaryReader
 from haxmetrics.models.action import Action
 from haxmetrics.models.action_types import ACTION_TYPES
+from haxmetrics.models.player import Player
+from haxmetrics.models.replay_messages import ReplayMessages
+from haxmetrics.models.room import Room
 from haxmetrics.models.stadium.disc import Disc
-from haxmetrics.binary_reader import BinaryReader
-import zlib
+from haxmetrics.models.team_color import TeamColor
+
+warnings.warn(
+    "parser.py is deprecated. Use new modular parser from haxmetrics.models.* "
+    "(Header, Messages, RoomBasic, etc.). This module will be removed in v2.0.0.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 
 class Parser:
+    """
+    Legacy replay parser.
+
+    .. deprecated:: 1.0.0
+        Use new modular parser. See docs/HBR2_PARSING_GUIDE.md
+
+        New approach:
+        1. Use Header.parse() for header parsing
+        2. Use Messages.parse() for messages parsing
+        3. Use RoomBasic.parse() for room parsing
+        4. Parse stadium, players, actions separately as needed
+    """
+
     ACTION_TYPES = ACTION_TYPES
 
     def __init__(self, replay_data: bytes):
         self.reader = BinaryReader(replay_data)
 
+        # TODO: Migrate to use Header.parse()
+        # See: docs/HBR2_PARSING_GUIDE.md Section 4
         # Header fields are big-endian according to HaxBall format
         self.header = self.reader.read_fixed_string(4)
         self.version = self.reader.read_uint32_be()
@@ -38,16 +76,21 @@ class Parser:
         """
         Parse the replay file according to HaxBall original scripts structure.
         Order: messages -> room (includes players and team colors) -> actions
+
+        TODO: Migrate to use new modular parser architecture
+        See: docs/HBR2_PARSING_GUIDE.md for new architecture
         """
-        # 1. Descomprime el bloque principal
+        # 1. Decompress main block
         decompressed_data = zlib.decompress(self.reader.get_input_string(), wbits=-15)
         print(f"All bytes: {decompressed_data.hex()}")
         reader = BinaryReader(decompressed_data)
 
         # 2. Parse messages (must be done before room)
+        # TODO: Use Messages.parse() from new modular architecture
         self.replay["messages"] = ReplayMessages.parse(reader)
 
         # 3. Parse room info (includes stadium, game state, players, and team colors)
+        # TODO: Use RoomBasic.parse() from new modular architecture
         self.replay["room_info"] = Room.parse(reader, self.version)
 
         # Extract players and team colors from room for backward compatibility
@@ -76,7 +119,11 @@ class Parser:
         return self.replay
 
     def parse_discs(self, reader):
-        """Parse discs from the replay. Count is a single byte (F() in original)."""
+        """
+        Parse discs from the replay. Count is a single byte (F() in original).
+
+        TODO: Migrate to stadium parsing from HBR2_PARSING_GUIDE.md Section 6.2
+        """
         discs = []
         num = reader.read_byte()
         for _ in range(num):
@@ -89,6 +136,8 @@ class Parser:
 
         Note: Player structure appears to differ between replay types.
         Some replays may have simplified player data or different field ordering.
+
+        TODO: Migrate to player parsing from HBR2_PARSING_GUIDE.md Section 6.4
         """
         players = []
         num = reader.read_byte()
@@ -105,6 +154,8 @@ class Parser:
     def parse_team_colors(self, reader):
         """
         Parse team colors. May fail if prior parsing (players) consumed incorrect bytes.
+
+        TODO: Migrate to team colors parsing from HBR2_PARSING_GUIDE.md Section 6.5
         """
         try:
             return {"red": TeamColor.parse(reader), "blue": TeamColor.parse(reader)}
@@ -122,6 +173,8 @@ class Parser:
         - Sender ID is a uint16 big-endian (Sb())
         - Action type is a byte (F())
         - Then action-specific data is parsed by the action class
+
+        TODO: Migrate to actions parsing from HBR2_PARSING_GUIDE.md Section 7
         """
         actions = []
         frame = 0

@@ -1,7 +1,7 @@
 """
-Tests unitarios para Header parsing.
+Unit tests for Header parsing.
 
-Fixtures usadas:
+Fixtures used:
 - src/tests/fixtures/basic/basic.hbr2
 """
 
@@ -17,7 +17,7 @@ BASIC_REPLAY = FIXTURES_DIR / "basic" / "basic.hbr2"
 
 
 def test_parse_valid_header_basic_replay():
-    """Debe parsear header correctamente de replay real."""
+    """Should parse header correctly from real replay."""
     with open(BASIC_REPLAY, "rb") as f:
         reader = BinaryReader(f.read())
         header = Header.parse(reader)
@@ -29,7 +29,7 @@ def test_parse_valid_header_basic_replay():
 
 
 def test_parse_header_magic_field():
-    """Debe extraer magic 'HBR2' correctamente."""
+    """Should extract magic 'HBR2' correctly."""
     data = b"HBR2" + b"\x00\x00\x00\x03" + b"\x00\x00\x00\x64"
     reader = BinaryReader(data)
     header = Header.parse(reader)
@@ -38,7 +38,7 @@ def test_parse_header_magic_field():
 
 
 def test_parse_header_version_field():
-    """Debe extraer version correctamente (big-endian)."""
+    """Should extract version correctly (big-endian)."""
     data = b"HBR2" + b"\x00\x00\x00\x05" + b"\x00\x00\x00\x64"
     reader = BinaryReader(data)
     header = Header.parse(reader)
@@ -47,7 +47,7 @@ def test_parse_header_version_field():
 
 
 def test_parse_header_duration_field():
-    """Debe extraer duration correctamente."""
+    """Should extract duration correctly."""
     data = b"HBR2" + b"\x00\x00\x00\x03" + b"\x00\x00\x04\xb0"  # 1200 frames
     reader = BinaryReader(data)
     header = Header.parse(reader)
@@ -56,7 +56,7 @@ def test_parse_header_duration_field():
 
 
 def test_parse_invalid_magic_raises_error():
-    """Debe lanzar ValueError si magic != 'HBR2'."""
+    """Should raise ValueError if magic != 'HBR2'."""
     data = b"FAKE" + b"\x00\x00\x00\x03" + b"\x00\x00\x00\x64"
     reader = BinaryReader(data)
 
@@ -65,7 +65,7 @@ def test_parse_invalid_magic_raises_error():
 
 
 def test_header_to_dict():
-    """Debe serializar a dict correctamente."""
+    """Should serialize to dict correctly."""
     header = Header(magic="HBR2", version=3, duration=600)
     result = header.to_dict()
 
@@ -76,14 +76,14 @@ def test_header_to_dict():
 
 
 def test_header_duration_seconds_property():
-    """Debe calcular duration_seconds correctamente."""
+    """Should calculate duration_seconds correctly."""
     header = Header(magic="HBR2", version=3, duration=3600)
 
     assert header.duration_seconds == 60.0  # 3600 frames / 60 fps
 
 
 def test_header_immutability():
-    """Debe ser inmutable (frozen dataclass)."""
+    """Should be immutable (frozen dataclass)."""
     header = Header(magic="HBR2", version=3, duration=100)
 
     with pytest.raises(AttributeError):
@@ -91,7 +91,7 @@ def test_header_immutability():
 
 
 def test_header_equality():
-    """Debe comparar instancias correctamente."""
+    """Should compare instances correctly."""
     h1 = Header(magic="HBR2", version=3, duration=100)
     h2 = Header(magic="HBR2", version=3, duration=100)
     h3 = Header(magic="HBR2", version=3, duration=200)
@@ -101,7 +101,7 @@ def test_header_equality():
 
 
 def test_header_string_representation():
-    """Debe tener __str__ legible."""
+    """Should have readable __str__."""
     header = Header(magic="HBR2", version=3, duration=120)
     result = str(header)
 
@@ -111,12 +111,12 @@ def test_header_string_representation():
 
 
 def test_header_validation_negative_version():
-    """Debe rechazar version negativa."""
+    """Should reject negative version."""
     with pytest.raises(ValueError, match="Version must be non-negative"):
         Header(magic="HBR2", version=-1, duration=100)
 
 
 def test_header_validation_negative_duration():
-    """Debe rechazar duration negativa."""
+    """Should reject negative duration."""
     with pytest.raises(ValueError, match="Duration must be non-negative"):
         Header(magic="HBR2", version=3, duration=-100)
