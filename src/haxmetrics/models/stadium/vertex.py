@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from typing import Any
 
 
@@ -12,8 +12,8 @@ class Vertex:
 
     @staticmethod
     def parse(reader, stadium_cls):
-        # reader: debe tener métodos read_double_be() y read_uint32()
-        # stadium_cls: clase Stadium con método parse_mask
+        # reader: must have read_double_be() and read_uint32() methods
+        # stadium_cls: Stadium class with parse_mask method
         x = reader.read_double_be()
         y = reader.read_double_be()
         b_coef = reader.read_double_be()
@@ -26,5 +26,5 @@ class Vertex:
         return Vertex(x=x, y=y, b_coef=b_coef, c_mask=c_mask, c_group=c_group)
 
     def to_json(self):
-        # Si usas dataclasses, puedes usar asdict(self)
+        # If using dataclasses, you can use asdict(self)
         return asdict(self)
