@@ -9,7 +9,7 @@ from typing import Any, Dict
 
 from haxmetrics.binary_reader import BinaryReader
 from haxmetrics.models.game import Game
-from haxmetrics.models.stadium.stadium import Stadium
+from haxmetrics.models.stadium import parse_stadium
 
 
 @dataclass(frozen=True)
@@ -198,7 +198,7 @@ class Room:
         room.kick_timeout = reader.read_byte()
 
         # 8. Stadium
-        room.set_stadium(Stadium.parse(reader))
+        room.set_stadium(parse_stadium(reader))
 
         # 9. Game active flag (1 byte)
         game_active = reader.read_byte() != 0

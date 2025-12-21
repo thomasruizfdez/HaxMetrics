@@ -71,7 +71,8 @@ class Messages:
             >>> print(len(messages))
             5
         """
-        messages_count = reader.read_varint()
+        # Messages count is uint16_be (2 bytes), not varint
+        messages_count = reader.read_uint16_be()
 
         messages = []
         for _ in range(messages_count):
