@@ -28,20 +28,22 @@ class CustomStadium(Stadium):
     Custom stadium (type 255).
     
     Contains complete stadium definition with all components.
-    Parsing order MUST match game-min.js class q.ma() exactly.
+    Parsing order follows the original stadium.py implementation.
     
     Attributes:
         name: Stadium name
-        bg_width: Background width
-        bg_height: Background height
-        bg_kick_off_radius: Kick-off circle radius
-        bg_corner_radius: Corner arc radius
-        bg_max_view_width: Maximum viewport width
-        camera_follow: Camera follow mode (0=none, 1=player)
-        spawn_inv_flags: Spawn inversion flags
+        bg_type: Background type (0=none, 1=grass, 2=hockey)
+        bg_width: Background width (float)
+        bg_height: Background height (float)
+        bg_kick_off_radius: Kick-off circle radius (float)
+        bg_corner_radius: Corner arc radius (float)
+        bg_goal_line: Goal line distance (float)
+        bg_color: Background color (uint32)
+        max_view_width: Maximum viewport width
+        max_view_height: Maximum viewport height
         spawn_distance: Distance for player spawning
+        camera_follow: Camera follow mode
         can_be_stored: Whether stadium can be stored
-        can_kick_off: Whether kick-off is allowed
         kick_off_reset: Reset mode (0=partial, 1=full)
         vertices: List of vertices
         segments: List of segments
@@ -52,19 +54,21 @@ class CustomStadium(Stadium):
         player_physics: Player physics parameters
     """
     
-    # Basic configuration (12 fields)
+    # Basic configuration
     name: str
-    bg_width: int
-    bg_height: int
-    bg_kick_off_radius: int
-    bg_corner_radius: int
-    bg_max_view_width: float
-    camera_follow: int
-    spawn_inv_flags: bool
+    bg_type: int
+    bg_width: float
+    bg_height: float
+    bg_kick_off_radius: float
+    bg_corner_radius: float
+    bg_goal_line: float
+    bg_color: int
+    max_view_width: float
+    max_view_height: float
     spawn_distance: float
-    can_be_stored: int
-    can_kick_off: int
-    kick_off_reset: int
+    camera_follow: int
+    can_be_stored: bool
+    kick_off_reset: bool
     
     # Component arrays
     vertices: List[Vertex]
@@ -82,10 +86,14 @@ class CustomStadium(Stadium):
         """
         Parse custom stadium from binary reader.
         
-        CRITICAL: Parsing order MUST match game-min.js class q.ma() exactly:
-        1. Basic configuration (12 fields)
-        2. Component arrays (6 arrays: vertices, segments, planes, goals, discs, joints)
-        3. Player physics (8 fields)
+        Parsing order follows the original implementation in stadium.py:
+        1. Stadium name
+        2. Background (type + 5 floats + color)
+        3. Max view width/height  
+        4. Spawn distance
+        5. Player physics
+        6. Additional fields
+        7. Component arrays (6 arrays)
         
         Args:
             reader: BinaryReader instance
@@ -93,63 +101,84 @@ class CustomStadium(Stadium):
         Returns:
             CustomStadium: Parsed custom stadium
         """
-        # 1. Basic configuration (12 fields)
+        # 1. Stadium name
         name = reader.read_string()
         if name is None:
             name = ""
         
-        bg_width = reader.read_int32_be()
-        bg_height = reader.read_int32_be()
-        bg_kick_off_radius = reader.read_int32_be()
-        bg_corner_radius = reader.read_int32_be()
-        bg_max_view_width = reader.read_double_be()
-        camera_follow = reader.read_byte()
-        spawn_inv_flags = bool(reader.read_byte())
-        spawn_distance = reader.read_double_be()
-        can_be_stored = reader.read_byte()
-        can_kick_off = reader.read_byte()
-        kick_off_reset = reader.read_byte()
+        # 2. Background (48 bytes total)
+        bg_type = reader.read_uint32_be()  # 4 bytes
+        bg_width = reader.read_double_be()  # 8 bytes
+        bg_height = reader.read_double_be()  # 8 bytes
+        bg_kick_off_radius = reader.read_double_be()  # 8 bytes
+        bg_corner_radius = reader.read_double_be()  # 8 bytes
+        bg_goal_line = reader.read_double_be()  # 8 bytes
+        bg_color = reader.read_uint32_be()  # 4 bytes
         
-        # 2. Component arrays (each starts with count byte)
-        # 2.1 Vertices
+        # 3. Max view dimensions
+        max_view_width = reader.read_double_be()
+        max_view_height = reader.read_double_be()
+        
+        # 4. Spawn distance
+        spawn_distance = reader.read_double_be()
+        
+        # 5. Player physics (7 fields in old code, missing radius)
+        player_physics = PlayerPhysics(
+            radius=15.0,  # Default value, not parsed here
+            b_coef=reader.read_double_be(),
+            inv_mass=reader.read_double_be(),
+            damping=reader.read_double_be(),
+            acceleration=reader.read_double_be(),
+            kick_acceleration=reader.read_double_be(),
+            kick_damping=reader.read_double_be(),
+            kick_strength=reader.read_double_be()
+        )
+        
+        # 6. Additional fields
+        max_view_width_override = reader.read_nullable_int32()
+        camera_follow = reader.read_byte()
+        can_be_stored = reader.read_byte() != 0
+        kick_off_reset = reader.read_byte() != 0
+        
+        # 7. Component arrays (each starts with count byte)
+        # Vertices
         vertex_count = reader.read_byte()
         vertices = [Vertex.parse(reader) for _ in range(vertex_count)]
         
-        # 2.2 Segments
+        # Segments
         segment_count = reader.read_byte()
         segments = [Segment.parse(reader) for _ in range(segment_count)]
         
-        # 2.3 Planes
+        # Planes
         plane_count = reader.read_byte()
         planes = [Plane.parse(reader) for _ in range(plane_count)]
         
-        # 2.4 Goals
+        # Goals
         goal_count = reader.read_byte()
         goals = [Goal.parse(reader) for _ in range(goal_count)]
         
-        # 2.5 Discs
+        # Discs
         disc_count = reader.read_byte()
         discs = [StadiumDisc.parse(reader) for _ in range(disc_count)]
         
-        # 2.6 Joints
+        # Joints
         joint_count = reader.read_byte()
         joints = [Joint.parse(reader) for _ in range(joint_count)]
         
-        # 3. Player physics (8 fields, 64 bytes)
-        player_physics = PlayerPhysics.parse(reader)
-        
         return cls(
             name=name,
+            bg_type=bg_type,
             bg_width=bg_width,
             bg_height=bg_height,
             bg_kick_off_radius=bg_kick_off_radius,
             bg_corner_radius=bg_corner_radius,
-            bg_max_view_width=bg_max_view_width,
-            camera_follow=camera_follow,
-            spawn_inv_flags=spawn_inv_flags,
+            bg_goal_line=bg_goal_line,
+            bg_color=bg_color,
+            max_view_width=max_view_width,
+            max_view_height=max_view_height,
             spawn_distance=spawn_distance,
+            camera_follow=camera_follow,
             can_be_stored=can_be_stored,
-            can_kick_off=can_kick_off,
             kick_off_reset=kick_off_reset,
             vertices=vertices,
             segments=segments,
@@ -167,21 +196,29 @@ class CustomStadium(Stadium):
         Returns:
             Dict: Dictionary with full stadium data
         """
+        bg_type_name = "none"
+        if self.bg_type == 1:
+            bg_type_name = "grass"
+        elif self.bg_type == 2:
+            bg_type_name = "hockey"
+            
         return {
             "custom": True,
             "name": self.name,
             "background": {
+                "type": bg_type_name,
                 "width": self.bg_width,
                 "height": self.bg_height,
                 "kickOffRadius": self.bg_kick_off_radius,
                 "cornerRadius": self.bg_corner_radius,
-                "maxViewWidth": self.bg_max_view_width
+                "goalLine": self.bg_goal_line,
+                "color": f"{self.bg_color:08x}"
             },
-            "cameraFollow": self.camera_follow,
-            "spawnInvFlags": self.spawn_inv_flags,
+            "maxViewWidth": self.max_view_width,
+            "maxViewHeight": self.max_view_height,
             "spawnDistance": self.spawn_distance,
+            "cameraFollow": self.camera_follow,
             "canBeStored": self.can_be_stored,
-            "canKickOff": self.can_kick_off,
             "kickOffReset": self.kick_off_reset,
             "vertexes": [v.to_dict() for v in self.vertices],
             "segments": [s.to_dict() for s in self.segments],

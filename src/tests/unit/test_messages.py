@@ -192,8 +192,8 @@ def test_parse_messages_with_content():
     # Message 2: frame=20, text="World"
 
     data = bytearray()
-    # Messages count: 2
-    data.append(2)
+    # Messages count: 2 (uint16_be, 2 bytes)
+    data.extend(b"\x00\x02")  # 2 in big-endian uint16
     # Message 1: frame=10
     data.append(10)
     # Message 1: text="Hello" (length 5+1=6 in varint, then 5 bytes)
