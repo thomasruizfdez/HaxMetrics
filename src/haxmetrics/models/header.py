@@ -9,7 +9,7 @@ Formato:
 """
 
 from dataclasses import dataclass
-from typing import Dict
+from typing import Any, Dict
 
 from haxmetrics.binary_reader import BinaryReader
 
@@ -79,7 +79,7 @@ class Header:
         """
         return self.duration / 60.0
 
-    def to_dict(self) -> Dict[str, any]:
+    def to_dict(self) -> Dict[str, Any]:
         """
         Serializa el header a un diccionario.
 

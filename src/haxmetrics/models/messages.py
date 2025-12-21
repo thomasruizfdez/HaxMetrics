@@ -12,7 +12,7 @@ Formato:
 """
 
 from dataclasses import dataclass
-from typing import Dict, Iterator, List
+from typing import Any, Dict, Iterator, List
 
 from haxmetrics.binary_reader import BinaryReader
 
@@ -30,7 +30,7 @@ class Message:
     frame: int
     text: str
 
-    def to_dict(self) -> Dict[str, any]:
+    def to_dict(self) -> Dict[str, Any]:
         """Serializa el mensaje a diccionario."""
         return {"frame": self.frame, "text": self.text}
 
@@ -81,7 +81,7 @@ class Messages:
 
         return cls(messages)
 
-    def to_dict(self) -> Dict[str, any]:
+    def to_dict(self) -> Dict[str, Any]:
         """
         Serializa la colección a diccionario.
 
