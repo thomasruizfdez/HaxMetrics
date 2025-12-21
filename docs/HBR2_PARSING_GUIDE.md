@@ -299,7 +299,7 @@ ma(a) {
 ### 6.2 Stadium Parsing
 
 **Clase:** `q` (Stadium)  
-**Método:** `ma(a)` (ubicación a determinar en game-min.js)
+**Método:** `ma(a)` y `ws(a)` (game-min.js línea ~1900)
 
 ```
 Offset | Bytes | Método | Tipo         | Campo        | Notas
@@ -310,24 +310,64 @@ Offset | Bytes | Método | Tipo         | Campo        | Notas
 #### 6.2.1 IF stadium_type == 255 (Custom Stadium)
 
 **Clase:** `q` (Stadium)  
-**Método:** `ma(a)` - rama custom
+**Método:** `ws(a)` - custom stadium parsing
+
+**⚠️ ORDEN CRÍTICO:** Debe seguirse exactamente como en game-min.js líneas 1918-1950.
+
+##### A. Basic Configuration (~72 bytes)
 
 ```
 Offset | Bytes    | Método | Tipo         | Campo              | Notas
 -------|----------|--------|--------------|--------------------|-----------------
-0x00   | 1-5      | Ab()   | string       | name               | Stadium name (ej: "LIRS RS 4v4")
-...    | 4        | Sb()   | int32_be     | bg_width           | Background width
-...    | 4        | Sb()   | int32_be     | bg_height          | Background height
-...    | 4        | Sb()   | int32_be     | bg_kick_off_radius | Kick-off radius
-...    | 4        | Sb()   | int32_be     | bg_corner_radius   | Corner radius
-...    | 8        | w()    | float64_be   | bg_max_view_width  | Max viewport width
-...    | 1        | F()    | byte         | camera_follow      | 0=none, 1=player
-...    | 1        | F()    | byte→bool    | spawn_inv_flags    | (unknown bool)
+0x00   | 1-5      | Ab()   | string       | name               | Stadium name (varint + UTF-8)
+...    | 4        | N()    | uint32_be    | bg_type            | 0=none, 1=grass, 2=hockey
+...    | 8        | w()    | float64_be   | bg_width           | Background width
+...    | 8        | w()    | float64_be   | bg_height          | Background height
+...    | 8        | w()    | float64_be   | bg_kick_off_radius | Kick-off circle radius
+...    | 8        | w()    | float64_be   | bg_corner_radius   | Corner arc radius
+...    | 8        | w()    | float64_be   | bg_goal_line       | Goal line distance
+...    | 4        | N()    | uint32_be    | bg_color           | Background color (ARGB)
+...    | 8        | w()    | float64_be   | max_view_width     | Max viewport width
+...    | 8        | w()    | float64_be   | max_view_height    | Max viewport height
 ...    | 8        | w()    | float64_be   | spawn_distance     | Distance for spawning
-...    | 1        | F()    | byte         | can_be_stored      | (unknown)
-...    | 1        | F()    | byte         | can_kick_off       | (unknown)
-...    | 1        | F()    | byte         | kick_off_reset     | 0=partial, 1=full
 ```
+
+##### B. Player Physics (92 bytes)
+
+**⚠️ CORRECCIÓN:** PlayerPhysics tiene **12 campos (92 bytes)**, no 7 u 8.
+
+```
+Offset | Bytes | Método | Tipo       | Campo              | Clase Ub  | Notas
+-------|-------|--------|------------|--------------------|-----------|-----------------
+0x00   | 8     | w()    | float64_be | bCoef              | this.o    | Bounce coefficient
+0x08   | 8     | w()    | float64_be | inv_mass           | this.ca   | Inverse mass
+0x10   | 8     | w()    | float64_be | damping            | this.Ea   | Damping
+0x18   | 8     | w()    | float64_be | acceleration       | this.Qe   | Normal acceleration
+0x20   | 8     | w()    | float64_be | kick_acceleration  | this.gf   | Kick acceleration
+0x28   | 8     | w()    | float64_be | kick_damping       | this.hf   | Kick damping
+0x30   | 8     | w()    | float64_be | kick_strength      | this.ef   | Kick strength
+0x38   | 8     | w()    | float64_be | gravity_x          | b.x       | Gravity X component
+0x40   | 8     | w()    | float64_be | gravity_y          | b.y       | Gravity Y component
+0x48   | 4     | N()    | uint32_be  | c_group            | this.B    | Collision group
+0x4C   | 8     | w()    | float64_be | radius             | this.V    | Player disc radius
+0x54   | 8     | w()    | float64_be | inv_mass_2         | this.ff   | Second inverse mass
+```
+
+**Total:** 11×8 + 4 = 92 bytes
+
+##### C. Additional Fields (~8 bytes)
+
+```
+Offset | Bytes | Método      | Tipo         | Campo                   | Notas
+-------|-------|-------------|--------------|-------------------------|------------------
+0x00   | 1-5   | Sb()        | nullable_int | max_view_width_override | Nullable int32
+...    | 1     | F()         | byte         | camera_follow           | Camera mode
+...    | 1     | F()         | byte→bool    | can_be_stored           | Storage flag
+...    | 1     | F()         | byte→bool    | kick_off_reset          | Reset mode
+...    | 1     | F()         | byte         | (unknown)               | ⚠️ Extra byte no documentado
+```
+
+**⚠️ NOTA:** Existe un byte extra (0x00) entre kick_off_reset y vertex_count que no está en game-min.js pero aparece en replays reales.
 
 **Seguido de arrays de componentes** (cada uno empieza con count F()):
 
@@ -341,26 +381,34 @@ Offset | Bytes | Método | Tipo    | Campo         | Notas
 
 **Por cada vértice (i = 0 to vertex_count-1):**
 
+**⚠️ CORRECCIÓN:** Vertex tiene **32 bytes**, no 24. c_mask y c_group son **uint32**, no float64.
+
 ```
-Offset | Bytes | Método | Tipo       | Campo     | Clase.Campo | Notas
--------|-------|--------|------------|-----------|-------------|-------
-0x00   | 8     | w()    | float64_be | x         | G.x         | Coordenada X
-0x08   | 8     | w()    | float64_be | y         | G.y         | Coordenada Y
-0x10   | 8     | w()    | float64_be | bCoef     | G.o         | Bounce coefficient
+Offset | Bytes | Método | Tipo       | Campo     | Clase G   | Notas
+-------|-------|--------|------------|-----------|-----------|-------
+0x00   | 8     | w()    | float64_be | x         | b.x       | Coordenada X
+0x08   | 8     | w()    | float64_be | y         | b.y       | Coordenada Y
+0x10   | 8     | w()    | float64_be | bCoef     | this.o    | Bounce coefficient
+0x18   | 4     | N()    | uint32_be  | cMask     | this.i    | Collision mask (⚠️ uint32, no float64)
+0x1C   | 4     | N()    | uint32_be  | cGroup    | this.B    | Collision group (⚠️ uint32, no float64)
 ```
 
 **Código game-min.js (clase G, línea ~394):**
 ```javascript
 class G {
   ma(a) {
-    this.x = a.w();    // float64 - x coordinate
-    this.y = a.w();    // float64 - y coordinate  
+    let b = new P(0, 0);
+    b.x = a.w();       // float64 - x coordinate
+    b.y = a.w();       // float64 - y coordinate  
+    this.S = b;
     this.o = a.w();    // float64 - bCoef (bounce coefficient)
+    this.i = a.N();    // uint32 - cMask  ⚠️ CORRECCIÓN
+    this.B = a.N();    // uint32 - cGroup ⚠️ CORRECCIÓN
   }
 }
 ```
 
-**Total por vértice:** 24 bytes
+**Total por vértice:** 32 bytes (no 24)
 
 ##### Segments Array
 
@@ -372,40 +420,45 @@ Offset | Bytes | Método | Tipo    | Campo          | Notas
 
 **Por cada segmento (i = 0 to segment_count-1):**
 
+**⚠️ CORRECCIÓN:** Segment usa **sistema de FLAGS** para tamaño variable (19-39 bytes).
+
 ```
-Offset | Bytes | Método | Tipo         | Campo      | Clase.Campo | Notas
--------|-------|--------|--------------|------------|-------------|-------
-0x00   | 1     | F()    | byte         | v0         | I.Rc        | Índice vértice 0
-0x01   | 1     | F()    | byte         | v1         | I.Sc        | Índice vértice 1
-0x02   | 8     | w()    | float64_be   | bias       | I.Hc        | Bias
-0x0A   | 8     | w()    | float64_be   | bCoef      | I.o         | Bounce coefficient
-0x12   | 8     | w()    | float64_be   | curve      | I.wd        | Curvatura
-0x1A   | 8     | w()    | float64_be   | curve_f    | I.xd        | Curvatura F (?)
-0x22   | 1     | F()    | byte→bool    | vis        | I.bb        | Visible
-0x23   | 4     | N()    | uint32_be    | color      | I.Z         | Color ARGB
+Offset | Bytes | Método | Tipo         | Campo      | Clase I   | Notas
+-------|-------|--------|--------------|------------|-----------|-------
+0x00   | 1     | F()    | byte         | flags      | c         | Bitflags: &1=bias, &2=curve, &4=color, &8=visible
+0x01   | 1     | F()    | byte         | v0         | this.$    | Índice vértice 0
+0x02   | 1     | F()    | byte         | v1         | this.ea   | Índice vértice 1
+...    | 8     | w()    | float64_be   | bias       | this.Hc   | Solo si (flags & 1), default 0
+...    | 8     | w()    | float64_be   | curve      | this.vb   | Solo si (flags & 2), default infinity
+...    | 4     | N()    | uint32_be    | color      | this.S    | Solo si (flags & 4), default 0
+...    | -     | -      | bool         | visible    | this.bb   | De (flags & 8) != 0
+...    | 8     | w()    | float64_be   | bCoef      | this.o    | Siempre presente
+...    | 4     | N()    | uint32_be    | cMask      | this.i    | Siempre presente (⚠️ uint32)
+...    | 4     | N()    | uint32_be    | cGroup     | this.B    | Siempre presente (⚠️ uint32)
 ```
 
 **Código game-min.js (clase I, línea ~5425):**
 ```javascript
 class I {
   ma(a, b) {
-    this.Rc = a.F();          // v0 (byte)
-    this.Sc = a.F();          // v1 (byte)
-    this.Hc = a.w();          // bias (float64)
-    this.o = a.w();           // bCoef (float64)
-    var c = a.w();            // curve (float64)
-    this.wd = c;
-    this.xd = a.w();          // curve_f (float64)
-    this.bb = 0 != a.F();     // vis (bool from byte)
-    this.Z = a.N();           // color (uint32)
-    this.Ec = b[this.Rc];     // vertex reference
-    this.Fc = b[this.Sc];     // vertex reference
+    let c = a.F();                    // flags byte
+    this.$ = b[a.F()];                // v0 (byte) - vertex reference
+    this.ea = b[a.F()];               // v1 (byte) - vertex reference
+    this.Hc = 0 != (c & 1) ? a.w() : 0;        // bias (conditional)
+    this.vb = 0 != (c & 2) ? a.w() : 1/0;      // curve (conditional, default infinity)
+    this.S = 0 != (c & 4) ? a.N() : 0;         // color (conditional)
+    this.bb = 0 != (c & 8);                     // visible (from flag)
+    this.o = a.w();                   // bCoef (float64)
+    this.i = a.N();                   // cMask (uint32) ⚠️ CORRECCIÓN
+    this.B = a.N();                   // cGroup (uint32) ⚠️ CORRECCIÓN
     // ... más lógica interna
   }
 }
 ```
 
-**Total por segmento:** 36 bytes
+**Tamaño por segmento:**
+- Mínimo: 3 + 8 + 4 + 4 = **19 bytes** (sin campos opcionales)
+- Máximo: 3 + 8 + 8 + 4 + 8 + 4 + 4 = **39 bytes** (todos los opcionales)
 
 ##### Planes Array
 
@@ -576,22 +629,14 @@ class rb {
 
 ##### Player Physics Defaults
 
-Después de los arrays, vienen los valores por defecto de física de jugadores:
+**⚠️ ELIMINADO:** Esta sección estaba incorrecta. Player Physics se parsea ANTES de los component arrays (ver sección B).
 
-```
-Offset | Bytes | Método | Tipo         | Campo              | Notas
--------|-------|--------|--------------|--------------------|-----------------
-0x00   | 8     | w()    | float64_be   | player_radius      | Radio del jugador
-0x08   | 8     | w()    | float64_be   | player_bCoef       | Bounce coefficient
-0x10   | 8     | w()    | float64_be   | player_inv_mass    | Masa inversa
-0x18   | 8     | w()    | float64_be   | player_damping     | Damping
-0x20   | 8     | w()    | float64_be   | player_accel       | Aceleración normal
-0x28   | 8     | w()    | float64_be   | player_kick_accel  | Aceleración de patada
-0x30   | 8     | w()    | float64_be   | player_kick_damp   | Damping de patada
-0x38   | 8     | w()    | float64_be   | player_kick_str    | Fuerza de patada
-```
-
-**Total player physics:** 64 bytes
+El orden correcto es:
+1. Basic Configuration
+2. **Player Physics (92 bytes) ← Aquí, no al final**
+3. Additional Fields
+4. Component Arrays (vertices, segments, planes, goals, discs, joints)
+5. Spawn Points (red, blue)
 
 #### 6.2.2 IF stadium_type != 255 (Predefined Stadium)
 
@@ -1100,18 +1145,40 @@ Offset | Bytes | Método | Tipo       | Campo    | Notas
 | `Ab()`, `kc()`     | `read_string()`       | Var   | varint+UTF-8 | N/A         |
 | `Cg()`             | `read_varint()`       | 1-5   | varint       | N/A         |
 
-### B. Clase Stadium - Método `q.ma()`
+### B. Clase Stadium - Método `q.ma()` y `q.ws()`
 
-**Ubicación aproximada:** Búsqueda de `class q` en game-min.js
+**Ubicación:** game-min.js líneas ~1900-1950
 
 El parsing del stadium es uno de los más complejos. Se divide en:
 
 1. **Tipo de stadium** (byte): 0-11=predefined, 255=custom
 2. **IF custom (255):**
    - Name (string)
-   - Background config (ints y floats)
-   - Arrays: Vertices, Segments, Planes, Goals, Discs, Joints
-   - Player physics defaults
+   - Background config (8 campos: type, width, height, kick_off, corner, goal_line, color, max_view)
+   - Spawn distance
+   - **Player physics (92 bytes, 12 campos)** ← ANTES de arrays
+   - Additional flags (max_view_override, camera, storage, reset)
+   - Extra byte no documentado
+   - Arrays: Vertices (32B), Segments (19-39B variable), Planes (40B), Goals (33B), Discs (92B), Joints (28B)
+   - Spawn points (red, blue)
+
+**⚠️ CORRECCIONES IMPORTANTES:**
+
+1. **PlayerPhysics:** 92 bytes (no 64), 12 campos (no 7 u 8)
+   - Incluye: gravity_x, gravity_y, c_group (uint32), radius, inv_mass_2
+   
+2. **Vertex:** 32 bytes (no 24)
+   - c_mask y c_group son **uint32** (4 bytes), no float64 (8 bytes)
+   
+3. **Segment:** Tamaño variable (19-39 bytes)
+   - Usa sistema de **FLAGS** para campos opcionales (bias, curve, color)
+   - c_mask y c_group son **uint32**, no float64
+   
+4. **Orden de parsing:**
+   - Player Physics va ANTES de los component arrays, no después
+   - Spawn points van AL FINAL, después de todos los arrays
+
+5. **Byte extra:** Existe un byte 0x00 no documentado entre kick_off_reset y vertex_count
 
 ### C. Validación de Parsing
 
@@ -1207,6 +1274,43 @@ Los colores se codifican como **uint32_be** en formato ARGB:
 - Byte 3 (LSB): Blue
 
 **Ejemplo:** 0xFFE30000 = rojo opaco (alpha=255, red=227, green=0, blue=0)
+
+### Stadium Parsing - Lecciones Aprendidas
+
+**Descubierto mediante ingeniería inversa de game-min.js (Diciembre 2024):**
+
+1. **PlayerPhysics es más grande de lo documentado:**
+   - Documentación original: 64 bytes (8 campos)
+   - **Realidad:** 92 bytes (12 campos)
+   - Campos faltantes: gravity_x, gravity_y, c_group, radius, inv_mass_2
+
+2. **Vertex tiene máscaras uint32:**
+   - Documentación original: 24 bytes (solo x, y, bCoef)
+   - **Realidad:** 32 bytes (x, y, bCoef + c_mask + c_group)
+   - c_mask y c_group son uint32 (4 bytes), NO float64 (8 bytes)
+
+3. **Segment usa codificación variable:**
+   - Documentación original: 36 bytes fijos
+   - **Realidad:** 19-39 bytes con sistema de FLAGS
+   - Byte de flags indica qué campos opcionales están presentes
+   - Esto permite optimizar el tamaño cuando valores son default
+
+4. **Orden de parsing corregido:**
+   ```
+   Correcto (game-min.js):        Incorrecto (doc vieja):
+   1. Basic config                1. Basic config
+   2. Player physics (92B)        2. Component arrays
+   3. Additional flags            3. Player physics (64B)
+   4. Component arrays            4. Additional flags
+   5. Spawn points                5. Spawn points
+   ```
+
+5. **Byte misterioso:** 
+   - Existe 1 byte (0x00) entre kick_off_reset y vertex_count
+   - NO aparece en game-min.js pero SÍ en replays reales
+   - Posible diferencia de versión o campo no documentado
+
+**Impacto:** La documentación vieja dejaba ~1870 bytes sin parsear. La implementación corregida parsea TODOS los bytes del custom stadium.
 
 ---
 
