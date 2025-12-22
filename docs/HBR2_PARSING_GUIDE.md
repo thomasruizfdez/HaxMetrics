@@ -777,8 +777,11 @@ Offset | Bytes    | Método | Tipo         | Campo         | Clase.Campo | Notas
 ...    | 2        | Di()   | int16_be     | unknown_int16_2| ua.Bc      | Unknown short 2
 ...    | 1        | F()    | byte         | unknown_byte  | ua.Zc       | Unknown byte
 ...    | 1        | zf()   | signed byte  | team          | ua.fa.ba    | -1 to 2 (0=spec, 1=red, 2=blue)
-...    | 2        | Di()   | int16_be     | disc_id       | ua.I.Il     | Disc ID (-1 si no tiene)
+...    | 1        | zf()   | signed byte  | disc_id       | ua.I.Il     | Disc array index (-1 si no tiene)
 ```
+
+**NOTA IMPORTANTE:** Aunque el código game-min.js muestra `a.Di()` (int16_be, 2 bytes) para disc_id,
+los archivos .hbr2 reales utilizan `zf()` (signed byte, 1 byte) para este campo.
 
 **Código game-min.js (línea 6889-6907):**
 ```javascript
@@ -798,19 +801,19 @@ xa(a, b) {
   this.Zc = a.F();            // unknown_byte (byte)
   let c = a.zf();             // team (signed byte)
   this.fa = 1 == c ? u.ia : 2 == c ? u.Da : u.Oa;  // Convert to team enum
-  a = a.Di();                 // disc_id (int16_be)
+  a = a.Di();                 // disc_id (int16_be en código, pero 1 byte en archivos reales)
   this.I = 0 > a ? null : b[a];  // Disc reference (null si -1)
 }
 ```
 
-**Total por jugador:** Variable (~40-80 bytes dependiendo de strings)
+**Total por jugador:** Variable (~35-75 bytes dependiendo de strings)
 
 ### 6.5 Team Colors
 
 **Ubicación:** Después de players
 
 **Clase:** `ta` (TeamColor)  
-**Método:** `ma(a)` (ubicación en game-min.js a determinar)
+**Método:** `ma(a)` (línea ~8520 en game-min.js)
 
 Se leen **2 team colors** (red y blue) en ese orden:
 
@@ -819,9 +822,9 @@ Se leen **2 team colors** (red y blue) en ese orden:
 ```
 Offset | Bytes | Método | Tipo         | Campo       | Clase.Campo | Notas
 -------|-------|--------|--------------|-------------|-------------|-------
-0x00   | 1     | F()    | byte         | angle       | ta.angle    | Ángulo (0-255)
-0x01   | 4     | N()    | uint32_be    | text_color  | ta.text     | Color del texto ARGB
-0x05   | 1     | F()    | byte         | num_stripes | ta.num      | Número de rayas (max 3)
+0x00   | 1     | F()    | byte         | angle       | ta.sd       | Ángulo (0-255)
+0x01   | 4     | N()    | uint32_be    | text_color  | ta.pd       | Color del texto ARGB
+0x05   | 1     | F()    | byte         | num_stripes | ta.hb.length| Número de rayas (max 3)
 ```
 
 **IF num_stripes > 0:**
@@ -832,28 +835,32 @@ Offset | Bytes    | Método | Tipo       | Campo   | Notas
 0x00   | 4*N      | N()    | uint32_be  | stripes | Array de colores (N = num_stripes)
 ```
 
-**Código game-min.js (clase ta, aproximadamente línea 198):**
+**Código game-min.js (clase ta, línea 8520-8535):**
 ```javascript
 class ta {
   ma(a) {
-    this.angle = a.F();          // angle (byte)
-    this.text = a.N();           // text_color (uint32_be)
+    this.sd = a.F();             // angle (byte)
+    this.pd = a.N();             // text_color (uint32_be, ARGB)
     let b = a.F();               // num_stripes (byte)
-    this.num = b;
-    this.ma = [];                // stripes array
-    for (let c = 0; c < b; c++) {
-      this.ma.push(a.N());       // stripe color (uint32_be)
-    }
+    if (3 < b) throw v.C("too many");  // Validación: max 3 stripes
+    this.hb = [];                // stripes array
+    let c = 0;
+    for (; c < b; ) ++c, this.hb.push(a.N());  // stripe color (uint32_be, ARGB)
   }
 }
 ```
 
 **Total por team color:** 6 + (4 * num_stripes) bytes
 
-**EJEMPLO:** Colores por defecto (0 stripes):
-- Red: 6 bytes (angle=0, text=0xFFFFFF, stripes=0)
-- Blue: 6 bytes (angle=1, text=0xE56E56, stripes=0)
-- **Total:** 12 bytes
+**EJEMPLO:** Colores observados en fixtures reales:
+- Red: 6 + 4 bytes = 10 bytes (angle=0, text=0x00FFFFFF, stripes=1, stripe[0]=0x00E56E56)
+- Blue: 6 + 4 bytes = 10 bytes (angle=0, text=0x00FFFFFF, stripes=1, stripe[0]=0x005689E5)
+- **Total:** 20 bytes
+
+**Formato de color ARGB:**
+- Los colores usan formato uint32_be ARGB (Alpha, Red, Green, Blue)
+- Ejemplo: 0x00FFFFFF = Alpha=0x00, Red=0xFF, Green=0xFF, Blue=0xFF (blanco con alpha 0)
+- Ejemplo: 0xFFFF0000 = Alpha=0xFF, Red=0xFF, Green=0x00, Blue=0x00 (rojo opaco)
 
 ---
 
