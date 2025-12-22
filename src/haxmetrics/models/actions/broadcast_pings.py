@@ -5,7 +5,7 @@ Broadcasts player ping information.
 """
 
 from dataclasses import dataclass
-from typing import List, Tuple, Dict, TYPE_CHECKING
+from typing import List, Dict, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from haxmetrics.binary_reader import BinaryReader
@@ -21,28 +21,30 @@ class BroadcastPingsAction(Action):
     
     Broadcasts ping information for all players.
     
+    Note: Based on game-min.js, this action stores ping values only (not player IDs).
+    The ping values are stored as varints in the same order as players.
+    
     Attributes:
         count (int): Number of pings
-        pings (List[Tuple[int, int]]): Array of (player_id, ping) tuples
+        pings (List[int]): Array of ping values (varint each)
         
     Parsing:
         Field | Method | Type  | Size | Notes
         ------|--------|-------|------|-------
-        count | F()    | byte  | 1    | Number of pings
-        pings | ...    | array | var  | Array of (player_id: uint32_be, ping: uint16_be)
+        count | Bb()   | varint| 1-5  | Number of pings
+        pings | Bb()...| varint| var  | Array of ping values (varint each)
     """
     count: int
-    pings: List[Tuple[int, int]]
+    pings: List[int]
 
     @classmethod
     def parse(cls, header: ActionHeader, reader: 'BinaryReader') -> 'BroadcastPingsAction':
         """Parse broadcast pings action from binary data."""
-        count = reader.read_byte()  # F() - byte
+        count = reader.read_varint()  # Bb() - varint count
         pings = []
         for _ in range(count):
-            player_id = reader.read_uint32_be()  # N() - uint32_be
-            ping = reader.read_uint16_be()       # Bb() - uint16_be
-            pings.append((player_id, ping))
+            ping = reader.read_varint()  # Bb() - varint ping value
+            pings.append(ping)
         
         return cls(header=header, count=count, pings=pings)
 
@@ -53,5 +55,5 @@ class BroadcastPingsAction(Action):
             "frame_delta": self.frame_delta,
             "sender": self.sender,
             "count": self.count,
-            "pings": [{"player_id": pid, "ping": p} for pid, p in self.pings]
+            "pings": self.pings
         }

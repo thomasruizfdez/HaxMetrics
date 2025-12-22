@@ -14,8 +14,8 @@ class TeamColor:
         Colors are stored as uint32 big-endian values.
         """
         model = cls()
-        # Angle is uint32 big-endian (N() method in original)
-        model.set_angle(reader.read_uint32_be())
+        # Angle is a byte (F() method in original)
+        model.set_angle(reader.read_byte())
         # Text color is uint32 big-endian
         model.set_text_color(hex(reader.read_uint32_be())[2:])
         # Number of stripes/colors
