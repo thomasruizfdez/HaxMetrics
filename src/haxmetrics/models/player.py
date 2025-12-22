@@ -18,7 +18,10 @@ Structure (per player) from ua.xa(a, b) method (line 6889-6907):
 - unknown_int16_2 (int16_be): Unknown short 2
 - unknown_byte (byte): Unknown byte
 - team (signed_byte): Team (-1 to 2, where 0=spec, 1=red, 2=blue)
-- disc_id (int16_be): Disc ID (-1 if no disc)
+- disc_id (signed_byte): Disc array index (-1 if no disc)
+
+NOTE: Actual HaxBall replays use signed_byte (1 byte) for disc_id,
+not int16_be (2 bytes) as game-min.js code suggests.
 """
 
 from dataclasses import dataclass
@@ -90,11 +93,14 @@ class Player:
         kicking = reader.read_byte() != 0  # this.Yb = 0 != a.F()
         unknown_int16_2 = reader.read_int16_be()  # this.Bc = a.Di()
         unknown_byte = reader.read_byte()  # this.Zc = a.F()
-        team_byte = reader.read_byte()  # let c = a.zf() - but we use F() for signed byte
-        # Convert team: 1=red, 2=blue, 0=spectator (game-min.js: 1 == c ? u.ia : 2 == c ? u.Da : u.Oa)
-        # Note: In original it's zf() which is signed byte, but values are 0, 1, 2
-        team = team_byte if team_byte in [0, 1, 2] else 0
-        disc_id = reader.read_int16_be()  # a = a.Di()
+        team_byte = reader.read_byte()  # let c = a.zf() - signed byte
+        # Convert signed byte to signed int for team
+        team_signed = team_byte if team_byte < 128 else team_byte - 256
+        # Convert team: 1=red, 2=blue, 0 or other=spectator
+        team = team_signed if team_signed in [0, 1, 2] else 0
+        # NOTE: Actual HaxBall replays use 1 byte for disc_id, not 2 bytes as game-min.js suggests
+        disc_id_byte = reader.read_byte()  # Disc array index as signed byte
+        disc_id = disc_id_byte if disc_id_byte < 128 else disc_id_byte - 256
         
         return cls(
             admin=admin,
