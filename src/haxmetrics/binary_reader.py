@@ -1,7 +1,10 @@
 # haxmetrics/utils/binary_reader.py
 
+import logging
 import struct
 from typing import Optional, Tuple, Union
+
+logger = logging.getLogger(__name__)
 
 
 class BinaryReader:
@@ -14,11 +17,32 @@ class BinaryReader:
     See: docs/HBR2_PARSING_GUIDE.md Section 3
     """
 
-    def __init__(self, data):
+    def __init__(self, data, enable_logging: bool = False):
         self.data = data
         self.position = 0
         self.length = len(data)
         self.little_endian = True
+        self.enable_logging = enable_logging
+
+    def _log_read(self, method: str, size: int, value, format_hex: bool = False):
+        """Log a read operation"""
+        if not self.enable_logging:
+            return
+        
+        offset_before = self.position - size
+        
+        if format_hex:
+            if isinstance(value, int):
+                logger.debug(f"[{offset_before:04d}] {method:20s} = 0x{value:08X} ({value})")
+            else:
+                logger.debug(f"[{offset_before:04d}] {method:20s} = {value}")
+        else:
+            logger.debug(f"[{offset_before:04d}] {method:20s} = {value}")
+
+    @property
+    def bytes_remaining(self) -> int:
+        """Get number of bytes remaining"""
+        return self.length - self.position
 
     def read_byte(self) -> int:
         """
@@ -34,6 +58,7 @@ class BinaryReader:
 
         result = self.data[self.position]
         self.position += 1
+        self._log_read("read_byte", 1, result, format_hex=True)
         return result
 
     def read_signed_byte(self) -> int:
@@ -50,6 +75,7 @@ class BinaryReader:
 
         result = struct.unpack("b", bytes([self.data[self.position]]))[0]
         self.position += 1
+        self._log_read("read_signed_byte", 1, result)
         return result
 
     def read_bool(self) -> bool:
@@ -145,6 +171,7 @@ class BinaryReader:
             self.data[self.position : self.position + 8],
         )[0]
         self.position += 8
+        self._log_read("read_float64", 8, result)
         return result
 
     def read_string(self) -> Optional[str]:
@@ -156,8 +183,10 @@ class BinaryReader:
         Returns:
             Optional[str]: Decoded string or None if length is 0
         """
+        offset_before = self.position
         length = self.read_varint()
         if length == 0:
+            self._log_read("read_string", 1, None)
             return None
         length -= 1
 
@@ -172,6 +201,8 @@ class BinaryReader:
             result = self.data[self.position : self.position + length].decode("latin-1")
 
         self.position += length
+        size = self.position - offset_before
+        self._log_read("read_string", size, f'"{result}"')
         return result
 
     def read_varint(self) -> int:
@@ -183,11 +214,16 @@ class BinaryReader:
         Returns:
             int: Decoded variable-length integer
         """
+        offset_before = self.position
         result = 0
         shift = 0
 
         while True:
-            byte = self.read_byte()
+            if self.position >= self.length:
+                raise EOFError("End of data")
+            byte = self.data[self.position]
+            self.position += 1
+            
             result |= (byte & 0x7F) << shift
             if not (byte & 0x80):
                 break
@@ -196,6 +232,10 @@ class BinaryReader:
             if shift > 35:
                 raise ValueError("VarInt too large, possible data corruption")
 
+        size = self.position - offset_before
+        # Log the varint result (not individual bytes)
+        if self.enable_logging:
+            logger.debug(f"[{offset_before:04d}] {'read_varint':20s} = {result} (consumed {size} bytes)")
         return result
 
     def read_remaining(self) -> bytes:
@@ -339,6 +379,7 @@ class BinaryReader:
 
         result = struct.unpack(">I", self.data[self.position : self.position + 4])[0]
         self.position += 4
+        self._log_read("read_uint32_be", 4, result, format_hex=True)
         return result
 
     def read_uint16_be(self) -> int:
@@ -355,6 +396,7 @@ class BinaryReader:
 
         result = struct.unpack(">H", self.data[self.position : self.position + 2])[0]
         self.position += 2
+        self._log_read("read_uint16_be", 2, result, format_hex=True)
         return result
 
     def read_int16_be(self) -> int:
@@ -371,6 +413,7 @@ class BinaryReader:
 
         result = struct.unpack(">h", self.data[self.position : self.position + 2])[0]
         self.position += 2
+        self._log_read("read_int16_be", 2, result)
         return result
 
     def read_int32_be(self) -> int:
@@ -387,6 +430,7 @@ class BinaryReader:
 
         result = struct.unpack(">i", self.data[self.position : self.position + 4])[0]
         self.position += 4
+        self._log_read("read_int32_be", 4, result)
         return result
 
     def read_string_auto(self) -> Optional[str]:
@@ -411,6 +455,7 @@ class BinaryReader:
 
         result = struct.unpack(">d", self.data[self.position : self.position + 8])[0]
         self.position += 8
+        self._log_read("read_float64_be", 8, result)
         return result
 
     def read_float_le(self) -> float:
