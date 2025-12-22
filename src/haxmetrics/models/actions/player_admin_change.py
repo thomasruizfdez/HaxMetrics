@@ -1,24 +1,54 @@
-from ..action import Action
+"""
+Type 14: Player admin change action.
+
+Changes admin status of a player.
+"""
+
+from dataclasses import dataclass
+from typing import Dict, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from haxmetrics.binary_reader import BinaryReader
+
+from .base import Action
+from .action_header import ActionHeader
 
 
-class PlayerAdminChange(Action):
+@dataclass(frozen=True)
+class PlayerAdminChangeAction(Action):
     """
-    Action index 14 (Ga in original JS)
-    Admin change
-    xa(): int Ud (player_id), bool jh (is_admin)
+    Player admin change action (Type 14).
+    
+    Changes the admin status of a player.
+    
+    Attributes:
+        player_id (int): Player ID (uint32_be)
+        admin (int): Admin status (0=no admin, 1=admin)
+        
+    Parsing:
+        Field     | Method | Type       | Size | Notes
+        ----------|--------|------------|------|-------
+        player_id | N()    | uint32_be  | 4    | Player ID
+        admin     | F()    | byte       | 1    | 0=no admin, 1=admin
     """
-    def __init__(self):
-        super().__init__()
-        self.type = "PlayerAdminChange"
-        self.player_id = None
-        self.is_admin = None
+    player_id: int
+    admin: int
 
     @classmethod
-    def parse(cls, reader):
-        obj = cls()
-        obj.player_id = reader.read_int32()  # N() - int32
-        obj.is_admin = reader.read_uint8()  # F() - byte
-        return obj
+    def parse(cls, header: ActionHeader, reader: 'BinaryReader') -> 'PlayerAdminChangeAction':
+        """Parse player admin change action from binary data."""
+        player_id = reader.read_uint32_be()  # N() - uint32_be
+        admin = reader.read_byte()           # F() - byte
+        
+        return cls(header=header, player_id=player_id, admin=admin)
 
-    def get_data(self):
-        return {"player_id": self.player_id, "is_admin": self.is_admin}
+    def to_dict(self) -> Dict:
+        """Convert to dictionary representation."""
+        return {
+            "type": "player_admin_change",
+            "frame_delta": self.frame_delta,
+            "sender": self.sender,
+            "player_id": self.player_id,
+            "admin": self.admin,
+            "is_admin": self.admin != 0
+        }

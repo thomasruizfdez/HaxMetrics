@@ -1,32 +1,53 @@
-from ..action import Action
-import zlib
+"""
+Type 11: Stadium update action.
+
+Updates the stadium configuration.
+"""
+
+from dataclasses import dataclass
+from typing import Dict, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from haxmetrics.binary_reader import BinaryReader
+
+from .base import Action
+from .action_header import ActionHeader
 
 
-class StadiumUpdate(Action):
+@dataclass(frozen=True)
+class StadiumUpdateAction(Action):
     """
-    Action index 11 (Ea in original JS)
-    Stadium data update (compressed)
-    xa(): compressed bytes (inflateRaw), then Stadium.parse()
+    Stadium update action (Type 11).
+    
+    Updates the stadium configuration during the game.
+    
+    Note: Untested with real fixture (rare in real games).
+    
+    Attributes:
+        stadium_json (str): Updated stadium configuration as JSON string
+        
+    Parsing:
+        Field        | Method | Type   | Size | Notes
+        -------------|--------|--------|------|-------
+        stadium_json | Ab()   | string | var  | Stadium JSON
     """
-    def __init__(self):
-        super().__init__()
-        self.type = "StadiumUpdate"
-        self.stadium_data = None
+    stadium_json: str
 
     @classmethod
-    def parse(cls, reader):
-        obj = cls()
-        # Read length using varint, then read compressed bytes
-        length = reader.read_varint()  # Bb()
-        compressed_data = reader.read_bytes(length)  # sb()
-        # Decompress using inflateRaw (same as zlib with negative wbits)
-        try:
-            obj.stadium_data = zlib.decompress(compressed_data, wbits=-15)
-        except Exception as e:
-            obj.stadium_data = compressed_data  # Store raw if decompression fails
-        return obj
+    def parse(cls, header: ActionHeader, reader: 'BinaryReader') -> 'StadiumUpdateAction':
+        """Parse stadium update action from binary data."""
+        stadium_json = reader.read_string()  # Ab() - string
+        
+        return cls(
+            header=header,
+            stadium_json=stadium_json or ""
+        )
 
-    def get_data(self):
+    def to_dict(self) -> Dict:
+        """Convert to dictionary representation."""
         return {
-            "stadium_data_size": len(self.stadium_data) if self.stadium_data else 0
+            "type": "stadium_update",
+            "frame_delta": self.frame_delta,
+            "sender": self.sender,
+            "stadium_json": self.stadium_json
         }

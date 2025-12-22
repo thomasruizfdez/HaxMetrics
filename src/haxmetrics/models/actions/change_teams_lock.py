@@ -1,22 +1,49 @@
-from ..action import Action
+"""
+Type 13: Change teams lock action.
+
+Lock or unlock team changes.
+"""
+
+from dataclasses import dataclass
+from typing import Dict, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from haxmetrics.binary_reader import BinaryReader
+
+from .base import Action
+from .action_header import ActionHeader
 
 
-class ChangeTeamsLock(Action):
+@dataclass(frozen=True)
+class ChangeTeamsLockAction(Action):
     """
-    Action index 13 (Fa in original JS)
-    Lock teams
-    xa(): bool newValue
+    Change teams lock action (Type 13).
+    
+    Locks or unlocks team changes.
+    
+    Attributes:
+        locked (int): Lock state (0=unlocked, 1=locked)
+        
+    Parsing:
+        Field  | Method | Type | Size | Notes
+        -------|--------|------|------|-------
+        locked | F()    | byte | 1    | 0=unlocked, 1=locked
     """
-    def __init__(self):
-        super().__init__()
-        self.type = "ChangeTeamsLock"
-        self.teams_locked = None
+    locked: int
 
     @classmethod
-    def parse(cls, reader):
-        obj = cls()
-        obj.teams_locked = reader.read_uint8()
-        return obj
+    def parse(cls, header: ActionHeader, reader: 'BinaryReader') -> 'ChangeTeamsLockAction':
+        """Parse change teams lock action from binary data."""
+        locked = reader.read_byte()  # F() - byte
+        
+        return cls(header=header, locked=locked)
 
-    def get_data(self):
-        return {"teams_locked": self.teams_locked}
+    def to_dict(self) -> Dict:
+        """Convert to dictionary representation."""
+        return {
+            "type": "change_teams_lock",
+            "frame_delta": self.frame_delta,
+            "sender": self.sender,
+            "locked": self.locked,
+            "is_locked": self.locked != 0
+        }

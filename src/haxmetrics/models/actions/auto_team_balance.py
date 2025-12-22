@@ -1,21 +1,49 @@
-from ..action import Action
+"""
+Type 15: Auto team balance action.
+
+Enables or disables auto team balance.
+"""
+
+from dataclasses import dataclass
+from typing import Dict, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from haxmetrics.binary_reader import BinaryReader
+
+from .base import Action
+from .action_header import ActionHeader
 
 
-class AutoTeamBalance(Action):
+@dataclass(frozen=True)
+class AutoTeamBalanceAction(Action):
     """
-    Action index 15 (Xa in original JS)
-    Auto team balance - no data fields
-    xa(): (empty)
+    Auto team balance action (Type 15).
+    
+    Enables or disables automatic team balancing.
+    
+    Attributes:
+        enabled (int): Enable state (0=disabled, 1=enabled)
+        
+    Parsing:
+        Field   | Method | Type | Size | Notes
+        --------|--------|------|------|-------
+        enabled | F()    | byte | 1    | 0=disabled, 1=enabled
     """
-    def __init__(self):
-        super().__init__()
-        self.type = "AutoTeamBalance"
+    enabled: int
 
     @classmethod
-    def parse(cls, reader):
-        obj = cls()
-        # No fields to parse
-        return obj
+    def parse(cls, header: ActionHeader, reader: 'BinaryReader') -> 'AutoTeamBalanceAction':
+        """Parse auto team balance action from binary data."""
+        enabled = reader.read_byte()  # F() - byte
+        
+        return cls(header=header, enabled=enabled)
 
-    def get_data(self):
-        return {}
+    def to_dict(self) -> Dict:
+        """Convert to dictionary representation."""
+        return {
+            "type": "auto_team_balance",
+            "frame_delta": self.frame_delta,
+            "sender": self.sender,
+            "enabled": self.enabled,
+            "is_enabled": self.enabled != 0
+        }

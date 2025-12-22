@@ -1,25 +1,51 @@
-from ..action import Action
-import zlib
+"""
+Type 2: Change stadium action.
+
+Changes the stadium/map.
+"""
+
+from dataclasses import dataclass
+from typing import Dict, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from haxmetrics.binary_reader import BinaryReader
+
+from .base import Action
+from .action_header import ActionHeader
 
 
-class ChangeStadium(Action):
+@dataclass(frozen=True)
+class ChangeStadiumAction(Action):
     """
-    Action index 2 (cb in original JS)
-    Stadium change - loads stadium from compressed bytes
-    xa(): bytes dh (stadium data, length-prefixed)
+    Change stadium action (Type 2).
+    
+    Changes the stadium/map configuration.
+    
+    Attributes:
+        stadium_json (str): Stadium configuration as JSON string
+        
+    Parsing:
+        Field        | Method | Type   | Size | Notes
+        -------------|--------|--------|------|-------
+        stadium_json | Ab()   | string | var  | Stadium JSON
     """
-    def __init__(self):
-        super().__init__()
-        self.type = "ChangeStadium"
-        self.stadium = None
+    stadium_json: str
 
     @classmethod
-    def parse(cls, reader):
-        obj = cls()
-        # Read length as varint, then read that many bytes
-        length = reader.read_varint()  # Bb()
-        obj.stadium = reader.read_bytes(length)  # bm()
-        return obj
+    def parse(cls, header: ActionHeader, reader: 'BinaryReader') -> 'ChangeStadiumAction':
+        """Parse change stadium action from binary data."""
+        stadium_json = reader.read_string()  # Ab() - string
+        
+        return cls(
+            header=header,
+            stadium_json=stadium_json or ""
+        )
 
-    def get_data(self):
-        return {"stadium_data_size": len(self.stadium) if self.stadium else 0}
+    def to_dict(self) -> Dict:
+        """Convert to dictionary representation."""
+        return {
+            "type": "change_stadium",
+            "frame_delta": self.frame_delta,
+            "sender": self.sender,
+            "stadium_json": self.stadium_json
+        }
