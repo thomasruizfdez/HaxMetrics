@@ -155,9 +155,38 @@ class TestFullReplaysValidation:
             failure = report.failure_section or "None"
             print(f"  {replay_file}: {progress:.1f}% parsed, failed at: {failure}")
         
-        # Save matrix to file
+        # Save matrix to file with actual content
         matrix_file = tmp_path / "validation_matrix.txt"
         with open(matrix_file, 'w') as f:
-            f.write(f"Generated comparison matrix saved to: {matrix_file}\n")
+            f.write("REPLAY VALIDATION MATRIX\n")
+            f.write("=" * 100 + "\n")
+            
+            # Write header
+            header = f"{'Replay':<35}"
+            for section in sections:
+                header += f" | {section[:8]:^8}"
+            f.write(header + "\n")
+            f.write("-" * 100 + "\n")
+            
+            # Write rows
+            for replay_file, report in results.items():
+                row = f"{replay_file:<35}"
+                for section in sections:
+                    if section in report.checkpoints:
+                        result = report.checkpoints[section]
+                        symbol = "✅" if result.status == "✅ SUCCESS" else "❌"
+                    else:
+                        symbol = "-"
+                    row += f" |    {symbol:^2}   "
+                f.write(row + "\n")
+            
+            f.write("=" * 100 + "\n\n")
+            
+            # Write summary
+            f.write("Summary:\n")
+            for replay_file, report in results.items():
+                progress = report.parsing_progress
+                failure = report.failure_section or "None"
+                f.write(f"  {replay_file}: {progress:.1f}% parsed, failed at: {failure}\n")
         
         print(f"\nComparison matrix saved to: {matrix_file}")

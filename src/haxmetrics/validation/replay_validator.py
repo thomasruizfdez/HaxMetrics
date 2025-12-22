@@ -247,7 +247,16 @@ class ReplayValidator:
         return header
     
     def _parse_messages(self, reader, debug):
-        """Parse messages section"""
+        """
+        Parse messages section with decompression.
+        
+        IMPORTANT: This method decompresses the remaining data and replaces
+        the reader's internal state. This is necessary because all subsequent
+        sections (room_basic, stadium, etc.) are stored in the decompressed data.
+        
+        This is the standard HBR2 format: header is uncompressed, everything
+        else after the header is compressed with deflate.
+        """
         # Decompress first
         import zlib
         
@@ -263,7 +272,8 @@ class ReplayValidator:
         from haxmetrics.models.messages import Messages
         messages = Messages.parse(reader_decompressed)
         
-        # Update main reader to use decompressed data for subsequent sections
+        # Replace reader's internal state with decompressed data
+        # This is intentional: all subsequent sections need to read from decompressed data
         reader.data = decompressed
         reader.position = reader_decompressed.position
         reader.length = len(decompressed)
@@ -291,9 +301,13 @@ class ReplayValidator:
         """Parse stadium section"""
         from haxmetrics.models.stadium import parse_stadium
         
+        # Custom stadium type = 255, predefined stadiums = 0-11
+        CUSTOM_STADIUM_TYPE = 255
+        
         stadium = parse_stadium(reader)
         
-        debug.log_field("type", stadium.stadium_type if hasattr(stadium, 'stadium_type') else 255)
+        # Log stadium type (255 for custom, 0-11 for predefined)
+        debug.log_field("type", stadium.stadium_type if hasattr(stadium, 'stadium_type') else CUSTOM_STADIUM_TYPE)
         
         if hasattr(stadium, 'name'):
             debug.log_field("name", stadium.name)
