@@ -250,21 +250,27 @@ class ReplayValidator:
         """Parse messages section"""
         # Decompress first
         import zlib
-        compressed = reader.get_remaining_bytes()
+        
+        # Store the compressed size for tracking
+        compressed_size = reader.bytes_remaining
+        compressed = reader.read_remaining()  # This advances position to end
         decompressed = zlib.decompress(compressed, wbits=-15)
         
         # Create new reader for decompressed data
         from haxmetrics.binary_reader import BinaryReader
         reader_decompressed = BinaryReader(decompressed, enable_logging=self.enable_logging)
         
-        # Replace reader reference (hack for checkpoint system)
-        reader.data = decompressed
-        reader.position = 0
-        
         from haxmetrics.models.messages import Messages
-        messages = Messages.parse(reader)
+        messages = Messages.parse(reader_decompressed)
+        
+        # Update main reader to use decompressed data for subsequent sections
+        reader.data = decompressed
+        reader.position = reader_decompressed.position
+        reader.length = len(decompressed)
         
         debug.log_field("count", len(messages))
+        debug.log_field("compressed_size", compressed_size)
+        debug.log_field("decompressed_size", len(decompressed))
         
         return messages
     
