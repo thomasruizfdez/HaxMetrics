@@ -1,22 +1,49 @@
-from ..action import Action
+"""
+Type 9: Change paused action.
+
+Toggle pause state of the game.
+"""
+
+from dataclasses import dataclass
+from typing import Dict, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from haxmetrics.binary_reader import BinaryReader
+
+from .base import Action
+from .action_header import ActionHeader
 
 
-class ChangePaused(Action):
+@dataclass(frozen=True)
+class ChangePausedAction(Action):
     """
-    Action index 9 (Za in original JS)
-    Pause toggle
-    xa(): bool Pf (paused state)
+    Change paused action (Type 9).
+    
+    Toggles the pause state of the game.
+    
+    Attributes:
+        paused (int): Pause state (0=unpaused, 1=paused)
+        
+    Parsing:
+        Field  | Method | Type | Size | Notes
+        -------|--------|------|------|-------
+        paused | F()    | byte | 1    | 0=unpaused, 1=paused
     """
-    def __init__(self):
-        super().__init__()
-        self.type = "ChangePaused"
-        self.paused = None
+    paused: int
 
     @classmethod
-    def parse(cls, reader):
-        obj = cls()
-        obj.paused = reader.read_uint8()
-        return obj
+    def parse(cls, header: ActionHeader, reader: 'BinaryReader') -> 'ChangePausedAction':
+        """Parse change paused action from binary data."""
+        paused = reader.read_byte()  # F() - byte
+        
+        return cls(header=header, paused=paused)
 
-    def get_data(self):
-        return {"paused": self.paused}
+    def to_dict(self) -> Dict:
+        """Convert to dictionary representation."""
+        return {
+            "type": "change_paused",
+            "frame_delta": self.frame_delta,
+            "sender": self.sender,
+            "paused": self.paused,
+            "is_paused": self.paused != 0
+        }

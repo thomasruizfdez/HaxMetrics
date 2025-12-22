@@ -36,6 +36,22 @@ class BinaryReader:
         self.position += 1
         return result
 
+    def read_signed_byte(self) -> int:
+        """
+        Read 1 signed byte (-128 to 127).
+
+        Corresponds to: zf() in game-min.js
+
+        Returns:
+            int: Signed byte value
+        """
+        if self.position >= self.length:
+            raise EOFError("End of data")
+
+        result = struct.unpack("b", bytes([self.data[self.position]]))[0]
+        self.position += 1
+        return result
+
     def read_bool(self) -> bool:
         """Read a boolean value (0 = False, non-zero = True)."""
         return self.read_byte() != 0
@@ -281,6 +297,10 @@ class BinaryReader:
     def eof(self) -> bool:
         """Check if at end of data."""
         return self.position >= self.length
+
+    def is_eof(self) -> bool:
+        """Alias for eof() for consistency with problem statement."""
+        return self.eof()
 
     def read_position(self) -> Tuple[float, float]:
         """Read a 2D position (x, y) as two float64 values."""

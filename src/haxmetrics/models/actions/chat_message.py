@@ -1,24 +1,53 @@
-from ..action import Action
+"""
+Type 4: Chat message action.
+
+Chat message from player.
+"""
+
+from dataclasses import dataclass
+from typing import Dict, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from haxmetrics.binary_reader import BinaryReader
+
+from .base import Action
+from .action_header import ActionHeader
 
 
-class ChatMessage(Action):
+@dataclass(frozen=True)
+class ChatMessageAction(Action):
     """
-    Action index 4 (Ya in original JS)
-    Chat message from player
-    xa(): string $c (max 140)
+    Chat message action (Type 4).
+    
+    Represents a chat message from a player.
+    
+    Attributes:
+        message (str): Chat message text (max 140 characters)
+        
+    Parsing:
+        Field   | Method | Type   | Size | Notes
+        --------|--------|--------|------|-------
+        message | Ab()   | string | var  | Chat message text
     """
-    def __init__(self):
-        super().__init__()
-        self.type = "ChatMessage"
-        self.message = None
+    message: str
 
     @classmethod
-    def parse(cls, reader):
-        obj = cls()
-        obj.message = reader.read_string()  # kc() - length-prefixed string
-        if obj.message and len(obj.message) > 140:
-            raise ValueError("message too long")
-        return obj
+    def parse(cls, header: ActionHeader, reader: 'BinaryReader') -> 'ChatMessageAction':
+        """Parse chat message action from binary data."""
+        message = reader.read_string()  # Ab() - string
+        if message and len(message) > 140:
+            raise ValueError("Chat message too long (max 140 characters)")
+        
+        return cls(
+            header=header,
+            message=message or ""
+        )
 
-    def get_data(self):
-        return {"message": self.message}
+    def to_dict(self) -> Dict:
+        """Convert to dictionary representation."""
+        return {
+            "type": "chat_message",
+            "frame_delta": self.frame_delta,
+            "sender": self.sender,
+            "message": self.message
+        }

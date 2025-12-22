@@ -1,26 +1,59 @@
-from ..action import Action
+"""
+Type 22: Player avatar set action.
+
+Sets a player's avatar (admin action).
+"""
+
+from dataclasses import dataclass
+from typing import Dict, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from haxmetrics.binary_reader import BinaryReader
+
+from .base import Action
+from .action_header import ActionHeader
 
 
-class PlayerAvatarSet(Action):
+@dataclass(frozen=True)
+class PlayerAvatarSetAction(Action):
     """
-    Action index 22 (Gb in original JS)
-    Player avatar set
-    xa(): nullable string ac (max 2 chars), int Ke (player_id)
+    Player avatar set action (Type 22).
+    
+    Sets a player's avatar (typically an admin action).
+    
+    Note: Untested with real fixture (rare in real games).
+    
+    Attributes:
+        player_id (int): Player ID (uint32_be)
+        avatar (str): Avatar string
+        
+    Parsing:
+        Field     | Method | Type       | Size | Notes
+        ----------|--------|------------|------|-------
+        player_id | N()    | uint32_be  | 4    | Player ID
+        avatar    | Ab()   | string     | var  | Avatar
     """
-    def __init__(self):
-        super().__init__()
-        self.type = "PlayerAvatarSet"
-        self.avatar = None
-        self.player_id = None
+    player_id: int
+    avatar: str
 
     @classmethod
-    def parse(cls, reader):
-        obj = cls()
-        obj.avatar = reader.read_nullable_string()  # Ab() - nullable string
-        if obj.avatar and len(obj.avatar) > 2:
-            obj.avatar = obj.avatar[:2]  # Truncate to 2 chars
-        obj.player_id = reader.read_int32()  # N() - int32
-        return obj
+    def parse(cls, header: ActionHeader, reader: 'BinaryReader') -> 'PlayerAvatarSetAction':
+        """Parse player avatar set action from binary data."""
+        player_id = reader.read_uint32_be()  # N() - uint32_be
+        avatar = reader.read_string()        # Ab() - string
+        
+        return cls(
+            header=header,
+            player_id=player_id,
+            avatar=avatar or ""
+        )
 
-    def get_data(self):
-        return {"avatar": self.avatar, "player_id": self.player_id}
+    def to_dict(self) -> Dict:
+        """Convert to dictionary representation."""
+        return {
+            "type": "player_avatar_set",
+            "frame_delta": self.frame_delta,
+            "sender": self.sender,
+            "player_id": self.player_id,
+            "avatar": self.avatar
+        }

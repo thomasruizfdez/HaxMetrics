@@ -220,7 +220,7 @@ class Room:
         print(f"Player count: {player_count}")
         for i in range(player_count):
             try:
-                player = Player.parse(reader, version)
+                player = Player.parse(reader)
                 room.players.append(player)
             except Exception as e:
                 print(f"Warning: Failed to parse player {i+1}/{player_count}: {e}")
