@@ -9,6 +9,15 @@ Exports:
     - Component classes: Vertex, Segment, Plane, Goal, StadiumDisc, Joint, PlayerPhysics
 """
 
+import warnings
+
+warnings.warn(
+    "haxmetrics.models.stadium is deprecated and will be removed in v2.0.0. "
+    "Use the node-haxball→Parquet pipeline instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
 from .base import Stadium
 from .components import (
     Goal,

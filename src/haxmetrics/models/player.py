@@ -24,10 +24,18 @@ NOTE: Actual HaxBall replays use signed_byte (1 byte) for disc_id,
 not int16_be (2 bytes) as game-min.js code suggests.
 """
 
+import warnings
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 from haxmetrics.binary_reader import BinaryReader
+
+warnings.warn(
+    "haxmetrics.models.player is deprecated and will be removed in v2.0.0. "
+    "Use the node-haxball→Parquet pipeline instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 
 @dataclass(frozen=True)

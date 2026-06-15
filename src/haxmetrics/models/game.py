@@ -1,4 +1,12 @@
+import warnings
 from typing import List, Optional, Any, Dict
+
+warnings.warn(
+    "haxmetrics.models.game is deprecated and will be removed in v2.0.0. "
+    "Use the node-haxball→Parquet pipeline instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 
 class Game:

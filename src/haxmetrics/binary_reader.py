@@ -2,6 +2,7 @@
 
 import logging
 import struct
+import warnings
 from typing import Optional, Tuple, Union
 
 logger = logging.getLogger(__name__)
@@ -18,6 +19,12 @@ class BinaryReader:
     """
 
     def __init__(self, data, enable_logging: bool = False):
+        warnings.warn(
+            "BinaryReader is deprecated and will be removed in v2.0.0. "
+            "Use the node-haxball→Parquet pipeline instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self.data = data
         self.position = 0
         self.length = len(data)

@@ -4,6 +4,15 @@ Actions module - HaxBall replay action parsing.
 Exports all action types, enums, and collection classes.
 """
 
+import warnings
+
+warnings.warn(
+    "haxmetrics.models.actions is deprecated and will be removed in v2.0.0. "
+    "Use the node-haxball→Parquet pipeline instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
 # Core classes
 from .action_type import ActionType
 from .action_header import ActionHeader

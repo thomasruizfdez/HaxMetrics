@@ -11,10 +11,18 @@ Formato:
         - String: Texto del mensaje (varint length + UTF-8)
 """
 
+import warnings
 from dataclasses import dataclass
 from typing import Any, Dict, Iterator, List
 
 from haxmetrics.binary_reader import BinaryReader
+
+warnings.warn(
+    "haxmetrics.models.messages is deprecated and will be removed in v2.0.0. "
+    "Use the node-haxball→Parquet pipeline instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 
 @dataclass(frozen=True)

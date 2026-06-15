@@ -8,10 +8,18 @@ Formato:
     - Bytes 8-11: Duration in frames (uint32_be)
 """
 
+import warnings
 from dataclasses import dataclass
 from typing import Any, Dict
 
 from haxmetrics.binary_reader import BinaryReader
+
+warnings.warn(
+    "haxmetrics.models.header is deprecated and will be removed in v2.0.0. "
+    "Use the node-haxball→Parquet pipeline instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 
 @dataclass(frozen=True)

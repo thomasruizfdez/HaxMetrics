@@ -52,30 +52,32 @@ isort src/haxmetrics
 flake8 src/haxmetrics
 ```
 
-### Node.js (Decoders)
+### Node.js (Extractor)
 
 ```bash
 npm install
 
-# Decode a replay to JSON (recommended)
-npm run decode:v2 -- <file.hbr2> [output.json]
-
-# Full decoder V1 (original Haxball implementation)
-npm run decode:full -- <file.hbr2> [output.json]
-
-# Basic metadata-only decoder
-npm run decode -- <file.hbr2> [output.json]
+# Extract a replay to Parquet (production path)
+npm run extract -- <replay.hbr2> <outdir>
 
 # Debug: list internal classes in replay-min.js
 npm run debug:replay
 ```
 
+> **Note:** `decode`, `decode:full`, and `decode:v2` scripts were removed in S5 (#31).
+> The old `scripts/decode_hbr2*.js` files are preserved in `scripts/legacy/` for reference.
+
 ## Architecture
 
-HaxMetrics parses Haxball `.hbr2` binary replay files. There are two parallel implementations:
+HaxMetrics extracts stats from Haxball `.hbr2` replay files via the node-haxball pipeline:
 
-- **Python parser** (`src/haxmetrics/`) — modular, typed, test-driven; primary development target
-- **Node.js decoders** (`decode_hbr2*.js`) — leverage the official Haxball JS runtime (`node-haxball`) to extract complete JSON; V2 is recommended
+```
+.hbr2 → scripts/extract_replay.js → Parquet → src/haxmetrics/analytics.py → JSON
+```
+
+> **Deprecated:** The Python binary parser (`binary_reader.py`, `models/`, `parser.py`) is
+> frozen and emits `DeprecationWarning` on use. No new features will be added. Planned
+> removal in v2.0.0. See #26 (PRD F0–F1) for context.
 
 ### HBR2 Format (sequential sections)
 
@@ -93,21 +95,23 @@ zlib-compressed body (wbits=-15)
 
 The full byte-by-byte spec is in `docs/HBR2_PARSING_GUIDE.md`.
 
-### Python Parser Layer Stack
+### Python Parser Layer Stack (DEPRECATED)
+
+> All of the following is frozen and deprecated (emits `DeprecationWarning`). Removal planned for v2.0.0.
 
 ```
 src/haxmetrics/
-├── binary_reader.py     # Low-level: read_byte, read_varint, read_string, etc. (big-endian)
+├── binary_reader.py     # ⚠️ DEPRECATED — BinaryReader warns on instantiation
 ├── models/
-│   ├── header.py        # Header dataclass — first 12 bytes before decompression
-│   ├── messages.py      # Messages collection — first section after decompression
-│   ├── room.py          # RoomBasic — second section
-│   ├── stadium/         # Stadium hierarchy — predefined and custom map geometry
-│   ├── game.py          # GameState — disc positions and scores
-│   ├── player.py        # Player dataclass with embedded disc physics
-│   ├── team_color.py    # TeamColors
-│   └── actions/         # Actions — 24 types parsed via factory function
-├── parser.py            # ⚠️ Legacy Parser class — deprecated, removal in v2.0.0
+│   ├── header.py        # ⚠️ DEPRECATED — warns on import
+│   ├── messages.py      # ⚠️ DEPRECATED — warns on import
+│   ├── room.py          # ⚠️ DEPRECATED — warns on import
+│   ├── stadium/         # ⚠️ DEPRECATED — warns on import
+│   ├── game.py          # ⚠️ DEPRECATED — warns on import
+│   ├── player.py        # ⚠️ DEPRECATED — warns on import
+│   ├── team_color.py    # ⚠️ DEPRECATED — warns on import
+│   └── actions/         # ⚠️ DEPRECATED — warns on import
+├── parser.py            # ⚠️ DEPRECATED — warns on import (removal in v2.0.0)
 └── cli.py               # Click CLI entry point (haxmetrics command)
 ```
 
