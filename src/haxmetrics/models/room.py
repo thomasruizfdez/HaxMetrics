@@ -207,7 +207,6 @@ class Room:
         if game_active:
             room.set_in_progress(True)
             room.game = Game.parse(reader, room)
-            print(f"Game is active - parsed game state at frame {room.game.frame}")
         else:
             room.set_in_progress(False)
 
@@ -217,13 +216,11 @@ class Room:
 
         room.players = []
         player_count = reader.read_byte()
-        print(f"Player count: {player_count}")
         for i in range(player_count):
             try:
                 player = Player.parse(reader)
                 room.players.append(player)
             except Exception as e:
-                print(f"Warning: Failed to parse player {i+1}/{player_count}: {e}")
                 break
 
         # 12. Parse team colors (red and blue)
