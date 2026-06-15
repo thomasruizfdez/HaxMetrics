@@ -14,7 +14,7 @@ from pathlib import Path
 
 import click
 
-from haxmetrics.analytics import compute_stats
+from haxmetrics.analytics import compute_stats, stats_to_dict
 
 
 def _extractor_path() -> str:
@@ -48,25 +48,7 @@ def analyze(replay: str, output: str | None) -> None:
 
         stats = compute_stats(tmp)
 
-    result = {
-        "replay": Path(replay).name,
-        "score": {"red": stats.red, "blue": stats.blue},
-        "duration": {
-            "frames": stats.duration_frames,
-            "seconds": stats.duration_seconds,
-        },
-        "score_invariant_ok": stats.score_invariant_ok,
-        "players": [
-            {
-                "id": p.player_id,
-                "name": p.name,
-                "team": p.team_id,
-                "frames_played": p.frames_played,
-                "seconds_played": p.seconds_played,
-            }
-            for p in stats.players
-        ],
-    }
+    result = stats_to_dict(Path(replay).name, stats)
     payload = json.dumps(result, indent=2)
     if output:
         Path(output).write_text(payload, encoding="utf-8")
