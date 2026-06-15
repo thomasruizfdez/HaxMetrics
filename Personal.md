@@ -2,6 +2,12 @@
 
 ## Monorepo exploration with CodeGraph
 
+> **Nunca verifiques la existencia de `.codegraph/` con Glob, Bash o Read.**
+> Los directorios ocultos no aparecen en Glob y pueden tener permisos restringidos.
+> Llama directamente a `codegraph_explore` — si el índice no existe, la herramienta lo
+> indica por sí sola. Omite CodeGraph solo cuando la herramienta misma reporte ausencia
+> de índice.
+
 When CodeGraph is available, use it before broad file exploration.
 
 Default strategy:
@@ -22,3 +28,12 @@ If investigating in Plan Mode, first produce a search strategy:
 - tests to inspect
 - directories explicitly out of scope
 - CodeGraph queries/tools to use
+
+## Selección rápida de herramienta CodeGraph
+
+| Pregunta                                          | Herramienta          |
+|---------------------------------------------------|----------------------|
+| ¿Cómo funciona X? / ¿Dónde está X? / flujo A→B   | `codegraph_explore`  |
+| Source + callers de un símbolo concreto           | `codegraph_node`     |
+| ¿Qué llama a X? (antes de cambiar una API)        | `codegraph_callers`  |
+| Búsqueda por nombre parcial de símbolo            | `codegraph_search`   |
