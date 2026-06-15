@@ -38,6 +38,26 @@ def test_analyze_produces_stats_json_with_score_and_duration(tmp_path):
 
 
 @pytest.mark.integration
+def test_analyze_includes_players_with_time_played(tmp_path):
+    out = tmp_path / "stats.json"
+
+    result = CliRunner().invoke(main, ["analyze", str(REPLAY), "-o", str(out)])
+
+    assert result.exit_code == 0, result.output
+    data = json.loads(out.read_text())
+
+    assert "players" in data
+    assert len(data["players"]) > 0
+    for p in data["players"]:
+        assert "id" in p
+        assert "name" in p
+        assert "team" in p
+        assert "frames_played" in p
+        assert "seconds_played" in p
+    assert sum(p["frames_played"] for p in data["players"]) > 0
+
+
+@pytest.mark.integration
 def test_analyze_invalid_replay_exits_nonzero_with_clear_error(tmp_path):
     bad = tmp_path / "garbage.hbr2"
     bad.write_bytes(b"not a real replay file")

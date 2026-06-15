@@ -6,11 +6,21 @@ import pyarrow.parquet as pq
 from haxmetrics.analytics import compute_stats
 
 
-def _write_fixture(parquet_dir, *, scoring_teams, **meta_overrides):
-    """Write the minimal meta+events Parquet contract the extractor produces.
+def _write_fixture(
+    parquet_dir,
+    *,
+    scoring_teams,
+    players=(),      # [(player_id, name, team_id), ...]
+    player_frames=(), # [(frame_no, object_id, team), ...] — active-game player rows
+    **meta_overrides,
+):
+    """Write the full Parquet contract the extractor produces.
 
-    ``scoring_teams`` is the per-goal scoring team (1=red, 2=blue) used to
-    reconstruct the score; ``meta_overrides`` set the recorded score etc.
+    ``scoring_teams`` — per-goal scoring team (1=red, 2=blue).
+    ``players``       — rows for players.parquet; empty list = no players.
+    ``player_frames`` — (frame_no, object_id, team) rows added to frames.parquet
+                        as object_kind='player' rows; empty = no frames.
+    ``meta_overrides``— override meta fields.
     """
     meta = {
         "total_frames": 22247,
@@ -31,10 +41,97 @@ def _write_fixture(parquet_dir, *, scoring_teams, **meta_overrides):
     events = {
         "frame_no": [1000 * (i + 1) for i in range(len(scoring_teams))],
         "kind": ["goal"] * len(scoring_teams),
-        "team_id": [3 - t for t in scoring_teams],  # raw marker (conceding team)
+        "team_id": [3 - t for t in scoring_teams],
         "scoring_team": list(scoring_teams),
     }
     pq.write_table(pa.table(events), str(parquet_dir / "events.parquet"))
+
+    pq.write_table(
+        pa.table({
+            "player_id": pa.array([p[0] for p in players], type=pa.int32()),
+            "name": pa.array([p[1] for p in players], type=pa.string()),
+            "team_id": pa.array([p[2] for p in players], type=pa.int32()),
+        }),
+        str(parquet_dir / "players.parquet"),
+    )
+
+    pq.write_table(
+        pa.table({
+            "frame_no": pa.array([f[0] for f in player_frames], type=pa.int64()),
+            "object_kind": pa.array(["player"] * len(player_frames), type=pa.string()),
+            "object_id": pa.array([f[1] for f in player_frames], type=pa.int32()),
+            "team": pa.array([f[2] for f in player_frames], type=pa.int32()),
+        }),
+        str(parquet_dir / "frames.parquet"),
+    )
+
+
+def test_compute_stats_includes_players(tmp_path):
+    _write_fixture(
+        tmp_path,
+        scoring_teams=[2],
+        players=[(1, "Alice", 1), (2, "Bob", 2)],
+    )
+
+    stats = compute_stats(tmp_path)
+
+    ids = {p.player_id for p in stats.players}
+    assert ids == {1, 2}
+    alice = next(p for p in stats.players if p.player_id == 1)
+    assert alice.name == "Alice"
+    assert alice.team_id == 1
+
+
+def test_player_frames_played_counts_active_game_frames(tmp_path):
+    # Alice played 3 frames (team=1), Bob played 2 frames (team=2)
+    _write_fixture(
+        tmp_path,
+        scoring_teams=[],
+        recorded_red=0, recorded_blue=0,
+        players=[(1, "Alice", 1), (2, "Bob", 2)],
+        player_frames=[
+            (10, 1, 1), (20, 1, 1), (30, 1, 1),  # Alice, 3 frames
+            (10, 2, 2), (20, 2, 2),                 # Bob, 2 frames
+        ],
+    )
+
+    stats = compute_stats(tmp_path)
+
+    alice = next(p for p in stats.players if p.player_id == 1)
+    bob = next(p for p in stats.players if p.player_id == 2)
+    assert alice.frames_played == 3
+    assert bob.frames_played == 2
+
+
+def test_player_seconds_played_is_frames_over_60(tmp_path):
+    _write_fixture(
+        tmp_path,
+        scoring_teams=[],
+        recorded_red=0, recorded_blue=0,
+        players=[(1, "Alice", 1)],
+        player_frames=[(f, 1, 1) for f in range(120)],  # 120 frames = 2.0s
+    )
+
+    stats = compute_stats(tmp_path)
+
+    alice = next(p for p in stats.players if p.player_id == 1)
+    assert alice.seconds_played == 2.0
+
+
+def test_spectator_has_zero_frames_played(tmp_path):
+    _write_fixture(
+        tmp_path,
+        scoring_teams=[],
+        recorded_red=0, recorded_blue=0,
+        players=[(99, "Lurker", 0)],
+        player_frames=[],
+    )
+
+    stats = compute_stats(tmp_path)
+
+    lurker = stats.players[0]
+    assert lurker.frames_played == 0
+    assert lurker.seconds_played == 0.0
 
 
 def test_compute_stats_reads_score_and_duration(tmp_path):
