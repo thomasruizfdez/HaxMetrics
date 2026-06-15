@@ -1,0 +1,91 @@
+{
+  "replay": "HBReplay-2026-01-08-22h58m.hbr2",
+  "score": {
+    "red": 5,
+    "blue": 4
+  },
+  "duration": {
+    "frames": 100416,
+    "seconds": 1673.6
+  },
+  "score_invariant_ok": true,
+  "players": [
+    {
+      "id": 122,
+      "name": "depene",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 118,
+      "name": "nandxtrash6",
+      "team": 0,
+      "frames_played": 20019,
+      "seconds_played": 333.65
+    },
+    {
+      "id": 109,
+      "name": "Bandolero",
+      "team": 2,
+      "frames_played": 99012,
+      "seconds_played": 1650.2
+    },
+    {
+      "id": 119,
+      "name": "Proffesor",
+      "team": 1,
+      "frames_played": 99012,
+      "seconds_played": 1650.2
+    },
+    {
+      "id": 120,
+      "name": "8danielflakoeintelektual",
+      "team": 1,
+      "frames_played": 99012,
+      "seconds_played": 1650.2
+    },
+    {
+      "id": 124,
+      "name": "Santana",
+      "team": 2,
+      "frames_played": 98533,
+      "seconds_played": 1642.2167
+    },
+    {
+      "id": 125,
+      "name": "adeyemi",
+      "team": 1,
+      "frames_played": 79043,
+      "seconds_played": 1317.3833
+    },
+    {
+      "id": 121,
+      "name": "Nico Williams",
+      "team": 1,
+      "frames_played": 98862,
+      "seconds_played": 1647.7
+    },
+    {
+      "id": 126,
+      "name": "Gerson",
+      "team": 2,
+      "frames_played": 36383,
+      "seconds_played": 606.3833
+    },
+    {
+      "id": 110,
+      "name": "aitor",
+      "team": 2,
+      "frames_played": 87027,
+      "seconds_played": 1450.45
+    },
+    {
+      "id": 112,
+      "name": "vMarius",
+      "team": 0,
+      "frames_played": 74631,
+      "seconds_played": 1243.85
+    }
+  ]
+}

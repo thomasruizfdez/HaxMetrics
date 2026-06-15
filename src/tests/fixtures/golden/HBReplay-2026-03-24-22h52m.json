@@ -1,0 +1,105 @@
+{
+  "replay": "HBReplay-2026-03-24-22h52m.hbr2",
+  "score": {
+    "red": 1,
+    "blue": 4
+  },
+  "duration": {
+    "frames": 96481,
+    "seconds": 1608.0167
+  },
+  "score_invariant_ok": true,
+  "players": [
+    {
+      "id": 52,
+      "name": "HASAN \u015eA\u015e",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 56,
+      "name": "Gerson",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 57,
+      "name": "Ellerst",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 17,
+      "name": "rio10",
+      "team": 2,
+      "frames_played": 93071,
+      "seconds_played": 1551.1833
+    },
+    {
+      "id": 15,
+      "name": "SACHA.",
+      "team": 2,
+      "frames_played": 93071,
+      "seconds_played": 1551.1833
+    },
+    {
+      "id": 38,
+      "name": "Bandolero",
+      "team": 1,
+      "frames_played": 93071,
+      "seconds_played": 1551.1833
+    },
+    {
+      "id": 39,
+      "name": "aitor",
+      "team": 1,
+      "frames_played": 93071,
+      "seconds_played": 1551.1833
+    },
+    {
+      "id": 44,
+      "name": "vMarius",
+      "team": 1,
+      "frames_played": 93071,
+      "seconds_played": 1551.1833
+    },
+    {
+      "id": 47,
+      "name": "sam",
+      "team": 1,
+      "frames_played": 93071,
+      "seconds_played": 1551.1833
+    },
+    {
+      "id": 49,
+      "name": "n\u00e9ymarr",
+      "team": 0,
+      "frames_played": 43680,
+      "seconds_played": 728.0
+    },
+    {
+      "id": 19,
+      "name": "\u010clyburn",
+      "team": 0,
+      "frames_played": 43812,
+      "seconds_played": 730.2
+    },
+    {
+      "id": 35,
+      "name": "Spawer",
+      "team": 2,
+      "frames_played": 49174,
+      "seconds_played": 819.5667
+    },
+    {
+      "id": 12,
+      "name": "d3A",
+      "team": 2,
+      "frames_played": 49114,
+      "seconds_played": 818.5667
+    }
+  ]
+}

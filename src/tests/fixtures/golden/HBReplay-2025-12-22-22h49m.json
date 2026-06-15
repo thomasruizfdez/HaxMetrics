@@ -1,0 +1,77 @@
+{
+  "replay": "HBReplay-2025-12-22-22h49m.hbr2",
+  "score": {
+    "red": 1,
+    "blue": 0
+  },
+  "duration": {
+    "frames": 97144,
+    "seconds": 1619.0667
+  },
+  "score_invariant_ok": true,
+  "players": [
+    {
+      "id": 35,
+      "name": "Bandolero",
+      "team": 2,
+      "frames_played": 90874,
+      "seconds_played": 1514.5667
+    },
+    {
+      "id": 37,
+      "name": "vMarius",
+      "team": 2,
+      "frames_played": 90874,
+      "seconds_played": 1514.5667
+    },
+    {
+      "id": 36,
+      "name": "aitor",
+      "team": 2,
+      "frames_played": 90874,
+      "seconds_played": 1514.5667
+    },
+    {
+      "id": 38,
+      "name": "Gerson",
+      "team": 2,
+      "frames_played": 90874,
+      "seconds_played": 1514.5667
+    },
+    {
+      "id": 31,
+      "name": "m\u00e4rz",
+      "team": 1,
+      "frames_played": 49182,
+      "seconds_played": 819.7
+    },
+    {
+      "id": 43,
+      "name": "simpollllll",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 13,
+      "name": "Anime",
+      "team": 0,
+      "frames_played": 41692,
+      "seconds_played": 694.8667
+    },
+    {
+      "id": 41,
+      "name": "MK",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 45,
+      "name": "al\u0258x",
+      "team": 1,
+      "frames_played": 47140,
+      "seconds_played": 785.6667
+    }
+  ]
+}

@@ -15,6 +15,7 @@ dependencies = ["click>=8.1", "pyarrow>=14"]
 testpaths = ["src/tests"]
 markers = [
     "integration: end-to-end tests that run the Node extractor (slower).",
+    "slow: tests that compare full output against golden files.",
 ]
 
 [tool.setuptools]

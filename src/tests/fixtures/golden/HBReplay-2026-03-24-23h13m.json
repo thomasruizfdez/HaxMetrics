@@ -1,0 +1,119 @@
+{
+  "replay": "HBReplay-2026-03-24-23h13m.hbr2",
+  "score": {
+    "red": 6,
+    "blue": 3
+  },
+  "duration": {
+    "frames": 67431,
+    "seconds": 1123.85
+  },
+  "score_invariant_ok": true,
+  "players": [
+    {
+      "id": 27,
+      "name": "deni harum suporter",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 28,
+      "name": "RogerCarbo",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 18,
+      "name": "Ancasi",
+      "team": 2,
+      "frames_played": 67143,
+      "seconds_played": 1119.05
+    },
+    {
+      "id": 19,
+      "name": "Deffinho",
+      "team": 2,
+      "frames_played": 67143,
+      "seconds_played": 1119.05
+    },
+    {
+      "id": 20,
+      "name": "lulas",
+      "team": 2,
+      "frames_played": 67143,
+      "seconds_played": 1119.05
+    },
+    {
+      "id": 22,
+      "name": "Bandolero",
+      "team": 1,
+      "frames_played": 67143,
+      "seconds_played": 1119.05
+    },
+    {
+      "id": 23,
+      "name": "Gerson",
+      "team": 1,
+      "frames_played": 67143,
+      "seconds_played": 1119.05
+    },
+    {
+      "id": 25,
+      "name": "aitor",
+      "team": 1,
+      "frames_played": 67143,
+      "seconds_played": 1119.05
+    },
+    {
+      "id": 24,
+      "name": "sam",
+      "team": 0,
+      "frames_played": 43121,
+      "seconds_played": 718.6833
+    },
+    {
+      "id": 21,
+      "name": "vMarius",
+      "team": 1,
+      "frames_played": 24022,
+      "seconds_played": 400.3667
+    },
+    {
+      "id": 17,
+      "name": "rudimental",
+      "team": 2,
+      "frames_played": 21999,
+      "seconds_played": 366.65
+    },
+    {
+      "id": 16,
+      "name": "UFO",
+      "team": 0,
+      "frames_played": 45722,
+      "seconds_played": 762.0333
+    },
+    {
+      "id": 29,
+      "name": "Zekrom",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 30,
+      "name": "Serbio",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 33,
+      "name": "Reshiram",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    }
+  ]
+}

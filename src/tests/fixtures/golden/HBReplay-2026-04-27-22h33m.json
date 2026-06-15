@@ -1,0 +1,119 @@
+{
+  "replay": "HBReplay-2026-04-27-22h33m.hbr2",
+  "score": {
+    "red": 5,
+    "blue": 1
+  },
+  "duration": {
+    "frames": 101177,
+    "seconds": 1686.2833
+  },
+  "score_invariant_ok": true,
+  "players": [
+    {
+      "id": 24,
+      "name": "ilaola",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 15,
+      "name": "sir rai",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 33,
+      "name": "niggerhttps://www.haxball",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 71,
+      "name": "\ud835\udcda\ud835\udce3\ud835\udcdc ",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 65,
+      "name": "baif\u00f8",
+      "team": 1,
+      "frames_played": 96420,
+      "seconds_played": 1607.0
+    },
+    {
+      "id": 59,
+      "name": "Felix6",
+      "team": 1,
+      "frames_played": 96420,
+      "seconds_played": 1607.0
+    },
+    {
+      "id": 66,
+      "name": "nexo",
+      "team": 1,
+      "frames_played": 96420,
+      "seconds_played": 1607.0
+    },
+    {
+      "id": 43,
+      "name": "Colcho",
+      "team": 2,
+      "frames_played": 96420,
+      "seconds_played": 1607.0
+    },
+    {
+      "id": 45,
+      "name": "Bandolero",
+      "team": 2,
+      "frames_played": 96420,
+      "seconds_played": 1607.0
+    },
+    {
+      "id": 46,
+      "name": "joaquin",
+      "team": 2,
+      "frames_played": 96420,
+      "seconds_played": 1607.0
+    },
+    {
+      "id": 55,
+      "name": "Trapstar",
+      "team": 2,
+      "frames_played": 96420,
+      "seconds_played": 1607.0
+    },
+    {
+      "id": 57,
+      "name": "Nacho.0",
+      "team": 2,
+      "frames_played": 96420,
+      "seconds_played": 1607.0
+    },
+    {
+      "id": 69,
+      "name": "iker",
+      "team": 1,
+      "frames_played": 47673,
+      "seconds_played": 794.55
+    },
+    {
+      "id": 81,
+      "name": "ala_",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 83,
+      "name": "a-ha",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    }
+  ]
+}

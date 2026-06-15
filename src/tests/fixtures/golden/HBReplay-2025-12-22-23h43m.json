@@ -1,0 +1,84 @@
+{
+  "replay": "HBReplay-2025-12-22-23h43m.hbr2",
+  "score": {
+    "red": 1,
+    "blue": 1
+  },
+  "duration": {
+    "frames": 99011,
+    "seconds": 1650.1833
+  },
+  "score_invariant_ok": true,
+  "players": [
+    {
+      "id": 43,
+      "name": "simpollllll",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 53,
+      "name": "TOCAYO[LIRS TV]",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 35,
+      "name": "Bandolero",
+      "team": 1,
+      "frames_played": 98544,
+      "seconds_played": 1642.4
+    },
+    {
+      "id": 37,
+      "name": "vMarius",
+      "team": 1,
+      "frames_played": 98544,
+      "seconds_played": 1642.4
+    },
+    {
+      "id": 38,
+      "name": "Gerson",
+      "team": 1,
+      "frames_played": 98544,
+      "seconds_played": 1642.4
+    },
+    {
+      "id": 50,
+      "name": "Anti Social",
+      "team": 2,
+      "frames_played": 98544,
+      "seconds_played": 1642.4
+    },
+    {
+      "id": 51,
+      "name": "MENEZ",
+      "team": 2,
+      "frames_played": 98544,
+      "seconds_played": 1642.4
+    },
+    {
+      "id": 57,
+      "name": "sam",
+      "team": 2,
+      "frames_played": 60659,
+      "seconds_played": 1010.9833
+    },
+    {
+      "id": 61,
+      "name": "raulinho",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 62,
+      "name": "XEL",
+      "team": 2,
+      "frames_played": 24637,
+      "seconds_played": 410.6167
+    }
+  ]
+}

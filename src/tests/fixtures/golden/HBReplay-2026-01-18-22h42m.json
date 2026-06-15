@@ -1,0 +1,70 @@
+{
+  "replay": "HBReplay-2026-01-18-22h42m.hbr2",
+  "score": {
+    "red": 12,
+    "blue": 7
+  },
+  "duration": {
+    "frames": 170928,
+    "seconds": 2848.8
+  },
+  "score_invariant_ok": true,
+  "players": [
+    {
+      "id": 69,
+      "name": "aitor",
+      "team": 1,
+      "frames_played": 169219,
+      "seconds_played": 2820.3167
+    },
+    {
+      "id": 73,
+      "name": "Bandolero",
+      "team": 1,
+      "frames_played": 169219,
+      "seconds_played": 2820.3167
+    },
+    {
+      "id": 74,
+      "name": "Gerson",
+      "team": 1,
+      "frames_played": 169219,
+      "seconds_played": 2820.3167
+    },
+    {
+      "id": 76,
+      "name": "vMarius",
+      "team": 1,
+      "frames_played": 169219,
+      "seconds_played": 2820.3167
+    },
+    {
+      "id": 75,
+      "name": "QSM",
+      "team": 2,
+      "frames_played": 169219,
+      "seconds_played": 2820.3167
+    },
+    {
+      "id": 79,
+      "name": "reashe",
+      "team": 2,
+      "frames_played": 169219,
+      "seconds_played": 2820.3167
+    },
+    {
+      "id": 83,
+      "name": "esc",
+      "team": 2,
+      "frames_played": 142529,
+      "seconds_played": 2375.4833
+    },
+    {
+      "id": 86,
+      "name": "mev",
+      "team": 2,
+      "frames_played": 127374,
+      "seconds_played": 2122.9
+    }
+  ]
+}

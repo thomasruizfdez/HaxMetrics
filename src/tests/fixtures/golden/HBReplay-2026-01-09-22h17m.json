@@ -1,0 +1,84 @@
+{
+  "replay": "HBReplay-2026-01-09-22h17m.hbr2",
+  "score": {
+    "red": 0,
+    "blue": 1
+  },
+  "duration": {
+    "frames": 26445,
+    "seconds": 440.75
+  },
+  "score_invariant_ok": true,
+  "players": [
+    {
+      "id": 197,
+      "name": "CHICO ZA LEGIE ZAPIERDOLE",
+      "team": 1,
+      "frames_played": 26359,
+      "seconds_played": 439.3167
+    },
+    {
+      "id": 198,
+      "name": "o1o",
+      "team": 1,
+      "frames_played": 26359,
+      "seconds_played": 439.3167
+    },
+    {
+      "id": 201,
+      "name": "Nasu",
+      "team": 1,
+      "frames_played": 26359,
+      "seconds_played": 439.3167
+    },
+    {
+      "id": 203,
+      "name": "PAWEL",
+      "team": 1,
+      "frames_played": 26359,
+      "seconds_played": 439.3167
+    },
+    {
+      "id": 205,
+      "name": "aitor",
+      "team": 2,
+      "frames_played": 26359,
+      "seconds_played": 439.3167
+    },
+    {
+      "id": 208,
+      "name": "batu",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 200,
+      "name": "aero",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 209,
+      "name": "vMarius",
+      "team": 2,
+      "frames_played": 26359,
+      "seconds_played": 439.3167
+    },
+    {
+      "id": 210,
+      "name": "Gerson",
+      "team": 2,
+      "frames_played": 26359,
+      "seconds_played": 439.3167
+    },
+    {
+      "id": 211,
+      "name": "Bandolero",
+      "team": 2,
+      "frames_played": 26359,
+      "seconds_played": 439.3167
+    }
+  ]
+}

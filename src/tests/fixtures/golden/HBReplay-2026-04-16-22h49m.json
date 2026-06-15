@@ -1,0 +1,98 @@
+{
+  "replay": "HBReplay-2026-04-16-22h49m.hbr2",
+  "score": {
+    "red": 6,
+    "blue": 4
+  },
+  "duration": {
+    "frames": 103168,
+    "seconds": 1719.4667
+  },
+  "score_invariant_ok": true,
+  "players": [
+    {
+      "id": 69,
+      "name": "m\u00e4rz",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 67,
+      "name": "sam",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 77,
+      "name": "hola",
+      "team": 0,
+      "frames_played": 0,
+      "seconds_played": 0.0
+    },
+    {
+      "id": 64,
+      "name": "Bandolero",
+      "team": 2,
+      "frames_played": 102637,
+      "seconds_played": 1710.6167
+    },
+    {
+      "id": 68,
+      "name": "vMarius",
+      "team": 2,
+      "frames_played": 102637,
+      "seconds_played": 1710.6167
+    },
+    {
+      "id": 66,
+      "name": "aitor",
+      "team": 2,
+      "frames_played": 102637,
+      "seconds_played": 1710.6167
+    },
+    {
+      "id": 65,
+      "name": "Musi",
+      "team": 2,
+      "frames_played": 102637,
+      "seconds_played": 1710.6167
+    },
+    {
+      "id": 70,
+      "name": "bigballs",
+      "team": 1,
+      "frames_played": 102637,
+      "seconds_played": 1710.6167
+    },
+    {
+      "id": 73,
+      "name": "TOCAYO",
+      "team": 1,
+      "frames_played": 102637,
+      "seconds_played": 1710.6167
+    },
+    {
+      "id": 75,
+      "name": "Ken",
+      "team": 1,
+      "frames_played": 102637,
+      "seconds_played": 1710.6167
+    },
+    {
+      "id": 71,
+      "name": "ashito",
+      "team": 0,
+      "frames_played": 80204,
+      "seconds_played": 1336.7333
+    },
+    {
+      "id": 72,
+      "name": "s1mple",
+      "team": 1,
+      "frames_played": 22392,
+      "seconds_played": 373.2
+    }
+  ]
+}
