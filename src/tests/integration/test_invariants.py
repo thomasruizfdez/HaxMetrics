@@ -25,6 +25,12 @@ CORPUS_DIR = Path(__file__).resolve().parents[1] / "fixtures" / "actions"
 GOLDEN_DIR = Path(__file__).resolve().parents[1] / "fixtures" / "golden"
 CACHE_DIR = Path(__file__).resolve().parents[1] / "fixtures" / ".corpus_cache"
 
+# Paths hashed into the composite cache key so that changes to the extractor
+# or analytics layer automatically invalidate cached results.
+# Key format: {replay_sha256[:12]}_{extractor_sha256[:8]}{analytics_sha256[:8]}
+_EXTRACTOR_PATH = Path(__file__).resolve().parents[3] / "scripts" / "extract_replay.js"
+_ANALYTICS_PATH = Path(__file__).resolve().parents[2] / "haxmetrics" / "analytics.py"
+
 CORPUS_NAMES = sorted(f.name for f in CORPUS_DIR.glob("HBReplay-*.hbr2"))
 
 # subprocess is thread-safe (unlike CliRunner, which patches sys.stdout globally)
@@ -33,8 +39,11 @@ _CLI = [sys.executable, "-m", "haxmetrics.cli"]
 
 def _load_or_extract(name: str) -> tuple[str, dict]:
     replay_path = CORPUS_DIR / name
-    h = hashlib.sha256(replay_path.read_bytes()).hexdigest()[:16]
-    cache_file = CACHE_DIR / f"{h}.json"
+    replay_h = hashlib.sha256(replay_path.read_bytes()).hexdigest()[:12]
+    extractor_h = hashlib.sha256(_EXTRACTOR_PATH.read_bytes()).hexdigest()[:8]
+    analytics_h = hashlib.sha256(_ANALYTICS_PATH.read_bytes()).hexdigest()[:8]
+    cache_key = f"{replay_h}_{extractor_h}{analytics_h}"
+    cache_file = CACHE_DIR / f"{cache_key}.json"
     if cache_file.exists():
         return name, json.loads(cache_file.read_text(encoding="utf-8"))
     proc = subprocess.run(
