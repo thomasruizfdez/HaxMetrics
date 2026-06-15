@@ -1,9 +1,10 @@
 """Unit tests for the Python analytics layer (reads Parquet -> Stats)."""
 
+import pytest
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from haxmetrics.analytics import compute_stats
+from haxmetrics.analytics import EXPECTED_COLUMNS, Stats, PlayerStats, compute_stats, stats_to_dict
 
 
 def _write_fixture(
@@ -33,6 +34,7 @@ def _write_fixture(
         "num_players": 8,
     }
     meta.update(meta_overrides)
+    assert EXPECTED_COLUMNS["meta"].issubset(meta.keys())
     pq.write_table(
         pa.table({k: [v] for k, v in meta.items()}),
         str(parquet_dir / "meta.parquet"),
@@ -44,26 +46,47 @@ def _write_fixture(
         "team_id": [3 - t for t in scoring_teams],
         "scoring_team": list(scoring_teams),
     }
+    assert EXPECTED_COLUMNS["events"].issubset(events.keys())
     pq.write_table(pa.table(events), str(parquet_dir / "events.parquet"))
 
-    pq.write_table(
-        pa.table({
-            "player_id": pa.array([p[0] for p in players], type=pa.int32()),
-            "name": pa.array([p[1] for p in players], type=pa.string()),
-            "team_id": pa.array([p[2] for p in players], type=pa.int32()),
-        }),
-        str(parquet_dir / "players.parquet"),
-    )
+    players_dict = {
+        "player_id": pa.array([p[0] for p in players], type=pa.int32()),
+        "name": pa.array([p[1] for p in players], type=pa.string()),
+        "team_id": pa.array([p[2] for p in players], type=pa.int32()),
+    }
+    assert EXPECTED_COLUMNS["players"].issubset(players_dict.keys())
+    pq.write_table(pa.table(players_dict), str(parquet_dir / "players.parquet"))
 
-    pq.write_table(
-        pa.table({
-            "frame_no": pa.array([f[0] for f in player_frames], type=pa.int64()),
-            "object_kind": pa.array(["player"] * len(player_frames), type=pa.string()),
-            "object_id": pa.array([f[1] for f in player_frames], type=pa.int32()),
-            "team": pa.array([f[2] for f in player_frames], type=pa.int32()),
-        }),
-        str(parquet_dir / "frames.parquet"),
-    )
+    frames_dict = {
+        "frame_no": pa.array([f[0] for f in player_frames], type=pa.int64()),
+        "object_kind": pa.array(["player"] * len(player_frames), type=pa.string()),
+        "object_id": pa.array([f[1] for f in player_frames], type=pa.int32()),
+        "team": pa.array([f[2] for f in player_frames], type=pa.int32()),
+    }
+    assert EXPECTED_COLUMNS["frames"].issubset(frames_dict.keys())
+    pq.write_table(pa.table(frames_dict), str(parquet_dir / "frames.parquet"))
+
+
+def test_stats_to_dict_score_and_duration():
+    stats = Stats(red=2, blue=3, duration_frames=22247, duration_seconds=370.7833, score_invariant_ok=True)
+    result = stats_to_dict("match.hbr2", stats)
+    assert result["replay"] == "match.hbr2"
+    assert result["score"] == {"red": 2, "blue": 3}
+    assert result["duration"] == {"frames": 22247, "seconds": 370.7833}
+    assert result["score_invariant_ok"] is True
+    assert result["players"] == []
+
+
+def test_stats_to_dict_player_fields_are_renamed():
+    player = PlayerStats(player_id=7, name="Alice", team_id=1, frames_played=120, seconds_played=2.0)
+    stats = Stats(red=1, blue=0, duration_frames=100, duration_seconds=1.6667, score_invariant_ok=True, players=(player,))
+    result = stats_to_dict("x.hbr2", stats)
+    p = result["players"][0]
+    assert p["id"] == 7
+    assert p["name"] == "Alice"
+    assert p["team"] == 1
+    assert p["frames_played"] == 120
+    assert p["seconds_played"] == 2.0
 
 
 def test_compute_stats_includes_players(tmp_path):
@@ -161,3 +184,13 @@ def test_score_invariant_fails_when_reconstructed_mismatches_recorded(tmp_path):
     stats = compute_stats(tmp_path)
 
     assert stats.score_invariant_ok is False
+
+
+def test_compute_stats_raises_on_missing_column(tmp_path):
+    # meta.parquet is missing 'total_frames' — validation must catch this
+    pq.write_table(
+        pa.table({"duration_ms": [370783.3], "recorded_red": [2], "recorded_blue": [3]}),
+        str(tmp_path / "meta.parquet"),
+    )
+    with pytest.raises(ValueError, match="total_frames"):
+        compute_stats(tmp_path)
