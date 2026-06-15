@@ -1,0 +1,884 @@
+{
+  "metadata": {
+    "version": 3,
+    "duration": 170928,
+    "recordingStart": 1781472956834
+  },
+  "roomInfo": {
+    "name": "LIRS ROOMS",
+    "locked": true,
+    "scoreLimit": 0,
+    "timeLimit": 0,
+    "rules": {
+      "kickRateLimit": 2,
+      "teamSize": 0,
+      "bounciness": 1
+    }
+  },
+  "stadium": {
+    "name": "LIRS RS 4v4",
+    "width": 0,
+    "height": 0,
+    "canBeStored": 180,
+    "note": "Manual extraction - yk() method failed"
+  },
+  "players": [
+    {
+      "id": 69,
+      "name": "aitor",
+      "admin": false,
+      "position": 1,
+      "avatar": "N",
+      "country": null,
+      "team": {
+        "id": 1,
+        "name": "Red"
+      },
+      "disc": {
+        "x": 143.67323728442096,
+        "y": -81.13569429181256,
+        "xSpeed": null,
+        "ySpeed": null,
+        "invMass": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "bCoef": null
+      }
+    },
+    {
+      "id": 73,
+      "name": "Bandolero",
+      "admin": true,
+      "position": 2,
+      "avatar": "82",
+      "country": null,
+      "team": {
+        "id": 1,
+        "name": "Red"
+      },
+      "disc": {
+        "x": -92.46618617710818,
+        "y": 55,
+        "xSpeed": null,
+        "ySpeed": null,
+        "invMass": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "bCoef": null
+      }
+    },
+    {
+      "id": 74,
+      "name": "Gerson",
+      "admin": false,
+      "position": 3,
+      "avatar": "🦈",
+      "country": null,
+      "team": {
+        "id": 1,
+        "name": "Red"
+      },
+      "disc": {
+        "x": 4.904714465780121,
+        "y": -59.437268470999314,
+        "xSpeed": null,
+        "ySpeed": null,
+        "invMass": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "bCoef": null
+      }
+    },
+    {
+      "id": 76,
+      "name": "vMarius",
+      "admin": false,
+      "position": 4,
+      "avatar": "M",
+      "country": null,
+      "team": {
+        "id": 1,
+        "name": "Red"
+      },
+      "disc": {
+        "x": 128.809609857085,
+        "y": 103.11684832492483,
+        "xSpeed": null,
+        "ySpeed": null,
+        "invMass": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "bCoef": null
+      }
+    },
+    {
+      "id": 75,
+      "name": "QSM",
+      "admin": true,
+      "position": 1,
+      "avatar": "8",
+      "country": null,
+      "team": {
+        "id": 2,
+        "name": "Blue"
+      },
+      "disc": {
+        "x": 226.6418274839849,
+        "y": 5.0324443567746675,
+        "xSpeed": null,
+        "ySpeed": null,
+        "invMass": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "bCoef": null
+      }
+    },
+    {
+      "id": 78,
+      "name": "esc",
+      "admin": false,
+      "position": 2,
+      "avatar": "\\",
+      "country": null,
+      "team": {
+        "id": 2,
+        "name": "Blue"
+      },
+      "disc": {
+        "x": 398.6654759694334,
+        "y": 85.06244583890276,
+        "xSpeed": null,
+        "ySpeed": null,
+        "invMass": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "bCoef": null
+      }
+    },
+    {
+      "id": 79,
+      "name": "reashe",
+      "admin": false,
+      "position": 3,
+      "avatar": "10",
+      "country": null,
+      "team": {
+        "id": 2,
+        "name": "Blue"
+      },
+      "disc": {
+        "x": 55.37138355043462,
+        "y": 186.9732865510757,
+        "xSpeed": null,
+        "ySpeed": null,
+        "invMass": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "bCoef": null
+      }
+    },
+    {
+      "id": 80,
+      "name": "mev",
+      "admin": false,
+      "position": 4,
+      "avatar": "+",
+      "country": null,
+      "team": {
+        "id": 2,
+        "name": "Blue"
+      },
+      "disc": {
+        "x": 184.90885183551657,
+        "y": -69.29881108567396,
+        "xSpeed": null,
+        "ySpeed": null,
+        "invMass": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "bCoef": null
+      }
+    }
+  ],
+  "gameState": {
+    "time": 0,
+    "timeLimit": 0,
+    "scoreLimit": 0,
+    "redScore": 0,
+    "blueScore": 0,
+    "discs": [
+      {
+        "x": 0,
+        "y": 0,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": -1311,
+        "y": -19,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": -1310,
+        "y": 29,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": -1308,
+        "y": 62,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": -1150,
+        "y": 600,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": 1150,
+        "y": -600,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": 1150,
+        "y": 600,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": -1150,
+        "y": -124,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": -1150,
+        "y": 124,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": -1250,
+        "y": -158,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": -1250,
+        "y": 158,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": 1150,
+        "y": -124,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": 1150,
+        "y": 124,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": 1250,
+        "y": -158,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": 1250,
+        "y": 158,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": -1150,
+        "y": -600,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": -1149,
+        "y": -485,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": -1149,
+        "y": -485,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": -1149,
+        "y": -485,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": -1149,
+        "y": -485,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": -1149,
+        "y": 485,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": -1149,
+        "y": 485,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": -1149,
+        "y": 485,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": -1149,
+        "y": 485,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": 0,
+        "y": 2000,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": 0,
+        "y": 2000,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": 0,
+        "y": 2000,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": 0,
+        "y": 2000,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "x": 143.67323728442096,
+        "y": -81.13569429181256,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": -0.017653020987365542,
+          "y": -0.0205016397347167
+        }
+      },
+      {
+        "x": -92.46618617710818,
+        "y": 55,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0.2586474470843179,
+          "y": 0
+        }
+      },
+      {
+        "x": 4.904714465780121,
+        "y": -59.437268470999314,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0.05116206873169679,
+          "y": 0.007785111355198887
+        }
+      },
+      {
+        "x": 128.809609857085,
+        "y": 103.11684832492483,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 0.07125837510662088,
+          "y": -0.09776197900175253
+        }
+      },
+      {
+        "x": 226.6418274839849,
+        "y": 5.0324443567746675,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 1.1425692594650096,
+          "y": -0.21347140831021474
+        }
+      },
+      {
+        "x": 398.6654759694334,
+        "y": 85.06244583890276,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 1.0056435623551113e-8,
+          "y": 6.444592331906946e-11
+        }
+      },
+      {
+        "x": 55.37138355043462,
+        "y": 186.9732865510757,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": 1.082469902858046,
+          "y": -0.318144519658069
+        }
+      },
+      {
+        "x": 184.90885183551657,
+        "y": -69.29881108567396,
+        "xSpeed": null,
+        "ySpeed": null,
+        "damping": {
+          "x": 0,
+          "y": 0
+        },
+        "cMask": {
+          "x": -1.7998103288479843e-13,
+          "y": -1.030333021349148e-12
+        }
+      }
+    ]
+  },
+  "teams": {
+    "spectators": null,
+    "red": {
+      "kc": 11901198,
+      "Wa": [
+        854785
+      ],
+      "qc": 42
+    },
+    "blue": {
+      "kc": 16731599,
+      "Wa": [
+        16383966
+      ],
+      "qc": 42
+    }
+  },
+  "events": [
+    {
+      "index": 0,
+      "timePercent": 0.01975100627164654,
+      "time": 3376,
+      "kind": 2,
+      "type": "GOAL"
+    },
+    {
+      "index": 1,
+      "timePercent": 0.05339675184873163,
+      "time": 9127,
+      "kind": 2,
+      "type": "GOAL"
+    },
+    {
+      "index": 2,
+      "timePercent": 0.07281428437704765,
+      "time": 12446,
+      "kind": 2,
+      "type": "GOAL"
+    },
+    {
+      "index": 3,
+      "timePercent": 0.17422540484882523,
+      "time": 29780,
+      "kind": 2,
+      "type": "GOAL"
+    },
+    {
+      "index": 4,
+      "timePercent": 0.19686651689600299,
+      "time": 33650,
+      "kind": 1,
+      "type": "CHAT"
+    },
+    {
+      "index": 5,
+      "timePercent": 0.20445450716090985,
+      "time": 34947,
+      "kind": 1,
+      "type": "CHAT"
+    },
+    {
+      "index": 6,
+      "timePercent": 0.23027824581110176,
+      "time": 39361,
+      "kind": 2,
+      "type": "GOAL"
+    },
+    {
+      "index": 7,
+      "timePercent": 0.30826429841804737,
+      "time": 52691,
+      "kind": 1,
+      "type": "CHAT"
+    },
+    {
+      "index": 8,
+      "timePercent": 0.3191460732004119,
+      "time": 54551,
+      "kind": 2,
+      "type": "GOAL"
+    },
+    {
+      "index": 9,
+      "timePercent": 0.33803121782270895,
+      "time": 57778.99999999999,
+      "kind": 2,
+      "type": "GOAL"
+    },
+    {
+      "index": 10,
+      "timePercent": 0.368938968454554,
+      "time": 63062,
+      "kind": 1,
+      "type": "CHAT"
+    },
+    {
+      "index": 11,
+      "timePercent": 0.3879762239071422,
+      "time": 66316,
+      "kind": 2,
+      "type": "GOAL"
+    },
+    {
+      "index": 12,
+      "timePercent": 0.4155960404380792,
+      "time": 71037,
+      "kind": 1,
+      "type": "CHAT"
+    },
+    {
+      "index": 13,
+      "timePercent": 0.5737269493587943,
+      "time": 98066,
+      "kind": 2,
+      "type": "GOAL"
+    },
+    {
+      "index": 14,
+      "timePercent": 0.6098532715529346,
+      "time": 104241,
+      "kind": 1,
+      "type": "CHAT"
+    },
+    {
+      "index": 15,
+      "timePercent": 0.6417614434147711,
+      "time": 109695,
+      "kind": 2,
+      "type": "GOAL"
+    },
+    {
+      "index": 16,
+      "timePercent": 0.6668246279135075,
+      "time": 113979.00000000001,
+      "kind": 2,
+      "type": "GOAL"
+    },
+    {
+      "index": 17,
+      "timePercent": 0.7568976411120472,
+      "time": 129375,
+      "kind": 2,
+      "type": "GOAL"
+    },
+    {
+      "index": 18,
+      "timePercent": 0.9987129083590751,
+      "time": 170708,
+      "kind": 1,
+      "type": "CHAT"
+    }
+  ]
+}
