@@ -9,7 +9,13 @@ description = "Haxball replay metrics: decode .hbr2, simulate, compute metrics."
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "Tomas Ruiz" }]
-dependencies = ["click>=8.1"]
+dependencies = ["click>=8.1", "pyarrow>=14"]
+
+[tool.pytest.ini_options]
+testpaths = ["src/tests"]
+markers = [
+    "integration: end-to-end tests that run the Node extractor (slower).",
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
