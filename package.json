@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "debug:replay": "node scripts/debug_replay_script.js",
     "extract": "node scripts/extract_replay.js"
   },
@@ -26,5 +26,8 @@
     "node-domexception": "^2.0.2",
     "node-haxball": "^2.3.0",
     "pako": "^2.1.0"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2"
   }
 }

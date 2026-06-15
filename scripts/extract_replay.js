@@ -20,6 +20,13 @@
 const fs = require('fs');
 const path = require('path');
 const parquet = require('@dsnp/parquetjs');
+const ScoreTracker = require('./ScoreTracker');
+const { buildPlayerMaps } = require('./buildPlayerMaps');
+
+// Upper bound on RAF ticks per frame step — prevents infinite loops if the
+// simulator stalls or the frame target is unreachable.
+const MAX_TICKS = 5000000;
+const STEP_MS = 2000;
 
 async function main() {
   const replayPath = process.argv[2];
@@ -46,22 +53,20 @@ async function main() {
   const goalMarkers = data.goalMarkers || [];
 
   // --- reader con RAF manual ("pump") para steppear determinista ----------
-  let pendingCb = null;
-  let vclock = 0;
+  const pumpCtx = { pendingCb: null, vclock: 0 };
   const reader = Replay.read(bytes, {}, {
-    requestAnimationFrame: (cb) => { pendingCb = cb; return 1; },
-    cancelAnimationFrame: () => { pendingCb = null; },
+    requestAnimationFrame: (cb) => { pumpCtx.pendingCb = cb; return 1; },
+    cancelAnimationFrame: () => { pumpCtx.pendingCb = null; },
   });
-  const STEP_MS = 2000;
-  const MAX_TICKS = 5000000;
-  function pumpToFrame(target) {
+
+  function stepToFrame(reader, f) {
     let ticks = 0;
-    reader.setCurrentFrameNo(target);
-    while (pendingCb && reader.getCurrentFrameNo() < target && ticks < MAX_TICKS) {
-      const cb = pendingCb;
-      pendingCb = null;
-      vclock += STEP_MS;
-      cb(vclock);
+    reader.setCurrentFrameNo(f);
+    while (pumpCtx.pendingCb && reader.getCurrentFrameNo() < f && ticks < MAX_TICKS) {
+      const cb = pumpCtx.pendingCb;
+      pumpCtx.pendingCb = null;
+      pumpCtx.vclock += STEP_MS;
+      cb(pumpCtx.vclock);
       ticks++;
     }
   }
@@ -86,45 +91,29 @@ async function main() {
   const framesWriter = await parquet.ParquetWriter.openFile(
     framesSchema, path.join(outDir, 'frames.parquet'));
 
-  // Goles marcados DURANTE la replay, contando incrementos del marcador.
-  // El primer frame puede traer un marcador pre-existente (grabación iniciada
-  // a mitad de partido): se toma como baseline y NO cuenta como gol. Entre
-  // partidos el marcador se reinicia (descenso): los descensos se ignoran.
-  let baseRed = null;
-  let baseBlue = null;
-  let prevRed = 0;
-  let prevBlue = 0;
-  let simRed = 0;
-  let simBlue = 0;
+  const score = new ScoreTracker();
   let lastRoster = [];
   let stadiumName = '';
 
   for (let f = 0; f <= maxFrame; f++) {
-    pumpToFrame(f);
+    stepToFrame(reader, f);
     const gs = reader.gameState;
     if (!gs) continue; // sin juego activo (antes del saque / fin de partido)
 
-    if (baseRed === null) {
-      baseRed = gs.redScore; baseBlue = gs.blueScore;
-      prevRed = gs.redScore; prevBlue = gs.blueScore;
+    if (!score.initialized) {
+      score.init(gs.redScore, gs.blueScore);
+    } else {
+      score.feed(gs.redScore, gs.blueScore);
     }
-    if (gs.redScore > prevRed) simRed += gs.redScore - prevRed;
-    if (gs.blueScore > prevBlue) simBlue += gs.blueScore - prevBlue;
-    prevRed = gs.redScore; prevBlue = gs.blueScore;
 
     const discs = (gs.physicsState && gs.physicsState.discs) || [];
     if (!discs.length) continue;
 
     const players = (reader.state && reader.state.players) || [];
-    const teamById = new Map();
-    const kickingById = new Map();
-    const inputById = new Map();
-    for (const p of players) {
-      const tid = p.team ? p.team.id : 0;
-      if (tid) { lastRoster = players; stadiumName = gs.stadium ? gs.stadium.name : stadiumName; }
-      teamById.set(p.id, tid);
-      kickingById.set(p.id, !!p.isKicking);
-      inputById.set(p.id, p.input | 0);
+    const { teamById, kickingById, inputById } = buildPlayerMaps(players);
+    if ([...teamById.values()].some(t => t !== 0)) {
+      lastRoster = players;
+      stadiumName = gs.stadium ? gs.stadium.name : stadiumName;
     }
 
     // balón
@@ -167,10 +156,10 @@ async function main() {
   await metaWriter.appendRow({
     total_frames: data.totalFrames,
     duration_ms: durationMs,
-    recorded_red: simRed,
-    recorded_blue: simBlue,
-    initial_red: baseRed || 0,
-    initial_blue: baseBlue || 0,
+    recorded_red: score.total.red,
+    recorded_blue: score.total.blue,
+    initial_red: score.initial.red,
+    initial_blue: score.initial.blue,
     score_limit: (reader.state && reader.state.scoreLimit) | 0,
     time_limit: (reader.state && reader.state.timeLimit) | 0,
     stadium_name: stadiumName,
@@ -213,7 +202,7 @@ async function main() {
   await playersWriter.close();
 
   try { reader.destroy(); } catch (_) {}
-  console.error(`extracted ${data.totalFrames} frames -> ${outDir} (goals ${simRed}-${simBlue}, initial ${baseRed || 0}-${baseBlue || 0})`);
+  console.error(`extracted ${data.totalFrames} frames -> ${outDir} (goals ${score.total.red}-${score.total.blue}, initial ${score.initial.red}-${score.initial.blue})`);
 }
 
 main().catch((e) => {
