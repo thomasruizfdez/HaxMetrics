@@ -25,3 +25,5 @@ src/out/
 src/replays/*.json
 !src/replays/examples/*.json.coverage
 .pytest_cache/
+
+.codegraph/
