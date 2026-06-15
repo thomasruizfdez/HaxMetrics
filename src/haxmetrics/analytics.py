@@ -11,6 +11,32 @@ from pathlib import Path
 
 import pyarrow.parquet as pq
 
+EXPECTED_COLUMNS: dict[str, frozenset[str]] = {
+    "meta": frozenset({"total_frames", "duration_ms", "recorded_red", "recorded_blue"}),
+    "events": frozenset({"kind", "scoring_team"}),
+    "players": frozenset({"player_id", "name", "team_id"}),
+    "frames": frozenset({"object_id", "team"}),
+}
+
+SIMULATION_HZ: int = 60
+
+
+def _active_frames(frames_rows: list) -> dict[int, int]:
+    counts: dict[int, int] = {}
+    for row in frames_rows:
+        pid = row.get("object_id")
+        if pid is not None and row.get("team") in (1, 2):
+            counts[pid] = counts.get(pid, 0) + 1
+    return counts
+
+
+def _check_columns(table, name: str) -> None:
+    missing = EXPECTED_COLUMNS[name] - set(table.schema.names)
+    if missing:
+        raise ValueError(
+            f"Parquet table '{name}' is missing expected columns: {sorted(missing)}"
+        )
+
 
 @dataclass(frozen=True)
 class PlayerStats:
@@ -31,10 +57,38 @@ class Stats:
     players: tuple[PlayerStats, ...] = ()
 
 
+def stats_to_dict(replay_name: str, stats: Stats) -> dict:
+    return {
+        "replay": replay_name,
+        "score": {"red": stats.red, "blue": stats.blue},
+        "duration": {
+            "frames": stats.duration_frames,
+            "seconds": stats.duration_seconds,
+        },
+        "score_invariant_ok": stats.score_invariant_ok,
+        "players": [
+            {
+                "id": p.player_id,
+                "name": p.name,
+                "team": p.team_id,
+                "frames_played": p.frames_played,
+                "seconds_played": p.seconds_played,
+            }
+            for p in stats.players
+        ],
+    }
+
+
 def compute_stats(parquet_dir: str | Path) -> Stats:
     parquet_dir = Path(parquet_dir)
-    meta = pq.read_table(parquet_dir / "meta.parquet").to_pylist()[0]
-    events = pq.read_table(parquet_dir / "events.parquet").to_pylist()
+
+    meta_table = pq.read_table(parquet_dir / "meta.parquet")
+    _check_columns(meta_table, "meta")
+    meta = meta_table.to_pylist()[0]
+
+    events_table = pq.read_table(parquet_dir / "events.parquet")
+    _check_columns(events_table, "events")
+    events = events_table.to_pylist()
 
     recorded_red = int(meta["recorded_red"])
     recorded_blue = int(meta["recorded_blue"])
@@ -43,14 +97,15 @@ def compute_stats(parquet_dir: str | Path) -> Stats:
     reconstructed_red = sum(1 for e in goals if e["scoring_team"] == 1)
     reconstructed_blue = sum(1 for e in goals if e["scoring_team"] == 2)
 
-    players_rows = pq.read_table(parquet_dir / "players.parquet").to_pylist()
-    frames_rows = pq.read_table(parquet_dir / "frames.parquet").to_pylist()
+    players_table = pq.read_table(parquet_dir / "players.parquet")
+    _check_columns(players_table, "players")
+    players_rows = players_table.to_pylist()
 
-    frames_by_player: dict[int, int] = {}
-    for row in frames_rows:
-        pid = row.get("object_id")
-        if pid is not None and row.get("team") in (1, 2):
-            frames_by_player[pid] = frames_by_player.get(pid, 0) + 1
+    frames_table = pq.read_table(parquet_dir / "frames.parquet")
+    _check_columns(frames_table, "frames")
+    frames_rows = frames_table.to_pylist()
+
+    frames_by_player = _active_frames(frames_rows)
 
     players = tuple(
         PlayerStats(
@@ -58,7 +113,7 @@ def compute_stats(parquet_dir: str | Path) -> Stats:
             name=str(p["name"]),
             team_id=int(p["team_id"]),
             frames_played=frames_by_player.get(int(p["player_id"]), 0),
-            seconds_played=round(frames_by_player.get(int(p["player_id"]), 0) / 60.0, 4),
+            seconds_played=round(frames_by_player.get(int(p["player_id"]), 0) / SIMULATION_HZ, 4),
         )
         for p in players_rows
     )
