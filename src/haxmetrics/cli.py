@@ -56,6 +56,16 @@ def analyze(replay: str, output: str | None) -> None:
             "seconds": stats.duration_seconds,
         },
         "score_invariant_ok": stats.score_invariant_ok,
+        "players": [
+            {
+                "id": p.player_id,
+                "name": p.name,
+                "team": p.team_id,
+                "frames_played": p.frames_played,
+                "seconds_played": p.seconds_played,
+            }
+            for p in stats.players
+        ],
     }
     payload = json.dumps(result, indent=2)
     if output:
