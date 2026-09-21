@@ -45,4 +45,27 @@ describe('buildPlayerMaps', () => {
     expect(kickingById.get(2)).toBe(true);
     expect(inputById.get(2)).toBe(3);
   });
+
+  test('hasActiveTeam is false when every player is a spectator', () => {
+    const players = [
+      { id: 1, team: null, isKicking: false, input: 0 },
+      { id: 2, team: { id: 0 }, isKicking: false, input: 0 },
+    ];
+    const { hasActiveTeam } = buildPlayerMaps(players);
+    expect(hasActiveTeam).toBe(false);
+  });
+
+  test('hasActiveTeam is true when at least one player is on team 1 or 2', () => {
+    const players = [
+      { id: 1, team: null, isKicking: false, input: 0 },
+      { id: 2, team: { id: 2 }, isKicking: false, input: 0 },
+    ];
+    const { hasActiveTeam } = buildPlayerMaps(players);
+    expect(hasActiveTeam).toBe(true);
+  });
+
+  test('hasActiveTeam is false for an empty player list', () => {
+    const { hasActiveTeam } = buildPlayerMaps([]);
+    expect(hasActiveTeam).toBe(false);
+  });
 });
