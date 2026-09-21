@@ -66,5 +66,75 @@
       "frames_played": 0,
       "seconds_played": 0.0
     }
+  ],
+  "goals": [
+    {
+      "frame_no": 6629,
+      "minute": 1.84,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 205
+    },
+    {
+      "frame_no": 14668,
+      "minute": 4.07,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 197
+    }
+  ],
+  "roster": {
+    "red": [
+      {
+        "id": 197,
+        "name": "CHICO ZA LEGIE ZAPIERDOLE"
+      },
+      {
+        "id": 198,
+        "name": "o1o"
+      },
+      {
+        "id": 201,
+        "name": "Nasu"
+      },
+      {
+        "id": 203,
+        "name": "PAWEL"
+      }
+    ],
+    "blue": [
+      {
+        "id": 204,
+        "name": "Bandolero"
+      },
+      {
+        "id": 205,
+        "name": "aitor"
+      }
+    ],
+    "spec": [
+      {
+        "id": 208,
+        "name": "batu"
+      },
+      {
+        "id": 200,
+        "name": "aero"
+      }
+    ]
+  },
+  "roster_changes": [
+    {
+      "frame_no": 19533,
+      "minute": 5.43,
+      "player_id": 207,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 21000,
+      "minute": 5.83,
+      "player_id": 206,
+      "kind": "leave"
+    }
   ]
 }

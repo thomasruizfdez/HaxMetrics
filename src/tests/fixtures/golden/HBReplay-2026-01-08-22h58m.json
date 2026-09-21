@@ -87,5 +87,160 @@
       "frames_played": 74631,
       "seconds_played": 1243.85
     }
+  ],
+  "goals": [
+    {
+      "frame_no": 4435,
+      "minute": 1.23,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 124
+    },
+    {
+      "frame_no": 12319,
+      "minute": 3.42,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 121
+    },
+    {
+      "frame_no": 18527,
+      "minute": 5.15,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 112
+    },
+    {
+      "frame_no": 19573,
+      "minute": 5.44,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 124
+    },
+    {
+      "frame_no": 37814,
+      "minute": 10.5,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 121
+    },
+    {
+      "frame_no": 61915,
+      "minute": 17.2,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 121
+    },
+    {
+      "frame_no": 75416,
+      "minute": 20.95,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 119
+    },
+    {
+      "frame_no": 88901,
+      "minute": 24.69,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 110
+    },
+    {
+      "frame_no": 91549,
+      "minute": 25.43,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 110
+    }
+  ],
+  "roster": {
+    "red": [
+      {
+        "id": 119,
+        "name": "Proffesor"
+      },
+      {
+        "id": 120,
+        "name": "8danielflakoeintelektual"
+      },
+      {
+        "id": 125,
+        "name": "adeyemi"
+      },
+      {
+        "id": 121,
+        "name": "Nico Williams"
+      }
+    ],
+    "blue": [
+      {
+        "id": 109,
+        "name": "Bandolero"
+      },
+      {
+        "id": 124,
+        "name": "Santana"
+      },
+      {
+        "id": 126,
+        "name": "Gerson"
+      },
+      {
+        "id": 110,
+        "name": "aitor"
+      }
+    ],
+    "spec": [
+      {
+        "id": 122,
+        "name": "depene"
+      },
+      {
+        "id": 118,
+        "name": "nandxtrash6"
+      },
+      {
+        "id": 112,
+        "name": "vMarius"
+      }
+    ]
+  },
+  "roster_changes": [
+    {
+      "frame_no": 71,
+      "minute": 0.02,
+      "player_id": 111,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 305,
+      "minute": 0.08,
+      "player_id": 124,
+      "kind": "join"
+    },
+    {
+      "frame_no": 309,
+      "minute": 0.09,
+      "player_id": 111,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 19630,
+      "minute": 5.45,
+      "player_id": 125,
+      "kind": "join"
+    },
+    {
+      "frame_no": 52704,
+      "minute": 14.64,
+      "player_id": 126,
+      "kind": "join"
+    },
+    {
+      "frame_no": 63778,
+      "minute": 17.72,
+      "player_id": 123,
+      "kind": "leave"
+    }
   ]
 }

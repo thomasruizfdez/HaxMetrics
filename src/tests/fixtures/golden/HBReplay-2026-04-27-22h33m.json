@@ -115,5 +115,317 @@
       "frames_played": 0,
       "seconds_played": 0.0
     }
+  ],
+  "goals": [
+    {
+      "frame_no": 35781,
+      "minute": 9.94,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 43
+    },
+    {
+      "frame_no": 42821,
+      "minute": 11.89,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 49
+    },
+    {
+      "frame_no": 62253,
+      "minute": 17.29,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 43
+    },
+    {
+      "frame_no": 73340,
+      "minute": 20.37,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 65
+    },
+    {
+      "frame_no": 77770,
+      "minute": 21.6,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 70
+    },
+    {
+      "frame_no": 81110,
+      "minute": 22.53,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 65
+    }
+  ],
+  "roster": {
+    "red": [
+      {
+        "id": 65,
+        "name": "baif\u00f8"
+      },
+      {
+        "id": 59,
+        "name": "Felix6"
+      },
+      {
+        "id": 66,
+        "name": "nexo"
+      },
+      {
+        "id": 69,
+        "name": "iker"
+      }
+    ],
+    "blue": [
+      {
+        "id": 43,
+        "name": "Colcho"
+      },
+      {
+        "id": 45,
+        "name": "Bandolero"
+      },
+      {
+        "id": 46,
+        "name": "joaquin"
+      },
+      {
+        "id": 55,
+        "name": "Trapstar"
+      },
+      {
+        "id": 57,
+        "name": "Nacho.0"
+      }
+    ],
+    "spec": [
+      {
+        "id": 24,
+        "name": "ilaola"
+      },
+      {
+        "id": 15,
+        "name": "sir rai"
+      },
+      {
+        "id": 33,
+        "name": "niggerhttps://www.haxball"
+      },
+      {
+        "id": 71,
+        "name": "\ud835\udcda\ud835\udce3\ud835\udcdc "
+      },
+      {
+        "id": 81,
+        "name": "ala_"
+      },
+      {
+        "id": 83,
+        "name": "a-ha"
+      }
+    ]
+  },
+  "roster_changes": [
+    {
+      "frame_no": 782,
+      "minute": 0.22,
+      "player_id": 73,
+      "kind": "join"
+    },
+    {
+      "frame_no": 3527,
+      "minute": 0.98,
+      "player_id": 30,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 13239,
+      "minute": 3.68,
+      "player_id": 73,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 16555,
+      "minute": 4.6,
+      "player_id": 74,
+      "kind": "join"
+    },
+    {
+      "frame_no": 17367,
+      "minute": 4.82,
+      "player_id": 74,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 18420,
+      "minute": 5.12,
+      "player_id": 75,
+      "kind": "join"
+    },
+    {
+      "frame_no": 24216,
+      "minute": 6.73,
+      "player_id": 76,
+      "kind": "join"
+    },
+    {
+      "frame_no": 24443,
+      "minute": 6.79,
+      "player_id": 75,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 29041,
+      "minute": 8.07,
+      "player_id": 77,
+      "kind": "join"
+    },
+    {
+      "frame_no": 29270,
+      "minute": 8.13,
+      "player_id": 77,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 39192,
+      "minute": 10.89,
+      "player_id": 76,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 43480,
+      "minute": 12.08,
+      "player_id": 53,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 44108,
+      "minute": 12.25,
+      "player_id": 78,
+      "kind": "join"
+    },
+    {
+      "frame_no": 47160,
+      "minute": 13.1,
+      "player_id": 63,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 48107,
+      "minute": 13.36,
+      "player_id": 68,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 50301,
+      "minute": 13.97,
+      "player_id": 79,
+      "kind": "join"
+    },
+    {
+      "frame_no": 51275,
+      "minute": 14.24,
+      "player_id": 80,
+      "kind": "join"
+    },
+    {
+      "frame_no": 53762,
+      "minute": 14.93,
+      "player_id": 81,
+      "kind": "join"
+    },
+    {
+      "frame_no": 77465,
+      "minute": 21.52,
+      "player_id": 82,
+      "kind": "join"
+    },
+    {
+      "frame_no": 78065,
+      "minute": 21.68,
+      "player_id": 82,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 80318,
+      "minute": 22.31,
+      "player_id": 83,
+      "kind": "join"
+    },
+    {
+      "frame_no": 81507,
+      "minute": 22.64,
+      "player_id": 84,
+      "kind": "join"
+    },
+    {
+      "frame_no": 81953,
+      "minute": 22.76,
+      "player_id": 84,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 85566,
+      "minute": 23.77,
+      "player_id": 72,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 90593,
+      "minute": 25.16,
+      "player_id": 49,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 90626,
+      "minute": 25.17,
+      "player_id": 60,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 91229,
+      "minute": 25.34,
+      "player_id": 80,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 91446,
+      "minute": 25.4,
+      "player_id": 78,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 91519,
+      "minute": 25.42,
+      "player_id": 62,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 92023,
+      "minute": 25.56,
+      "player_id": 67,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 92910,
+      "minute": 25.81,
+      "player_id": 70,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 93813,
+      "minute": 26.06,
+      "player_id": 79,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 94668,
+      "minute": 26.3,
+      "player_id": 48,
+      "kind": "leave"
+    }
   ]
 }

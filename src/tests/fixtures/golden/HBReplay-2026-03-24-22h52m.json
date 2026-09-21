@@ -101,5 +101,422 @@
       "frames_played": 49114,
       "seconds_played": 818.5667
     }
+  ],
+  "goals": [
+    {
+      "frame_no": 38535,
+      "minute": 10.7,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 39
+    },
+    {
+      "frame_no": 64958,
+      "minute": 18.04,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 17
+    },
+    {
+      "frame_no": 78174,
+      "minute": 21.71,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 17
+    },
+    {
+      "frame_no": 91871,
+      "minute": 25.52,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 17
+    },
+    {
+      "frame_no": 93582,
+      "minute": 26.0,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 44
+    }
+  ],
+  "roster": {
+    "red": [
+      {
+        "id": 38,
+        "name": "Bandolero"
+      },
+      {
+        "id": 39,
+        "name": "aitor"
+      },
+      {
+        "id": 44,
+        "name": "vMarius"
+      },
+      {
+        "id": 47,
+        "name": "sam"
+      }
+    ],
+    "blue": [
+      {
+        "id": 17,
+        "name": "rio10"
+      },
+      {
+        "id": 15,
+        "name": "SACHA."
+      },
+      {
+        "id": 35,
+        "name": "Spawer"
+      },
+      {
+        "id": 12,
+        "name": "d3A"
+      }
+    ],
+    "spec": [
+      {
+        "id": 52,
+        "name": "HASAN \u015eA\u015e"
+      },
+      {
+        "id": 56,
+        "name": "Gerson"
+      },
+      {
+        "id": 57,
+        "name": "Ellerst"
+      },
+      {
+        "id": 49,
+        "name": "n\u00e9ymarr"
+      },
+      {
+        "id": 19,
+        "name": "\u010clyburn"
+      }
+    ]
+  },
+  "roster_changes": [
+    {
+      "frame_no": 1101,
+      "minute": 0.31,
+      "player_id": 40,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 1690,
+      "minute": 0.47,
+      "player_id": 52,
+      "kind": "join"
+    },
+    {
+      "frame_no": 1694,
+      "minute": 0.47,
+      "player_id": 40,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 4493,
+      "minute": 1.25,
+      "player_id": 53,
+      "kind": "join"
+    },
+    {
+      "frame_no": 4501,
+      "minute": 1.25,
+      "player_id": 45,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 4501,
+      "minute": 1.25,
+      "player_id": 51,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 4595,
+      "minute": 1.28,
+      "player_id": 43,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 4895,
+      "minute": 1.36,
+      "player_id": 53,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 5199,
+      "minute": 1.44,
+      "player_id": 54,
+      "kind": "join"
+    },
+    {
+      "frame_no": 5207,
+      "minute": 1.45,
+      "player_id": 45,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 5207,
+      "minute": 1.45,
+      "player_id": 51,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 5207,
+      "minute": 1.45,
+      "player_id": 53,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 6467,
+      "minute": 1.8,
+      "player_id": 54,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 7654,
+      "minute": 2.13,
+      "player_id": 55,
+      "kind": "join"
+    },
+    {
+      "frame_no": 9602,
+      "minute": 2.67,
+      "player_id": 56,
+      "kind": "join"
+    },
+    {
+      "frame_no": 9606,
+      "minute": 2.67,
+      "player_id": 43,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 13485,
+      "minute": 3.75,
+      "player_id": 55,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 22659,
+      "minute": 6.29,
+      "player_id": 57,
+      "kind": "join"
+    },
+    {
+      "frame_no": 22662,
+      "minute": 6.29,
+      "player_id": 50,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 24209,
+      "minute": 6.72,
+      "player_id": 58,
+      "kind": "join"
+    },
+    {
+      "frame_no": 24228,
+      "minute": 6.73,
+      "player_id": 55,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 38498,
+      "minute": 10.69,
+      "player_id": 58,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 38965,
+      "minute": 10.82,
+      "player_id": 59,
+      "kind": "join"
+    },
+    {
+      "frame_no": 38973,
+      "minute": 10.83,
+      "player_id": 55,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 38973,
+      "minute": 10.83,
+      "player_id": 58,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 42356,
+      "minute": 11.77,
+      "player_id": 24,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 62372,
+      "minute": 17.33,
+      "player_id": 59,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 68594,
+      "minute": 19.05,
+      "player_id": 60,
+      "kind": "join"
+    },
+    {
+      "frame_no": 68602,
+      "minute": 19.06,
+      "player_id": 55,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 68602,
+      "minute": 19.06,
+      "player_id": 58,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 68602,
+      "minute": 19.06,
+      "player_id": 59,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 70207,
+      "minute": 19.5,
+      "player_id": 60,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 79650,
+      "minute": 22.12,
+      "player_id": 61,
+      "kind": "join"
+    },
+    {
+      "frame_no": 79660,
+      "minute": 22.13,
+      "player_id": 55,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 79660,
+      "minute": 22.13,
+      "player_id": 58,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 79660,
+      "minute": 22.13,
+      "player_id": 59,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 79660,
+      "minute": 22.13,
+      "player_id": 60,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 80684,
+      "minute": 22.41,
+      "player_id": 61,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 85304,
+      "minute": 23.7,
+      "player_id": 62,
+      "kind": "join"
+    },
+    {
+      "frame_no": 85312,
+      "minute": 23.7,
+      "player_id": 55,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 85312,
+      "minute": 23.7,
+      "player_id": 58,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 85312,
+      "minute": 23.7,
+      "player_id": 59,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 85312,
+      "minute": 23.7,
+      "player_id": 60,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 85312,
+      "minute": 23.7,
+      "player_id": 61,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 88817,
+      "minute": 24.67,
+      "player_id": 62,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 91771,
+      "minute": 25.49,
+      "player_id": 63,
+      "kind": "join"
+    },
+    {
+      "frame_no": 91779,
+      "minute": 25.49,
+      "player_id": 55,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 91779,
+      "minute": 25.49,
+      "player_id": 58,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 91779,
+      "minute": 25.49,
+      "player_id": 59,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 91779,
+      "minute": 25.49,
+      "player_id": 60,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 91779,
+      "minute": 25.49,
+      "player_id": 61,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 91779,
+      "minute": 25.49,
+      "player_id": 62,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 93017,
+      "minute": 25.84,
+      "player_id": 63,
+      "kind": "leave"
+    }
   ]
 }

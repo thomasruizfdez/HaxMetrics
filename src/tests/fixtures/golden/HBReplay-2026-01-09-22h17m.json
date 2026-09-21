@@ -80,5 +80,63 @@
       "frames_played": 26359,
       "seconds_played": 439.3167
     }
-  ]
+  ],
+  "goals": [
+    {
+      "frame_no": 16951,
+      "minute": 4.71,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 210
+    }
+  ],
+  "roster": {
+    "red": [
+      {
+        "id": 197,
+        "name": "CHICO ZA LEGIE ZAPIERDOLE"
+      },
+      {
+        "id": 198,
+        "name": "o1o"
+      },
+      {
+        "id": 201,
+        "name": "Nasu"
+      },
+      {
+        "id": 203,
+        "name": "PAWEL"
+      }
+    ],
+    "blue": [
+      {
+        "id": 205,
+        "name": "aitor"
+      },
+      {
+        "id": 209,
+        "name": "vMarius"
+      },
+      {
+        "id": 210,
+        "name": "Gerson"
+      },
+      {
+        "id": 211,
+        "name": "Bandolero"
+      }
+    ],
+    "spec": [
+      {
+        "id": 208,
+        "name": "batu"
+      },
+      {
+        "id": 200,
+        "name": "aero"
+      }
+    ]
+  },
+  "roster_changes": []
 }

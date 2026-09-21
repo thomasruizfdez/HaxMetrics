@@ -94,5 +94,216 @@
       "frames_played": 0,
       "seconds_played": 0.0
     }
+  ],
+  "goals": [
+    {
+      "frame_no": 15893,
+      "minute": 4.41,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 25
+    },
+    {
+      "frame_no": 18233,
+      "minute": 5.06,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 25
+    },
+    {
+      "frame_no": 26223,
+      "minute": 7.28,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 25
+    },
+    {
+      "frame_no": 37354,
+      "minute": 10.38,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 22
+    },
+    {
+      "frame_no": 38378,
+      "minute": 10.66,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 21
+    },
+    {
+      "frame_no": 47976,
+      "minute": 13.33,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 22
+    },
+    {
+      "frame_no": 55574,
+      "minute": 15.44,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 25
+    }
+  ],
+  "roster": {
+    "red": [
+      {
+        "id": 35,
+        "name": "spezinho."
+      },
+      {
+        "id": 28,
+        "name": "RogerCarbo"
+      },
+      {
+        "id": 34,
+        "name": "Maestro"
+      }
+    ],
+    "blue": [
+      {
+        "id": 22,
+        "name": "Bandolero"
+      },
+      {
+        "id": 25,
+        "name": "aitor"
+      },
+      {
+        "id": 21,
+        "name": "vMarius"
+      },
+      {
+        "id": 24,
+        "name": "sam"
+      }
+    ],
+    "spec": [
+      {
+        "id": 27,
+        "name": "deni harum suporter"
+      },
+      {
+        "id": 33,
+        "name": "Reshiram"
+      },
+      {
+        "id": 38,
+        "name": "THE BUNNIX"
+      },
+      {
+        "id": 29,
+        "name": "Zekrom"
+      },
+      {
+        "id": 40,
+        "name": "Serbio"
+      }
+    ]
+  },
+  "roster_changes": [
+    {
+      "frame_no": 201,
+      "minute": 0.06,
+      "player_id": 19,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 2852,
+      "minute": 0.79,
+      "player_id": 37,
+      "kind": "join"
+    },
+    {
+      "frame_no": 2856,
+      "minute": 0.79,
+      "player_id": 32,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 5321,
+      "minute": 1.48,
+      "player_id": 38,
+      "kind": "join"
+    },
+    {
+      "frame_no": 7565,
+      "minute": 2.1,
+      "player_id": 18,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 9736,
+      "minute": 2.7,
+      "player_id": 20,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 13264,
+      "minute": 3.68,
+      "player_id": 37,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 50124,
+      "minute": 13.92,
+      "player_id": 30,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 52360,
+      "minute": 14.54,
+      "player_id": 39,
+      "kind": "join"
+    },
+    {
+      "frame_no": 52364,
+      "minute": 14.55,
+      "player_id": 15,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 52364,
+      "minute": 14.55,
+      "player_id": 30,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 54777,
+      "minute": 15.22,
+      "player_id": 39,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 55426,
+      "minute": 15.4,
+      "player_id": 40,
+      "kind": "join"
+    },
+    {
+      "frame_no": 55433,
+      "minute": 15.4,
+      "player_id": 15,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 55433,
+      "minute": 15.4,
+      "player_id": 30,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 55433,
+      "minute": 15.4,
+      "player_id": 39,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 55581,
+      "minute": 15.44,
+      "player_id": 36,
+      "kind": "leave"
+    }
   ]
 }

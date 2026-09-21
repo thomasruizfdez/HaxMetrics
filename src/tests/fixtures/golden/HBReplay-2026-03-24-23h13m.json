@@ -115,5 +115,218 @@
       "frames_played": 0,
       "seconds_played": 0.0
     }
+  ],
+  "goals": [
+    {
+      "frame_no": 16130,
+      "minute": 4.48,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 24
+    },
+    {
+      "frame_no": 42969,
+      "minute": 11.94,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 24
+    },
+    {
+      "frame_no": 51873,
+      "minute": 14.41,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 23
+    },
+    {
+      "frame_no": 54675,
+      "minute": 15.19,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 18
+    },
+    {
+      "frame_no": 56028,
+      "minute": 15.56,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 25
+    },
+    {
+      "frame_no": 59907,
+      "minute": 16.64,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 19
+    },
+    {
+      "frame_no": 63700,
+      "minute": 17.69,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 20
+    },
+    {
+      "frame_no": 64983,
+      "minute": 18.05,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 22
+    },
+    {
+      "frame_no": 67051,
+      "minute": 18.63,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 21
+    }
+  ],
+  "roster": {
+    "red": [
+      {
+        "id": 22,
+        "name": "Bandolero"
+      },
+      {
+        "id": 23,
+        "name": "Gerson"
+      },
+      {
+        "id": 25,
+        "name": "aitor"
+      },
+      {
+        "id": 21,
+        "name": "vMarius"
+      }
+    ],
+    "blue": [
+      {
+        "id": 18,
+        "name": "Ancasi"
+      },
+      {
+        "id": 19,
+        "name": "Deffinho"
+      },
+      {
+        "id": 20,
+        "name": "lulas"
+      },
+      {
+        "id": 17,
+        "name": "rudimental"
+      }
+    ],
+    "spec": [
+      {
+        "id": 27,
+        "name": "deni harum suporter"
+      },
+      {
+        "id": 28,
+        "name": "RogerCarbo"
+      },
+      {
+        "id": 24,
+        "name": "sam"
+      },
+      {
+        "id": 16,
+        "name": "UFO"
+      },
+      {
+        "id": 29,
+        "name": "Zekrom"
+      },
+      {
+        "id": 30,
+        "name": "Serbio"
+      },
+      {
+        "id": 33,
+        "name": "Reshiram"
+      }
+    ]
+  },
+  "roster_changes": [
+    {
+      "frame_no": 17107,
+      "minute": 4.75,
+      "player_id": 26,
+      "kind": "join"
+    },
+    {
+      "frame_no": 20052,
+      "minute": 5.57,
+      "player_id": 26,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 20353,
+      "minute": 5.65,
+      "player_id": 27,
+      "kind": "join"
+    },
+    {
+      "frame_no": 20357,
+      "minute": 5.65,
+      "player_id": 26,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 42143,
+      "minute": 11.71,
+      "player_id": 28,
+      "kind": "join"
+    },
+    {
+      "frame_no": 48685,
+      "minute": 13.52,
+      "player_id": 29,
+      "kind": "join"
+    },
+    {
+      "frame_no": 49112,
+      "minute": 13.64,
+      "player_id": 30,
+      "kind": "join"
+    },
+    {
+      "frame_no": 49115,
+      "minute": 13.64,
+      "player_id": 15,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 50986,
+      "minute": 14.16,
+      "player_id": 31,
+      "kind": "join"
+    },
+    {
+      "frame_no": 56866,
+      "minute": 15.8,
+      "player_id": 32,
+      "kind": "join"
+    },
+    {
+      "frame_no": 60283,
+      "minute": 16.75,
+      "player_id": 32,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 63386,
+      "minute": 17.61,
+      "player_id": 33,
+      "kind": "join"
+    },
+    {
+      "frame_no": 63916,
+      "minute": 17.75,
+      "player_id": 31,
+      "kind": "leave"
+    }
   ]
 }

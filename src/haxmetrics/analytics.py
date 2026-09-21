@@ -13,7 +13,7 @@ import pyarrow.parquet as pq
 
 EXPECTED_COLUMNS: dict[str, frozenset[str]] = {
     "meta": frozenset({"total_frames", "duration_ms", "recorded_red", "recorded_blue"}),
-    "events": frozenset({"kind", "scoring_team"}),
+    "events": frozenset({"kind", "scoring_team", "player_id"}),
     "players": frozenset({"player_id", "name", "team_id"}),
     "frames": frozenset({"object_id", "team"}),
 }
@@ -48,6 +48,23 @@ class PlayerStats:
 
 
 @dataclass(frozen=True)
+class GoalStats:
+    frame_no: int
+    scoring_team: int
+    conceding_team: int
+    scorer_id: int | None
+    minute: float
+
+
+@dataclass(frozen=True)
+class RosterChange:
+    frame_no: int
+    player_id: int
+    kind: str
+    minute: float
+
+
+@dataclass(frozen=True)
 class Stats:
     red: int
     blue: int
@@ -55,6 +72,55 @@ class Stats:
     duration_seconds: float
     score_invariant_ok: bool
     players: tuple[PlayerStats, ...] = ()
+    goals: tuple[GoalStats, ...] = ()
+    roster_changes: tuple[RosterChange, ...] = ()
+
+
+def _minute(frame_no: int) -> float:
+    return round(frame_no / SIMULATION_HZ / 60, 2)
+
+
+def _extract_goals(events: list[dict]) -> tuple[GoalStats, ...]:
+    goals = []
+    for e in events:
+        if e["kind"] != "goal":
+            continue
+        scoring_team = int(e["scoring_team"])
+        scorer_id = e.get("player_id")
+        goals.append(
+            GoalStats(
+                frame_no=int(e["frame_no"]),
+                scoring_team=scoring_team,
+                conceding_team=3 - scoring_team,
+                scorer_id=int(scorer_id) if scorer_id is not None else None,
+                minute=_minute(int(e["frame_no"])),
+            )
+        )
+    return tuple(goals)
+
+
+def _extract_roster_changes(events: list[dict]) -> tuple[RosterChange, ...]:
+    changes = []
+    for e in events:
+        if e["kind"] not in ("join", "leave"):
+            continue
+        changes.append(
+            RosterChange(
+                frame_no=int(e["frame_no"]),
+                player_id=int(e["player_id"]),
+                kind=e["kind"],
+                minute=_minute(int(e["frame_no"])),
+            )
+        )
+    return tuple(changes)
+
+
+def _group_roster_by_team(players: tuple[PlayerStats, ...]) -> dict[str, list[dict]]:
+    team_key = {1: "red", 2: "blue"}
+    roster: dict[str, list[dict]] = {"red": [], "blue": [], "spec": []}
+    for p in players:
+        roster[team_key.get(p.team_id, "spec")].append({"id": p.player_id, "name": p.name})
+    return roster
 
 
 def stats_to_dict(replay_name: str, stats: Stats) -> dict:
@@ -76,6 +142,26 @@ def stats_to_dict(replay_name: str, stats: Stats) -> dict:
             }
             for p in stats.players
         ],
+        "goals": [
+            {
+                "frame_no": g.frame_no,
+                "minute": g.minute,
+                "scoring_team": g.scoring_team,
+                "conceding_team": g.conceding_team,
+                "scorer_id": g.scorer_id,
+            }
+            for g in stats.goals
+        ],
+        "roster": _group_roster_by_team(stats.players),
+        "roster_changes": [
+            {
+                "frame_no": rc.frame_no,
+                "minute": rc.minute,
+                "player_id": rc.player_id,
+                "kind": rc.kind,
+            }
+            for rc in stats.roster_changes
+        ],
     }
 
 
@@ -93,9 +179,10 @@ def compute_stats(parquet_dir: str | Path) -> Stats:
     recorded_red = int(meta["recorded_red"])
     recorded_blue = int(meta["recorded_blue"])
 
-    goals = [e for e in events if e["kind"] == "goal"]
-    reconstructed_red = sum(1 for e in goals if e["scoring_team"] == 1)
-    reconstructed_blue = sum(1 for e in goals if e["scoring_team"] == 2)
+    goal_stats = _extract_goals(events)
+    roster_changes = _extract_roster_changes(events)
+    reconstructed_red = sum(1 for g in goal_stats if g.scoring_team == 1)
+    reconstructed_blue = sum(1 for g in goal_stats if g.scoring_team == 2)
 
     players_table = pq.read_table(parquet_dir / "players.parquet")
     _check_columns(players_table, "players")
@@ -128,4 +215,6 @@ def compute_stats(parquet_dir: str | Path) -> Stats:
             and reconstructed_blue == recorded_blue
         ),
         players=players,
+        goals=goal_stats,
+        roster_changes=roster_changes,
     )

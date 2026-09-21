@@ -101,5 +101,129 @@
       "frames_played": 0,
       "seconds_played": 0.0
     }
+  ],
+  "goals": [
+    {
+      "frame_no": 7891,
+      "minute": 2.19,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 190
+    },
+    {
+      "frame_no": 16084,
+      "minute": 4.47,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 217
+    },
+    {
+      "frame_no": 23433,
+      "minute": 6.51,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 192
+    },
+    {
+      "frame_no": 34378,
+      "minute": 9.55,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 192
+    },
+    {
+      "frame_no": 77461,
+      "minute": 21.52,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 218
+    },
+    {
+      "frame_no": 88341,
+      "minute": 24.54,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 191
+    }
+  ],
+  "roster": {
+    "red": [
+      {
+        "id": 212,
+        "name": "Bandolero"
+      },
+      {
+        "id": 216,
+        "name": "Gerson"
+      },
+      {
+        "id": 217,
+        "name": "vMarius"
+      },
+      {
+        "id": 218,
+        "name": "aitor"
+      }
+    ],
+    "blue": [
+      {
+        "id": 205,
+        "name": "Spawer"
+      },
+      {
+        "id": 211,
+        "name": "rio10"
+      },
+      {
+        "id": 191,
+        "name": "d3A"
+      },
+      {
+        "id": 207,
+        "name": "Lsak"
+      }
+    ],
+    "spec": [
+      {
+        "id": 206,
+        "name": "xy"
+      },
+      {
+        "id": 215,
+        "name": "Klose [MAFIA TV LIRS]"
+      },
+      {
+        "id": 192,
+        "name": "\u010clyburn"
+      },
+      {
+        "id": 190,
+        "name": "SACHA."
+      },
+      {
+        "id": 219,
+        "name": "Valth\u00e9ra"
+      }
+    ]
+  },
+  "roster_changes": [
+    {
+      "frame_no": 71985,
+      "minute": 20.0,
+      "player_id": 193,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 78293,
+      "minute": 21.75,
+      "player_id": 219,
+      "kind": "join"
+    },
+    {
+      "frame_no": 78298,
+      "minute": 21.75,
+      "player_id": 193,
+      "kind": "leave"
+    }
   ]
 }

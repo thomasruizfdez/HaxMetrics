@@ -94,5 +94,159 @@
       "frames_played": 22392,
       "seconds_played": 373.2
     }
+  ],
+  "goals": [
+    {
+      "frame_no": 1992,
+      "minute": 0.55,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 73
+    },
+    {
+      "frame_no": 15036,
+      "minute": 4.18,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 64
+    },
+    {
+      "frame_no": 16172,
+      "minute": 4.49,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 71
+    },
+    {
+      "frame_no": 22469,
+      "minute": 6.24,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 68
+    },
+    {
+      "frame_no": 25877,
+      "minute": 7.19,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 68
+    },
+    {
+      "frame_no": 45478,
+      "minute": 12.63,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 66
+    },
+    {
+      "frame_no": 68563,
+      "minute": 19.05,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 73
+    },
+    {
+      "frame_no": 73078,
+      "minute": 20.3,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 66
+    },
+    {
+      "frame_no": 79731,
+      "minute": 22.15,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 66
+    },
+    {
+      "frame_no": 87644,
+      "minute": 24.35,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 66
+    }
+  ],
+  "roster": {
+    "red": [
+      {
+        "id": 70,
+        "name": "bigballs"
+      },
+      {
+        "id": 73,
+        "name": "TOCAYO"
+      },
+      {
+        "id": 75,
+        "name": "Ken"
+      },
+      {
+        "id": 72,
+        "name": "s1mple"
+      }
+    ],
+    "blue": [
+      {
+        "id": 64,
+        "name": "Bandolero"
+      },
+      {
+        "id": 68,
+        "name": "vMarius"
+      },
+      {
+        "id": 66,
+        "name": "aitor"
+      },
+      {
+        "id": 65,
+        "name": "Musi"
+      }
+    ],
+    "spec": [
+      {
+        "id": 69,
+        "name": "m\u00e4rz"
+      },
+      {
+        "id": 67,
+        "name": "sam"
+      },
+      {
+        "id": 77,
+        "name": "hola"
+      },
+      {
+        "id": 71,
+        "name": "ashito"
+      }
+    ]
+  },
+  "roster_changes": [
+    {
+      "frame_no": 11912,
+      "minute": 3.31,
+      "player_id": 76,
+      "kind": "join"
+    },
+    {
+      "frame_no": 12190,
+      "minute": 3.39,
+      "player_id": 76,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 45713,
+      "minute": 12.7,
+      "player_id": 77,
+      "kind": "join"
+    },
+    {
+      "frame_no": 87644,
+      "minute": 24.35,
+      "player_id": 74,
+      "kind": "leave"
+    }
   ]
 }

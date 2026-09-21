@@ -66,5 +66,355 @@
       "frames_played": 127374,
       "seconds_played": 2122.9
     }
+  ],
+  "goals": [
+    {
+      "frame_no": 3376,
+      "minute": 0.94,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 69
+    },
+    {
+      "frame_no": 9127,
+      "minute": 2.54,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 73
+    },
+    {
+      "frame_no": 12446,
+      "minute": 3.46,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 69
+    },
+    {
+      "frame_no": 29780,
+      "minute": 8.27,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 69
+    },
+    {
+      "frame_no": 33650,
+      "minute": 9.35,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 79
+    },
+    {
+      "frame_no": 34947,
+      "minute": 9.71,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 83
+    },
+    {
+      "frame_no": 39361,
+      "minute": 10.93,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 76
+    },
+    {
+      "frame_no": 52691,
+      "minute": 14.64,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 79
+    },
+    {
+      "frame_no": 54551,
+      "minute": 15.15,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 73
+    },
+    {
+      "frame_no": 57779,
+      "minute": 16.05,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 69
+    },
+    {
+      "frame_no": 63062,
+      "minute": 17.52,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 73
+    },
+    {
+      "frame_no": 66316,
+      "minute": 18.42,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 69
+    },
+    {
+      "frame_no": 71037,
+      "minute": 19.73,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 75
+    },
+    {
+      "frame_no": 98066,
+      "minute": 27.24,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 75
+    },
+    {
+      "frame_no": 104241,
+      "minute": 28.96,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 69
+    },
+    {
+      "frame_no": 109695,
+      "minute": 30.47,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 79
+    },
+    {
+      "frame_no": 113979,
+      "minute": 31.66,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 75
+    },
+    {
+      "frame_no": 129375,
+      "minute": 35.94,
+      "scoring_team": 1,
+      "conceding_team": 2,
+      "scorer_id": 75
+    },
+    {
+      "frame_no": 170708,
+      "minute": 47.42,
+      "scoring_team": 2,
+      "conceding_team": 1,
+      "scorer_id": 79
+    }
+  ],
+  "roster": {
+    "red": [
+      {
+        "id": 69,
+        "name": "aitor"
+      },
+      {
+        "id": 73,
+        "name": "Bandolero"
+      },
+      {
+        "id": 74,
+        "name": "Gerson"
+      },
+      {
+        "id": 76,
+        "name": "vMarius"
+      }
+    ],
+    "blue": [
+      {
+        "id": 75,
+        "name": "QSM"
+      },
+      {
+        "id": 79,
+        "name": "reashe"
+      },
+      {
+        "id": 83,
+        "name": "esc"
+      },
+      {
+        "id": 86,
+        "name": "mev"
+      }
+    ],
+    "spec": []
+  },
+  "roster_changes": [
+    {
+      "frame_no": 8106,
+      "minute": 2.25,
+      "player_id": 81,
+      "kind": "join"
+    },
+    {
+      "frame_no": 10863,
+      "minute": 3.02,
+      "player_id": 81,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 18335,
+      "minute": 5.09,
+      "player_id": 82,
+      "kind": "join"
+    },
+    {
+      "frame_no": 18339,
+      "minute": 5.09,
+      "player_id": 80,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 18344,
+      "minute": 5.1,
+      "player_id": 80,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 20584,
+      "minute": 5.72,
+      "player_id": 78,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 26288,
+      "minute": 7.3,
+      "player_id": 83,
+      "kind": "join"
+    },
+    {
+      "frame_no": 26292,
+      "minute": 7.3,
+      "player_id": 78,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 34940,
+      "minute": 9.71,
+      "player_id": 84,
+      "kind": "join"
+    },
+    {
+      "frame_no": 35194,
+      "minute": 9.78,
+      "player_id": 84,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 38151,
+      "minute": 10.6,
+      "player_id": 85,
+      "kind": "join"
+    },
+    {
+      "frame_no": 38155,
+      "minute": 10.6,
+      "player_id": 65,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 38285,
+      "minute": 10.63,
+      "player_id": 85,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 41353,
+      "minute": 11.49,
+      "player_id": 82,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 41727,
+      "minute": 11.59,
+      "player_id": 86,
+      "kind": "join"
+    },
+    {
+      "frame_no": 41735,
+      "minute": 11.59,
+      "player_id": 80,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 41735,
+      "minute": 11.59,
+      "player_id": 82,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 47279,
+      "minute": 13.13,
+      "player_id": 87,
+      "kind": "join"
+    },
+    {
+      "frame_no": 47282,
+      "minute": 13.13,
+      "player_id": 65,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 47282,
+      "minute": 13.13,
+      "player_id": 85,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 48819,
+      "minute": 13.56,
+      "player_id": 87,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 49947,
+      "minute": 13.87,
+      "player_id": 88,
+      "kind": "join"
+    },
+    {
+      "frame_no": 49951,
+      "minute": 13.88,
+      "player_id": 51,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 49951,
+      "minute": 13.88,
+      "player_id": 57,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 53358,
+      "minute": 14.82,
+      "player_id": 88,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 55533,
+      "minute": 15.43,
+      "player_id": 89,
+      "kind": "join"
+    },
+    {
+      "frame_no": 55599,
+      "minute": 15.44,
+      "player_id": 89,
+      "kind": "leave"
+    },
+    {
+      "frame_no": 70157,
+      "minute": 19.49,
+      "player_id": 90,
+      "kind": "join"
+    },
+    {
+      "frame_no": 70505,
+      "minute": 19.58,
+      "player_id": 90,
+      "kind": "leave"
+    }
   ]
 }
