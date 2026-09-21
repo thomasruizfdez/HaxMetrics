@@ -22,6 +22,11 @@ const path = require('path');
 const parquet = require('@dsnp/parquetjs');
 const ScoreTracker = require('./ScoreTracker');
 const { buildPlayerMaps } = require('./buildPlayerMaps');
+const { resolveGoalScorer } = require('./resolveGoalScorer');
+
+// ActionType de node-haxball data.events[] (ver docs/spikes/s3-events-probe.md);
+// coincide con src/haxmetrics/models/actions/action_type.py.
+const EVENT_TYPE = { MESSAGE: 0, PLAYER_JOINED: 5, PLAYER_LEFT: 6, PLAYER_TEAM_CHANGE: 12 };
 
 // Upper bound on RAF ticks per frame step — prevents infinite loops if the
 // simulator stalls or the frame target is unreachable.
@@ -74,6 +79,10 @@ async function main() {
   const maxFrame = reader.maxFrameNo;
   const durationMs = reader.length();
 
+  const PROFILE = !!process.env.HAXMETRICS_PROFILE;
+  let stepMs = 0;
+  let appendMs = 0;
+
   // --- frames.parquet -----------------------------------------------------
   const framesSchema = new parquet.ParquetSchema({
     frame_no: { type: 'INT64' },
@@ -94,9 +103,12 @@ async function main() {
   const score = new ScoreTracker();
   let lastRoster = [];
   let stadiumName = '';
+  const allPlayersById = new Map(); // id -> nombre, para resolver autor de gol por texto
 
   for (let f = 0; f <= maxFrame; f++) {
+    let t0 = PROFILE ? process.hrtime.bigint() : 0n;
     stepToFrame(reader, f);
+    if (PROFILE) { const t1 = process.hrtime.bigint(); stepMs += Number(t1 - t0) / 1e6; t0 = t1; }
     const gs = reader.gameState;
     if (!gs) continue; // sin juego activo (antes del saque / fin de partido)
 
@@ -110,12 +122,14 @@ async function main() {
     if (!discs.length) continue;
 
     const players = (reader.state && reader.state.players) || [];
-    const { teamById, kickingById, inputById } = buildPlayerMaps(players);
-    if ([...teamById.values()].some(t => t !== 0)) {
+    for (const p of players) allPlayersById.set(p.id, p.name || '');
+    const { teamById, kickingById, inputById, hasActiveTeam } = buildPlayerMaps(players);
+    if (hasActiveTeam) {
       lastRoster = players;
       stadiumName = gs.stadium ? gs.stadium.name : stadiumName;
     }
 
+    const tAppend0 = PROFILE ? process.hrtime.bigint() : 0n;
     // balón
     const ball = discs[0];
     await framesWriter.appendRow({
@@ -135,7 +149,9 @@ async function main() {
         team: teamById.has(d.playerId) ? teamById.get(d.playerId) : undefined,
       });
     }
+    if (PROFILE) appendMs += Number(process.hrtime.bigint() - tAppend0) / 1e6;
   }
+  if (PROFILE) console.error(`[profile] stepToFrame=${stepMs.toFixed(0)}ms appendRow=${appendMs.toFixed(0)}ms`);
   await framesWriter.close();
 
   // --- meta.parquet -------------------------------------------------------
@@ -167,23 +183,48 @@ async function main() {
   });
   await metaWriter.close();
 
-  // --- events.parquet (goles + start/stop) --------------------------------
+  // --- events.parquet (start, goal, join, leave, team_change, stop) ------
+  // Autor del gol: el protocolo HaxBall no lo registra; se intenta resolver por
+  // texto desde mensajes de sistema de bots de sala (mejor esfuerzo, puede ser
+  // null). Ver docs/spikes/s3-events-probe.md.
+  const nameToId = new Map();
+  for (const [id, name] of allPlayersById) nameToId.set(name, id);
+  const replayEvents = data.events || [];
+
+  const eventRows = [];
+  eventRows.push({ frame_no: 0, kind: 'start' });
+  for (const g of goalMarkers) {
+    eventRows.push({
+      frame_no: g.frameNo, kind: 'goal',
+      team_id: g.teamId, scoring_team: 3 - g.teamId,
+      player_id: resolveGoalScorer(replayEvents, g.frameNo, nameToId),
+    });
+  }
+  for (const e of replayEvents) {
+    if (e.eventType === EVENT_TYPE.PLAYER_JOINED) {
+      eventRows.push({ frame_no: e.frameNo, kind: 'join', player_id: e.id });
+    } else if (e.eventType === EVENT_TYPE.PLAYER_LEFT) {
+      eventRows.push({ frame_no: e.frameNo, kind: 'leave', player_id: e.id });
+    } else if (e.eventType === EVENT_TYPE.PLAYER_TEAM_CHANGE) {
+      eventRows.push({
+        frame_no: e.frameNo, kind: 'team_change',
+        player_id: e.playerId, team_id: e.team ? e.team.id : undefined,
+      });
+    }
+  }
+  eventRows.push({ frame_no: maxFrame, kind: 'stop' });
+  eventRows.sort((a, b) => a.frame_no - b.frame_no);
+
   const eventsSchema = new parquet.ParquetSchema({
     frame_no: { type: 'INT64' },
     kind: { type: 'UTF8' },
     team_id: { type: 'INT32', optional: true },
     scoring_team: { type: 'INT32', optional: true },
+    player_id: { type: 'INT32', optional: true },
   });
   const eventsWriter = await parquet.ParquetWriter.openFile(
     eventsSchema, path.join(outDir, 'events.parquet'));
-  await eventsWriter.appendRow({ frame_no: 0, kind: 'start' });
-  for (const g of goalMarkers) {
-    await eventsWriter.appendRow({
-      frame_no: g.frameNo, kind: 'goal',
-      team_id: g.teamId, scoring_team: 3 - g.teamId,
-    });
-  }
-  await eventsWriter.appendRow({ frame_no: maxFrame, kind: 'stop' });
+  for (const row of eventRows) await eventsWriter.appendRow(row);
   await eventsWriter.close();
 
   // --- players.parquet (roster) ------------------------------------------
